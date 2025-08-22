@@ -1,0 +1,68 @@
+{
+  "expo": {
+    "name": "sappers",
+    "slug": "sappers",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "sappers",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/logo-sappers.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#6A7814"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "splash": {
+        "image": "./assets/images/logo-sappers.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#6A7814"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/logo-sappers.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "splash": {
+        "image": "./assets/images/logo-sappers.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#6A7814"
+      },
+      "package": "com.codieprodigy.sappers"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/logo-sappers.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#6A9819",
+          "image": "./assets/images/logo-sappers.png",
+          "dark": {
+            "image": "./assets/images/logo-sappers.png",
+            "backgroundColor": "#6A9819"
+          },
+          "imageWidth": 200
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "3b11f18d-f392-4716-800b-807f59d0729b"
+      }
+    }
+  }
+}
