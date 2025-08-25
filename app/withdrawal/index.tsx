@@ -27,6 +27,7 @@ interface FormData {
   salaryAccountNumber: string;
   bankName: string;
   branch: string;
+  amount: number
 }
 
 const WithdrawalApplication = () => {
@@ -45,6 +46,7 @@ const WithdrawalApplication = () => {
     salaryAccountNumber: "",
     bankName: "",
     branch: "",
+    amount: 0
   });
 
   const ranks = [
@@ -311,6 +313,15 @@ const WithdrawalApplication = () => {
             value={formData.branch}
             onChangeText={(value) => handleInputChange("branch", value)}
             editable={false}
+          />
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Amount</Text>
+          <TextInput
+            style={[styles.input, styles.disabledInput]}
+            value={formData.branch}
+            onChangeText={(value) => handleInputChange("amount", value)}
           />
         </View>
 
