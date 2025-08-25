@@ -425,50 +425,67 @@ const RegistrationForm = () => {
                 <Text style={styles.subtitle}>
                   Enter Your Basic Information
                 </Text>
+
+                <Text style={styles.inputLabel}>Service Number</Text>
                 <View style={styles.inputIcon}>
                   <SignalMedium size={18} color="black" />
                   <TextInput
-                    placeholder="Service Number"
+                    placeholder="Enter service number"
                     style={styles.inputFlex}
                   />
                 </View>
 
+                <Text style={styles.inputLabel}>Rank</Text>
                 <View style={styles.inputIcon}>
                   <SignalHigh size={18} color="black" />
-                  <TextInput placeholder="Rank" style={styles.inputFlex} />
+                  <TextInput
+                    placeholder="Enter rank"
+                    style={styles.inputFlex}
+                  />
                 </View>
 
+                <Text style={styles.inputLabel}>Unit</Text>
                 <View style={styles.inputIcon}>
                   <Home size={18} color="black" />
-                  <TextInput placeholder="Unit" style={styles.inputFlex} />
-                </View>
-
-                <View style={styles.inputIcon}>
-                  <User size={18} color="black" />
                   <TextInput
-                    placeholder="First Name"
+                    placeholder="Enter unit"
                     style={styles.inputFlex}
                   />
                 </View>
 
+                <Text style={styles.inputLabel}>First Name</Text>
                 <View style={styles.inputIcon}>
                   <User size={18} color="black" />
                   <TextInput
-                    placeholder="Other Name"
+                    placeholder="Enter first name"
                     style={styles.inputFlex}
                   />
                 </View>
 
+                <Text style={styles.inputLabel}>Other Name</Text>
                 <View style={styles.inputIcon}>
                   <User size={18} color="black" />
-                  <TextInput placeholder="Surname" style={styles.inputFlex} />
+                  <TextInput
+                    placeholder="Enter other name"
+                    style={styles.inputFlex}
+                  />
                 </View>
 
+                <Text style={styles.inputLabel}>Surname</Text>
+                <View style={styles.inputIcon}>
+                  <User size={18} color="black" />
+                  <TextInput
+                    placeholder="Enter surname"
+                    style={styles.inputFlex}
+                  />
+                </View>
+
+                <Text style={styles.inputLabel}>Gender</Text>
                 <View style={styles.inputIcon}>
                   <User size={18} color="black" />
                   <RNPickerSelect
                     onValueChange={(value) => setGender(value)}
-                    placeholder={{ label: "Gender", value: "" }}
+                    placeholder={{ label: "Select gender", value: "" }}
                     items={[
                       { label: "MALE", value: "Male" },
                       { label: "FEMALE", value: "Female" },
@@ -488,13 +505,14 @@ const RegistrationForm = () => {
                   Enter Your Contact Information
                 </Text>
 
+                <Text style={styles.inputLabel}>Date of Birth</Text>
                 <TouchableOpacity
                   style={styles.inputIcon}
                   onPress={showDatePicker}
                 >
                   <Calendar size={18} color="black" />
                   <Text style={[styles.inputFlex, styles.dobText]}>
-                    {dob || "Date of Birth"}
+                    {dob || "Select date of birth"}
                   </Text>
                 </TouchableOpacity>
 
@@ -504,29 +522,32 @@ const RegistrationForm = () => {
                   onConfirm={handleConfirm}
                   onCancel={hideDatePicker}
                 />
-                
+
+                <Text style={styles.inputLabel}>Phone Number</Text>
                 <View style={styles.inputIcon}>
                   <Phone size={18} color="black" />
                   <TextInput
-                    placeholder="Phone Number"
+                    placeholder="Enter phone number"
                     style={styles.inputFlex}
                     keyboardType="phone-pad"
                   />
                 </View>
 
+                <Text style={styles.inputLabel}>Email Address</Text>
                 <View style={styles.inputIcon}>
                   <Mail size={18} color="black" />
                   <TextInput
-                    placeholder="Email Address"
+                    placeholder="Enter email address"
                     style={styles.inputFlex}
                     keyboardType="email-address"
                   />
                 </View>
 
+                <Text style={styles.inputLabel}>Home Address</Text>
                 <View style={styles.inputIcon}>
                   <Home size={18} color="black" />
                   <TextInput
-                    placeholder="Home Address"
+                    placeholder="Enter home address"
                     style={styles.inputFlex}
                   />
                 </View>
@@ -540,29 +561,31 @@ const RegistrationForm = () => {
                   Enter Your Financial Information
                 </Text>
 
-                <View>
-                  {/* State Picker - Fixed: Using personal stateOrigin and lga */}
-                  <View style={styles.inputIcon}>
-                    <User size={18} color="black" />
-                    <RNPickerSelect
-                      onValueChange={(value) => {
-                        setStateOrigin(value);
-                        setLga(""); // reset LGA when state changes
-                      }}
-                      placeholder={{ label: "State of Origin", value: "" }}
-                      items={Object.keys(states).map((state) => ({
-                        label: state,
-                        value: state,
-                      }))}
-                      value={stateOrigin}
-                      style={pickerSelectStyles}
-                      useNativeAndroidPickerStyle={false}
-                    />
-                  </View>
+                <Text style={styles.inputLabel}>State of Origin</Text>
+                <View style={styles.inputIcon}>
+                  <User size={18} color="black" />
+                  <RNPickerSelect
+                    onValueChange={(value) => {
+                      setStateOrigin(value);
+                      setLga(""); // reset LGA when state changes
+                    }}
+                    placeholder={{ label: "Select state of origin", value: "" }}
+                    items={Object.keys(states).map((state) => ({
+                      label: state,
+                      value: state,
+                    }))}
+                    value={stateOrigin}
+                    style={pickerSelectStyles}
+                    useNativeAndroidPickerStyle={false}
+                  />
+                </View>
 
+                <Text style={styles.inputLabel}>LGA</Text>
+                <View style={styles.inputIcon}>
+                  <User size={18} color="black" />
                   <RNPickerSelect
                     onValueChange={(value) => setLga(value)}
-                    placeholder={{ label: "LGA", value: "" }}
+                    placeholder={{ label: "Select LGA", value: "" }}
                     items={
                       stateOrigin
                         ? (states as Record<string, string[]>)[
@@ -579,31 +602,38 @@ const RegistrationForm = () => {
                   />
                 </View>
 
+                <Text style={styles.inputLabel}>Bank</Text>
                 <View style={styles.inputIcon}>
                   <Building size={18} color="black" />
-                  <TextInput placeholder="Bank" style={styles.inputFlex} />
-                </View>
-
-                <View style={styles.inputIcon}>
-                  <CreditCard size={18} color="black" />
                   <TextInput
-                    placeholder="Account Number"
+                    placeholder="Enter bank name"
                     style={styles.inputFlex}
                   />
                 </View>
 
+                <Text style={styles.inputLabel}>Account Number</Text>
                 <View style={styles.inputIcon}>
                   <CreditCard size={18} color="black" />
                   <TextInput
-                    placeholder="Account Name"
+                    placeholder="Enter account number"
                     style={styles.inputFlex}
                   />
                 </View>
 
+                <Text style={styles.inputLabel}>Account Name</Text>
                 <View style={styles.inputIcon}>
-                  <CreditCard size={18} color="#666" />
+                  <CreditCard size={18} color="black" />
                   <TextInput
-                    placeholder="Amount to be deducted"
+                    placeholder="Enter account name"
+                    style={styles.inputFlex}
+                  />
+                </View>
+
+                <Text style={styles.inputLabel}>Amount to be deducted</Text>
+                <View style={styles.inputIcon}>
+                  <CreditCard size={18} color="black" />
+                  <TextInput
+                    placeholder="Enter amount"
                     style={styles.inputFlex}
                     keyboardType="numeric"
                   />
@@ -617,32 +647,39 @@ const RegistrationForm = () => {
                 <Text style={styles.title}>Next of Kin</Text>
                 <Text style={styles.subtitle}>Enter Basic Information</Text>
 
+                <Text style={styles.inputLabel}>First Name</Text>
                 <View style={styles.inputIcon}>
                   <User size={18} color="black" />
                   <TextInput
-                    placeholder="First name"
+                    placeholder="Enter first name"
                     style={styles.inputFlex}
                   />
                 </View>
 
+                <Text style={styles.inputLabel}>Other Name</Text>
                 <View style={styles.inputIcon}>
                   <User size={18} color="black" />
                   <TextInput
-                    placeholder="Other Name"
+                    placeholder="Enter other name"
                     style={styles.inputFlex}
                   />
                 </View>
 
+                <Text style={styles.inputLabel}>Surname</Text>
                 <View style={styles.inputIcon}>
                   <User size={18} color="black" />
-                  <TextInput placeholder="Surname" style={styles.inputFlex} />
+                  <TextInput
+                    placeholder="Enter surname"
+                    style={styles.inputFlex}
+                  />
                 </View>
 
+                <Text style={styles.inputLabel}>Gender</Text>
                 <View style={styles.inputIcon}>
                   <User size={18} color="black" />
                   <RNPickerSelect
                     onValueChange={(value) => setKinGender(value)}
-                    placeholder={{ label: "Gender", value: "" }}
+                    placeholder={{ label: "Select gender", value: "" }}
                     items={[
                       { label: "MALE", value: "Male" },
                       { label: "FEMALE", value: "Female" },
@@ -653,11 +690,12 @@ const RegistrationForm = () => {
                   />
                 </View>
 
+                <Text style={styles.inputLabel}>Relationship</Text>
                 <View style={styles.inputIcon}>
                   <User size={18} color="black" />
                   <RNPickerSelect
                     onValueChange={(value) => setRelationship(value)}
-                    placeholder={{ label: "Relationship", value: "" }}
+                    placeholder={{ label: "Select relationship", value: "" }}
                     items={[
                       { label: "Brother", value: "Brother" },
                       { label: "Sister", value: "Sister" },
@@ -684,13 +722,14 @@ const RegistrationForm = () => {
                 <Text style={styles.title}>Next of Kin</Text>
                 <Text style={styles.subtitle}>Enter Contact Information</Text>
 
+                <Text style={styles.inputLabel}>Date of Birth</Text>
                 <TouchableOpacity
                   style={styles.inputIcon}
                   onPress={showKinDatePicker}
                 >
                   <Calendar size={18} color="black" />
                   <Text style={[styles.inputFlex, styles.dobText]}>
-                    {kinDob || "DOB"}
+                    {kinDob || "Select date of birth"}
                   </Text>
                 </TouchableOpacity>
 
@@ -701,28 +740,31 @@ const RegistrationForm = () => {
                   onCancel={hideKinDatePicker}
                 />
 
+                <Text style={styles.inputLabel}>Phone Number</Text>
                 <View style={styles.inputIcon}>
                   <Phone size={18} color="black" />
                   <TextInput
-                    placeholder="Phone Number"
+                    placeholder="Enter phone number"
                     style={styles.inputFlex}
                     keyboardType="phone-pad"
                   />
                 </View>
 
+                <Text style={styles.inputLabel}>Email Address</Text>
                 <View style={styles.inputIcon}>
                   <Mail size={18} color="black" />
                   <TextInput
-                    placeholder="Email Address"
+                    placeholder="Enter email address"
                     style={styles.inputFlex}
                     keyboardType="email-address"
                   />
                 </View>
 
+                <Text style={styles.inputLabel}>Home Address</Text>
                 <View style={styles.inputIcon}>
                   <Home size={18} color="black" />
                   <TextInput
-                    placeholder="Home Address"
+                    placeholder="Enter home address"
                     style={styles.inputFlex}
                   />
                 </View>
@@ -737,67 +779,72 @@ const RegistrationForm = () => {
                   Enter Additional Information
                 </Text>
 
+                <Text style={styles.inputLabel}>Guarantor Service Number</Text>
                 <View style={styles.inputIcon}>
                   <CreditCard size={18} color="black" />
                   <TextInput
-                    placeholder="Guarantor service Number"
+                    placeholder="Enter guarantor service number"
                     style={styles.inputFlex}
                   />
                 </View>
 
-                <View>
-                  <View style={styles.inputIcon}>
-                    <User size={18} color="black" />
-                    <RNPickerSelect
-                      onValueChange={(value) => {
-                        setKinStateOrigin(value);
-                        setKinLga("");
-                      }}
-                      placeholder={{ label: "State of Origin", value: "" }}
-                      items={Object.keys(states).map((state) => ({
-                        label: state,
-                        value: state,
-                      }))}
-                      value={kinStateOrigin}
-                      style={pickerSelectStyles}
-                      useNativeAndroidPickerStyle={false}
-                    />
-                  </View>
-
-                  <View style={styles.inputIcon}>
-                    <User size={18} color="black" />
-                    <RNPickerSelect
-                      onValueChange={(value) => setKinLga(value)}
-                      placeholder={{ label: "LGA", value: "" }}
-                      items={
-                        kinStateOrigin
-                          ? (states as Record<string, string[]>)[
-                              kinStateOrigin
-                            ]?.map((lgaItem: string) => ({
-                              label: lgaItem,
-                              value: lgaItem,
-                            })) || []
-                          : []
-                      }
-                      value={kinLga}
-                      style={pickerSelectStyles}
-                      useNativeAndroidPickerStyle={false}
-                    />
-                  </View>
+                <Text style={styles.inputLabel}>State of Origin</Text>
+                <View style={styles.inputIcon}>
+                  <User size={18} color="black" />
+                  <RNPickerSelect
+                    onValueChange={(value) => {
+                      setKinStateOrigin(value);
+                      setKinLga("");
+                    }}
+                    placeholder={{ label: "Select state of origin", value: "" }}
+                    items={Object.keys(states).map((state) => ({
+                      label: state,
+                      value: state,
+                    }))}
+                    value={kinStateOrigin}
+                    style={pickerSelectStyles}
+                    useNativeAndroidPickerStyle={false}
+                  />
                 </View>
 
+                <Text style={styles.inputLabel}>LGA</Text>
+                <View style={styles.inputIcon}>
+                  <User size={18} color="black" />
+                  <RNPickerSelect
+                    onValueChange={(value) => setKinLga(value)}
+                    placeholder={{ label: "Select LGA", value: "" }}
+                    items={
+                      kinStateOrigin
+                        ? (states as Record<string, string[]>)[
+                            kinStateOrigin
+                          ]?.map((lgaItem: string) => ({
+                            label: lgaItem,
+                            value: lgaItem,
+                          })) || []
+                        : []
+                    }
+                    value={kinLga}
+                    style={pickerSelectStyles}
+                    useNativeAndroidPickerStyle={false}
+                  />
+                </View>
+
+                <Text style={styles.inputLabel}>Guarantor's Unit</Text>
                 <View style={styles.inputIcon}>
                   <Building size={18} color="black" />
                   <TextInput
-                    placeholder="Guarantor's Unit"
+                    placeholder="Enter guarantor's unit"
                     style={styles.inputFlex}
                   />
                 </View>
 
+                <Text style={styles.inputLabel}>
+                  Relationship with Guarantor
+                </Text>
                 <View style={styles.inputIcon}>
                   <User size={18} color="black" />
                   <TextInput
-                    placeholder="Relationship with Guarantor"
+                    placeholder="Enter relationship with guarantor"
                     style={styles.inputFlex}
                   />
                 </View>
@@ -889,6 +936,7 @@ const RegistrationForm = () => {
                   Enter Your Current Information
                 </Text>
 
+                <Text style={styles.inputLabel}>Security Question</Text>
                 <View style={styles.inputIcon}>
                   <Shield size={18} color="black" />
                   <RNPickerSelect
@@ -925,10 +973,11 @@ const RegistrationForm = () => {
                   />
                 </View>
 
+                <Text style={styles.inputLabel}>Security Answer</Text>
                 <View style={styles.inputIcon}>
                   <Shield size={18} color="black" />
                   <TextInput
-                    placeholder="Security Answer"
+                    placeholder="Enter security answer"
                     style={styles.inputFlex}
                   />
                 </View>
@@ -938,16 +987,6 @@ const RegistrationForm = () => {
 
           {/* Buttons */}
           <View style={styles.buttonRow}>
-            {/* {(step > 1 ||
-              (step === 1 && subStep > 1) ||
-              (step === 2 && subStep > 1)) && (
-              <TouchableOpacity
-                style={styles.buttonSecondary}
-                onPress={prevStep}
-              >
-                <Text style={styles.buttonText}>Back</Text>
-              </TouchableOpacity>
-            )} */}
             <TouchableOpacity style={styles.buttonPrimary} onPress={nextStep}>
               <Text style={styles.buttonText}>
                 {step === 4 ? "Submit" : "Proceed"} →
@@ -1041,11 +1080,17 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: "#666",
   },
+  inputLabel: {
+    fontSize: 12,
+    color: "#333",
+    marginBottom: 5,
+    fontWeight: "500",
+  },
   inputIcon: {
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#000", // Changed to black
     paddingHorizontal: 10,
     borderRadius: 8,
     marginBottom: 12,
@@ -1067,7 +1112,7 @@ const styles = StyleSheet.create({
   },
   uploadBox: {
     borderWidth: 2,
-    borderColor: "#ddd",
+    borderColor: "#000", // Changed to black
     borderStyle: "dashed",
     borderRadius: 8,
     padding: 20,
