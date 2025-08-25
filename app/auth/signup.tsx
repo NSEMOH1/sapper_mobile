@@ -23,10 +23,16 @@ import {
   CreditCard,
   Upload,
   FileText,
-  Shield,
   X,
-  SignalMedium,
-  SignalHigh,
+  ShieldUser,
+  ShieldHalf,
+  UsersRound,
+  VenusAndMars,
+  MapPinHouse,
+  MapPinCheckInside,
+  Smile,
+  MessageCircleQuestion,
+  MessageSquare,
 } from "lucide-react-native";
 import { router } from "expo-router";
 import { states } from "../../constants/data";
@@ -428,7 +434,7 @@ const RegistrationForm = () => {
 
                 <Text style={styles.inputLabel}>Service Number</Text>
                 <View style={styles.inputIcon}>
-                  <SignalMedium size={18} color="black" />
+                  <ShieldUser size={18} color="black" />
                   <TextInput
                     placeholder="Enter service number"
                     style={styles.inputFlex}
@@ -437,7 +443,7 @@ const RegistrationForm = () => {
 
                 <Text style={styles.inputLabel}>Rank</Text>
                 <View style={styles.inputIcon}>
-                  <SignalHigh size={18} color="black" />
+                  <ShieldHalf size={18} color="black" />
                   <TextInput
                     placeholder="Enter rank"
                     style={styles.inputFlex}
@@ -446,7 +452,7 @@ const RegistrationForm = () => {
 
                 <Text style={styles.inputLabel}>Unit</Text>
                 <View style={styles.inputIcon}>
-                  <Home size={18} color="black" />
+                  <UsersRound size={18} color="black" />
                   <TextInput
                     placeholder="Enter unit"
                     style={styles.inputFlex}
@@ -482,7 +488,7 @@ const RegistrationForm = () => {
 
                 <Text style={styles.inputLabel}>Gender</Text>
                 <View style={styles.inputIcon}>
-                  <User size={18} color="black" />
+                  <VenusAndMars size={18} color="black" />
                   <RNPickerSelect
                     onValueChange={(value) => setGender(value)}
                     placeholder={{ label: "Select gender", value: "" }}
@@ -563,7 +569,7 @@ const RegistrationForm = () => {
 
                 <Text style={styles.inputLabel}>State of Origin</Text>
                 <View style={styles.inputIcon}>
-                  <User size={18} color="black" />
+                  <MapPinHouse size={18} color="black" />
                   <RNPickerSelect
                     onValueChange={(value) => {
                       setStateOrigin(value);
@@ -582,7 +588,7 @@ const RegistrationForm = () => {
 
                 <Text style={styles.inputLabel}>LGA</Text>
                 <View style={styles.inputIcon}>
-                  <User size={18} color="black" />
+                  <MapPinCheckInside size={18} color="black" />
                   <RNPickerSelect
                     onValueChange={(value) => setLga(value)}
                     placeholder={{ label: "Select LGA", value: "" }}
@@ -676,7 +682,7 @@ const RegistrationForm = () => {
 
                 <Text style={styles.inputLabel}>Gender</Text>
                 <View style={styles.inputIcon}>
-                  <User size={18} color="black" />
+                  <VenusAndMars size={18} color="black" />
                   <RNPickerSelect
                     onValueChange={(value) => setKinGender(value)}
                     placeholder={{ label: "Select gender", value: "" }}
@@ -692,7 +698,7 @@ const RegistrationForm = () => {
 
                 <Text style={styles.inputLabel}>Relationship</Text>
                 <View style={styles.inputIcon}>
-                  <User size={18} color="black" />
+                  <Smile size={18} color="black" />
                   <RNPickerSelect
                     onValueChange={(value) => setRelationship(value)}
                     placeholder={{ label: "Select relationship", value: "" }}
@@ -781,7 +787,7 @@ const RegistrationForm = () => {
 
                 <Text style={styles.inputLabel}>Guarantor Service Number</Text>
                 <View style={styles.inputIcon}>
-                  <CreditCard size={18} color="black" />
+                  <ShieldUser size={18} color="black" />
                   <TextInput
                     placeholder="Enter guarantor service number"
                     style={styles.inputFlex}
@@ -790,7 +796,7 @@ const RegistrationForm = () => {
 
                 <Text style={styles.inputLabel}>State of Origin</Text>
                 <View style={styles.inputIcon}>
-                  <User size={18} color="black" />
+                  <MapPinHouse size={18} color="black" />
                   <RNPickerSelect
                     onValueChange={(value) => {
                       setKinStateOrigin(value);
@@ -809,7 +815,7 @@ const RegistrationForm = () => {
 
                 <Text style={styles.inputLabel}>LGA</Text>
                 <View style={styles.inputIcon}>
-                  <User size={18} color="black" />
+                  <MapPinCheckInside size={18} color="black" />
                   <RNPickerSelect
                     onValueChange={(value) => setKinLga(value)}
                     placeholder={{ label: "Select LGA", value: "" }}
@@ -831,7 +837,7 @@ const RegistrationForm = () => {
 
                 <Text style={styles.inputLabel}>Guarantor's Unit</Text>
                 <View style={styles.inputIcon}>
-                  <Building size={18} color="black" />
+                  <UsersRound size={18} color="black" />
                   <TextInput
                     placeholder="Enter guarantor's unit"
                     style={styles.inputFlex}
@@ -842,7 +848,7 @@ const RegistrationForm = () => {
                   Relationship with Guarantor
                 </Text>
                 <View style={styles.inputIcon}>
-                  <User size={18} color="black" />
+                  <Smile size={18} color="black" />
                   <TextInput
                     placeholder="Enter relationship with guarantor"
                     style={styles.inputFlex}
@@ -938,7 +944,7 @@ const RegistrationForm = () => {
 
                 <Text style={styles.inputLabel}>Security Question</Text>
                 <View style={styles.inputIcon}>
-                  <Shield size={18} color="black" />
+                  <MessageCircleQuestion size={18} color="black" />
                   <RNPickerSelect
                     onValueChange={(value) => setSecurityQuestion(value)}
                     placeholder={{
@@ -975,7 +981,7 @@ const RegistrationForm = () => {
 
                 <Text style={styles.inputLabel}>Security Answer</Text>
                 <View style={styles.inputIcon}>
-                  <Shield size={18} color="black" />
+                  <MessageSquare size={18} color="black" />
                   <TextInput
                     placeholder="Enter security answer"
                     style={styles.inputFlex}
