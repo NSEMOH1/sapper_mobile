@@ -16,19 +16,20 @@
     "ios": {
       "supportsTablet": true,
       "splash": {
-        "image": "./assets/images/logo-sappers.png",
+        "image": "./assets/images/sappper-logo.png",
         "resizeMode": "contain",
         "backgroundColor": "#6A7814"
       }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo-sappers.png",
+        "foregroundImage": "./assets/images/sappper-logo.png",
         "backgroundColor": "#ffffff"
       },
+      "versionCode": 1,
       "edgeToEdgeEnabled": true,
       "splash": {
-        "image": "./assets/images/logo-sappers.png",
+        "image": "./assets/images/sappper-logo.png",
         "resizeMode": "contain",
         "backgroundColor": "#6A7814"
       },
@@ -37,7 +38,7 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/logo-sappers.png"
+      "favicon": "./assets/images/sappper-logo.png"
     },
     "plugins": [
       "expo-router",
@@ -46,9 +47,9 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#6A9819",
-          "image": "./assets/images/logo-sappers.png",
+          "image": "./assets/images/sappper-logo.png",
           "dark": {
-            "image": "./assets/images/logo-sappers.png",
+            "image": "./assets/images/sappper-logo.png",
             "backgroundColor": "#6A9819"
           },
           "imageWidth": 200
