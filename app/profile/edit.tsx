@@ -7,7 +7,17 @@ export default function EditProfile() {
       <Text style={styles.title}>Edit Profile</Text>
 
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Full Name</Text>
+        <Text style={styles.label}>First Name</Text>
+        <TextInput style={styles.input} value="John Doe" editable={false} />
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}></Text>
+        <TextInput style={styles.input} value="John Doe" editable={false} />
+      </View>
+
+      <View style={styles.formGroup}>
+        <Text style={styles.label}>Last Name</Text>
         <TextInput style={styles.input} value="John Doe" editable={false} />
       </View>
 

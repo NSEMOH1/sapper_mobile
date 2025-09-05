@@ -9,20 +9,27 @@ import {
   ScrollView,
   Modal,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import { usePaystack } from "react-native-paystack-webview";
 
 const PaymentFlow = () => {
-  const [currentStep, setCurrentStep] = useState<number>(1);
   const [selectedType, setSelectedType] = useState<string>("Loan Payment");
   const [amount, setAmount] = useState<string>("");
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const quickAmounts = [5000, 10000, 15000, 20000, 30000];
   const paymentTypes = ["Loan Payment", "Savings Deposit"];
+
+  const testUser = {
+    email: "test@example.com",
+  };
+
+  const { popup } = usePaystack();
 
   const handleQuickAmount = (quickAmount: number) => {
     setAmount(quickAmount.toString());
@@ -33,33 +40,52 @@ const PaymentFlow = () => {
     setShowDropdown(false);
   };
 
-  const handlePayNow = async () => {
-    if (!amount || parseInt(amount) < 5000) {
-      Alert.alert("Error", "Please enter a valid amount (minimum 5000)");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setCurrentStep(2);
-    } catch (error) {
-      Alert.alert("Error", "Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
+  const handleAmountChange = (value: string) => {
+    if (/^\d*$/.test(value)) {
+      setAmount(value);
     }
   };
 
-  const handleSentMoney = async () => {
-    setLoading(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      setShowSuccessModal(true);
-    } catch (error) {
-      Alert.alert("Error", "Payment failed. Please try again.");
-    } finally {
-      setLoading(false);
+  const handlePayNow = () => {
+    if (!amount || parseInt(amount) < 5000) {
+      Alert.alert("Error", "Please enter a valid amount (minimum ₦5,000)");
+      return;
     }
+    setIsLoading(true);
+
+    popup.newTransaction({
+      email: testUser.email,
+      amount: parseFloat(amount) * 100,
+      reference: generateTransactionReference(),
+      onSuccess: async (res: any) => {
+        console.log("Payment Success:", res);
+        setIsLoading(false);
+        setShowSuccessModal(true);
+        Alert.alert(
+          "Payment Successful! 🎉",
+          `Reference: ${res.data.reference}\nAmount: ₦${formatAmount(
+            amount
+          )}\nStatus: ${res.data.status}`,
+          [{ text: "OK", onPress: () => console.log("Payment completed") }]
+        );
+      },
+      onCancel: async () => {
+        console.log("Payment Cancelled");
+        setIsLoading(false);
+        Alert.alert("Payment Cancelled", "Your payment was cancelled.");
+      },
+      onError: (err: any) => {
+        console.log("Payment Error:", err);
+        setIsLoading(false);
+        Alert.alert(
+          "Payment Error",
+          err.message || "An error occurred during payment. Please try again."
+        );
+      },
+      onLoad: () => {
+        console.log("Paystack WebView Loaded");
+      },
+    });
   };
 
   const handleSuccessOk = () => {
@@ -69,6 +95,10 @@ const PaymentFlow = () => {
 
   const formatAmount = (value: string): string => {
     return value.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
+
+  const generateTransactionReference = (): string => {
+    return `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   };
 
   const renderDropdownModal = () => (
@@ -111,9 +141,14 @@ const PaymentFlow = () => {
     </Modal>
   );
 
-  const renderTransferGateway = () => (
+  const renderPaymentForm = () => (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
+        <View style={styles.testBanner}>
+          <Ionicons name="flask" size={20} color="#FF9800" />
+          <Text style={styles.testBannerText}>TEST MODE - Use test cards</Text>
+        </View>
+
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Type</Text>
           <TouchableOpacity
@@ -126,121 +161,81 @@ const PaymentFlow = () => {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Amount</Text>
+          <Text style={styles.label}>Amount (₦)</Text>
           <TextInput
             style={styles.input}
-            placeholder="min. 5000"
+            placeholder="Min. 5,000"
             value={amount}
-            onChangeText={setAmount}
+            onChangeText={handleAmountChange}
             keyboardType="numeric"
           />
         </View>
 
         <View style={styles.quickAmountContainer}>
-          {quickAmounts.map((quickAmount) => (
-            <TouchableOpacity
-              key={quickAmount}
-              style={styles.quickAmountButton}
-              onPress={() => handleQuickAmount(quickAmount)}
-            >
-              <Text style={styles.quickAmountText}>
-                +{formatAmount(quickAmount.toString())}
-              </Text>
-            </TouchableOpacity>
-          ))}
+          <Text style={styles.quickAmountLabel}>Quick amounts:</Text>
+          <View style={styles.quickAmountButtons}>
+            {quickAmounts.map((quickAmount) => (
+              <TouchableOpacity
+                key={quickAmount}
+                style={styles.quickAmountButton}
+                onPress={() => handleQuickAmount(quickAmount)}
+              >
+                <Text style={styles.quickAmountText}>
+                  ₦{formatAmount(quickAmount.toString())}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
 
-        <TouchableOpacity
-          style={[styles.payButton, loading && styles.buttonDisabled]}
-          onPress={handlePayNow}
-          disabled={loading}
-        >
-          <Text style={styles.payButtonText}>
-            {loading ? "Processing..." : "Pay Now"}
+        <TouchableOpacity style={styles.payButton} onPress={handlePayNow}>
+          <Ionicons
+            name="card"
+            size={20}
+            color="white"
+            style={{ marginRight: 8 }}
+          />
+          <Text style={styles.payButtonText}>Pay with Paystack</Text>
+        </TouchableOpacity>
+
+        {/* <View style={styles.testCardInfo}>
+          <Text style={styles.testCardTitle}>Test Card Details</Text>
+          <View style={styles.testCardItem}>
+            <Text style={styles.testCardLabel}>Successful Payment:</Text>
+            <Text style={styles.testCardValue}>4084084084084081</Text>
+          </View>
+          <View style={styles.testCardItem}>
+            <Text style={styles.testCardLabel}>Failed Payment:</Text>
+            <Text style={styles.testCardValue}>4084084084084083</Text>
+          </View>
+          <View style={styles.testCardItem}>
+            <Text style={styles.testCardLabel}>CVV:</Text>
+            <Text style={styles.testCardValue}>Any 3 digits</Text>
+          </View>
+          <View style={styles.testCardItem}>
+            <Text style={styles.testCardLabel}>Expiry:</Text>
+            <Text style={styles.testCardValue}>Any future date</Text>
+          </View>
+        </View> */}
+
+        <View style={styles.paymentInfoCard}>
+          <View style={styles.securePaymentHeader}>
+            <Ionicons name="shield-checkmark" size={24} color="#4CAF50" />
+            <Text style={styles.securePaymentText}>
+              Secure Payment by Paystack
+            </Text>
+          </View>
+          <Text style={styles.paymentDescription}>
+            Your payment is secured by Paystack. Accepted payment methods
+            include:
           </Text>
-        </TouchableOpacity>
-
-        <View style={styles.stepsContainer}>
-          <Text style={styles.stepsTitle}>Payment Steps</Text>
-
-          <View style={styles.step}>
-            <Text style={styles.stepNumber}>Step 1</Text>
-            <Text style={styles.stepText}>
-              Enter the amount you want to deposit and click the "Pay Now"
-              button.
-            </Text>
-          </View>
-
-          <View style={styles.step}>
-            <Text style={styles.stepNumber}>Step 2</Text>
-            <Text style={styles.stepText}>
-              You will be given a temporary transfer account (expires after 30
-              mins).
-            </Text>
-          </View>
-
-          <View style={styles.step}>
-            <Text style={styles.stepNumber}>Step 3</Text>
-            <Text style={styles.stepText}>
-              Transfer money to the account via your online banking or USSD.
-            </Text>
-          </View>
-
-          <View style={styles.step}>
-            <Text style={styles.stepNumber}>Step 4</Text>
-            <Text style={styles.stepText}>
-              Check your transaction history in Saggers. Bank transfers
-              generally credit within 10 minutes. If the deposit doesn't credit
-              within 24 hours, please contact your bank.
+          <View style={styles.paymentMethods}>
+            <Text style={styles.paymentMethodsList}>
+              • Visa, Mastercard, Verve cards{"\n"}• Bank transfers{"\n"}• USSD
+              codes{"\n"}• Mobile money
             </Text>
           </View>
         </View>
-      </View>
-    </ScrollView>
-  );
-
-  const renderPaymentDetails = () => (
-    <ScrollView style={styles.container}>
-      <View style={styles.content}>
-        <View style={styles.paymentCard}>
-          <Text style={styles.cardLabel}>BANK NAME</Text>
-          <Text style={styles.cardValue}>Sappers UBA Current Account</Text>
-
-          <Text style={styles.cardLabel}>ACCOUNT NUMBER</Text>
-          <View style={styles.accountRow}>
-            <Text style={styles.cardValue}>098383837737</Text>
-            <TouchableOpacity style={styles.copyButton}>
-              <Ionicons name="copy-outline" size={20} color="#666" />
-            </TouchableOpacity>
-          </View>
-
-          <Text style={styles.cardLabel}>AMOUNT</Text>
-          <Text style={styles.cardValue}>₦{formatAmount(amount)}</Text>
-
-          <Text style={styles.cardLabel}>TYPE</Text>
-          <Text style={styles.cardValue}>{selectedType}</Text>
-        </View>
-
-        <Text style={styles.expiryText}>
-          This account is for this transaction only and expires in 20:00
-        </Text>
-
-        <TouchableOpacity
-          style={[styles.sentButton, loading && styles.buttonDisabled]}
-          onPress={handleSentMoney}
-          disabled={loading}
-        >
-          <Text style={styles.sentButtonText}>
-            {loading ? "Verifying..." : "I've sent the money."}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.cancelButton}
-          onPress={() => setCurrentStep(1)}
-        >
-          <Text style={styles.cancelButtonText}>✕ Cancel Payment</Text>
-        </TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -252,12 +247,13 @@ const PaymentFlow = () => {
           <View style={styles.successIcon}>
             <Ionicons name="checkmark" size={40} color="white" />
           </View>
-          <Text style={styles.successTitle}>SUCCESS</Text>
+          <Text style={styles.successTitle}>PAYMENT SUCCESSFUL!</Text>
           <Text style={styles.successMessage}>
-            {selectedType === "Loan Payment"
-              ? "Loan payment"
-              : "Savings deposit"}{" "}
-            received
+            Your {selectedType.toLowerCase()} of ₦{formatAmount(amount)} has
+            been processed successfully.
+          </Text>
+          <Text style={styles.testNote}>
+            This was a test transaction. No real money was charged.
           </Text>
           <TouchableOpacity style={styles.okButton} onPress={handleSuccessOk}>
             <Text style={styles.okButtonText}>OK</Text>
@@ -269,9 +265,14 @@ const PaymentFlow = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {currentStep === 1 ? renderTransferGateway() : renderPaymentDetails()}
+      {renderPaymentForm()}
       {renderSuccessModal()}
       {renderDropdownModal()}
+      {isLoading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#2F4F2F" />
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -284,45 +285,24 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: "#f5f5f5",
-  },
-  backButton: {
-    padding: 8,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#333",
-    flex: 1,
-    textAlign: "center",
-    marginHorizontal: 16,
-  },
-  headerRight: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  avatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "#333",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatarText: {
-    color: "white",
-    fontSize: 12,
-    fontWeight: "bold",
-  },
   content: {
     padding: 16,
+  },
+  testBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFF3E0",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: "#FF9800",
+  },
+  testBannerText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: "#E65100",
+    fontWeight: "600",
   },
   inputGroup: {
     marginBottom: 20,
@@ -403,10 +383,18 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   quickAmountContainer: {
+    marginBottom: 30,
+  },
+  quickAmountLabel: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 12,
+    fontWeight: "500",
+  },
+  quickAmountButtons: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 12,
-    marginBottom: 30,
   },
   quickAmountButton: {
     backgroundColor: "white",
@@ -419,101 +407,85 @@ const styles = StyleSheet.create({
   quickAmountText: {
     fontSize: 14,
     color: "#666",
+    fontWeight: "500",
   },
   payButton: {
     backgroundColor: "#2F4F2F",
     borderRadius: 8,
     paddingVertical: 16,
     alignItems: "center",
-    marginBottom: 30,
+    marginBottom: 24,
+    flexDirection: "row",
+    justifyContent: "center",
   },
   payButtonText: {
     color: "white",
     fontSize: 16,
     fontWeight: "600",
   },
-  buttonDisabled: {
-    backgroundColor: "#ccc",
-  },
-  stepsContainer: {
-    backgroundColor: "white",
-    borderRadius: 8,
+  testCardInfo: {
+    backgroundColor: "#E3F2FD",
+    borderRadius: 12,
     padding: 16,
+    marginBottom: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: "#2196F3",
   },
-  stepsTitle: {
-    fontSize: 18,
+  testCardTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#1565C0",
+    marginBottom: 12,
+  },
+  testCardItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  testCardLabel: {
+    fontSize: 14,
+    color: "#1976D2",
+    fontWeight: "500",
+  },
+  testCardValue: {
+    fontSize: 14,
+    color: "#0D47A1",
+    fontWeight: "600",
+    fontFamily: "monospace",
+  },
+  paymentInfoCard: {
+    backgroundColor: "white",
+    borderRadius: 12,
+    padding: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: "#4CAF50",
+  },
+  securePaymentHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  securePaymentText: {
+    fontSize: 16,
     fontWeight: "600",
     color: "#333",
-    marginBottom: 16,
+    marginLeft: 8,
   },
-  step: {
-    marginBottom: 16,
-  },
-  stepNumber: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#666",
-    marginBottom: 4,
-  },
-  stepText: {
+  paymentDescription: {
     fontSize: 14,
     color: "#666",
     lineHeight: 20,
-  },
-  paymentCard: {
-    backgroundColor: "#e8e8e8",
-    borderRadius: 8,
-    padding: 20,
     marginBottom: 16,
   },
-  cardLabel: {
-    fontSize: 12,
+  paymentMethods: {
+    borderTopWidth: 1,
+    borderTopColor: "#f0f0f0",
+    paddingTop: 16,
+  },
+  paymentMethodsList: {
+    fontSize: 13,
     color: "#666",
-    marginBottom: 4,
-    fontWeight: "500",
-  },
-  cardValue: {
-    fontSize: 16,
-    color: "#333",
-    fontWeight: "600",
-    marginBottom: 16,
-  },
-  accountRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 16,
-  },
-  copyButton: {
-    padding: 4,
-  },
-  expiryText: {
-    fontSize: 14,
-    color: "#666",
-    textAlign: "center",
-    marginBottom: 30,
-  },
-  sentButton: {
-    backgroundColor: "white",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    paddingVertical: 16,
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  sentButtonText: {
-    fontSize: 16,
-    color: "#333",
-    fontWeight: "500",
-  },
-  cancelButton: {
-    alignItems: "center",
-    paddingVertical: 16,
-  },
-  cancelButtonText: {
-    fontSize: 16,
-    color: "#666",
+    lineHeight: 18,
   },
   modalOverlay: {
     flex: 1,
@@ -527,6 +499,7 @@ const styles = StyleSheet.create({
     padding: 30,
     alignItems: "center",
     minWidth: 280,
+    maxWidth: 340,
   },
   successIcon: {
     width: 60,
@@ -546,7 +519,15 @@ const styles = StyleSheet.create({
   successMessage: {
     fontSize: 16,
     color: "#666",
-    marginBottom: 30,
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  testNote: {
+    fontSize: 12,
+    color: "#FF9800",
+    marginBottom: 24,
+    textAlign: "center",
+    fontStyle: "italic",
   },
   okButton: {
     backgroundColor: "#2F4F2F",
@@ -558,6 +539,16 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontWeight: "600",
+  },
+  loadingOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.1)",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 
