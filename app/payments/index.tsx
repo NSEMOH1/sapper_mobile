@@ -195,7 +195,7 @@ const PaymentFlow = () => {
             color="white"
             style={{ marginRight: 8 }}
           />
-          <Text style={styles.payButtonText}>Pay with Paystack</Text>
+          <Text style={styles.payButtonText}>Pay</Text>
         </TouchableOpacity>
 
         {/* <View style={styles.testCardInfo}>
