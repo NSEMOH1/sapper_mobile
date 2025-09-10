@@ -33,6 +33,7 @@ import {
   Smile,
   MessageCircleQuestion,
   MessageSquare,
+  ChevronLeft, // Added back icon
 } from "lucide-react-native";
 import { router } from "expo-router";
 import { states } from "../../constants/data";
@@ -378,629 +379,642 @@ const RegistrationForm = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ImageBackground
-        source={require("../../assets/images/chief.jpg")}
-        resizeMode="cover"
-        style={styles.backgroundImage}
-      >
-        <ScrollView contentContainerStyle={styles.container}>
-          {/* Logo */}
-          <View style={styles.logo}>
-            <Image
-              source={require("../../assets/images/sappper-logo.png")}
-              style={styles.logoImage}
-            />
-          </View>
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.logo}>
+          <Image
+            source={require("../../assets/images/sappper-logo.png")}
+            style={styles.logoImage}
+          />
+        </View>
 
-          {/* White Form Container */}
-          <View style={styles.form}>
-            {/* Stepper */}
-            <View style={styles.stepper}>
-              {[
-                "Personal Info",
-                "Next of Kin",
-                "Upload Docs",
-                "Security Question",
-              ].map((label, index) => {
-                const stepNumber = index + 1;
-                const isActive = step === stepNumber;
-                return (
-                  <View key={index} style={styles.stepItem}>
-                    <View
-                      style={[styles.circle, isActive && styles.activeCircle]}
-                    >
-                      <Text style={styles.circleText}>{stepNumber}</Text>
-                    </View>
-                    <Text
-                      style={[
-                        styles.stepLabel,
-                        isActive && styles.activeStepLabel,
-                      ]}
-                    >
-                      {label}
-                    </Text>
+        <View style={styles.form}>
+          <View style={styles.stepper}>
+            {[
+              "Personal Info",
+              "Next of Kin",
+              "Upload Docs",
+              "Security Question",
+            ].map((label, index) => {
+              const stepNumber = index + 1;
+              const isActive = step === stepNumber;
+              return (
+                <View key={index} style={styles.stepItem}>
+                  <View
+                    style={[styles.circle, isActive && styles.activeCircle]}
+                  >
+                    <Text style={styles.circleText}>{stepNumber}</Text>
                   </View>
-                );
-              })}
+                  <Text
+                    style={[
+                      styles.stepLabel,
+                      isActive && styles.activeStepLabel,
+                    ]}
+                  >
+                    {label}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+
+          {step === 1 && subStep === 1 && (
+            <View>
+              <Text style={styles.title}>Create Profile</Text>
+
+              <Text style={styles.subtitle}>Enter Your Basic Information</Text>
+
+              <Text style={styles.inputLabel}>Service Number</Text>
+              <View style={styles.inputIcon}>
+                <ShieldUser size={18} color="black" />
+                <TextInput
+                  placeholder="Enter service number"
+                  style={styles.inputFlex}
+                />
+              </View>
+
+              <Text style={styles.inputLabel}>Rank</Text>
+              <View style={styles.inputIcon}>
+                <ShieldHalf size={18} color="black" />
+                <TextInput placeholder="Enter rank" style={styles.inputFlex} />
+              </View>
+
+              <Text style={styles.inputLabel}>Unit</Text>
+              <View style={styles.inputIcon}>
+                <UsersRound size={18} color="black" />
+                <TextInput placeholder="Enter unit" style={styles.inputFlex} />
+              </View>
+
+              <Text style={styles.inputLabel}>First Name</Text>
+              <View style={styles.inputIcon}>
+                <User size={18} color="black" />
+                <TextInput
+                  placeholder="Enter first name"
+                  style={styles.inputFlex}
+                />
+              </View>
+
+              <Text style={styles.inputLabel}>Other Name</Text>
+              <View style={styles.inputIcon}>
+                <User size={18} color="black" />
+                <TextInput
+                  placeholder="Enter other name"
+                  style={styles.inputFlex}
+                />
+              </View>
+
+              <Text style={styles.inputLabel}>Surname</Text>
+              <View style={styles.inputIcon}>
+                <User size={18} color="black" />
+                <TextInput
+                  placeholder="Enter surname"
+                  style={styles.inputFlex}
+                />
+              </View>
+
+              <Text style={styles.inputLabel}>Gender</Text>
+              <View style={styles.inputIcon}>
+                <VenusAndMars size={18} color="black" />
+                <RNPickerSelect
+                  onValueChange={(value) => setGender(value)}
+                  placeholder={{ label: "Select gender", value: "" }}
+                  items={[
+                    { label: "MALE", value: "Male" },
+                    { label: "FEMALE", value: "Female" },
+                  ]}
+                  value={gender}
+                  style={pickerSelectStyles}
+                  useNativeAndroidPickerStyle={false}
+                />
+              </View>
             </View>
+          )}
 
-            {/* Step-specific content */}
-            {step === 1 && subStep === 1 && (
-              <View>
-                <Text style={styles.title}>Create Profile</Text>
-                <Text style={styles.subtitle}>
-                  Enter Your Basic Information
-                </Text>
-
-                <Text style={styles.inputLabel}>Service Number</Text>
-                <View style={styles.inputIcon}>
-                  <ShieldUser size={18} color="black" />
-                  <TextInput
-                    placeholder="Enter service number"
-                    style={styles.inputFlex}
-                  />
-                </View>
-
-                <Text style={styles.inputLabel}>Rank</Text>
-                <View style={styles.inputIcon}>
-                  <ShieldHalf size={18} color="black" />
-                  <TextInput
-                    placeholder="Enter rank"
-                    style={styles.inputFlex}
-                  />
-                </View>
-
-                <Text style={styles.inputLabel}>Unit</Text>
-                <View style={styles.inputIcon}>
-                  <UsersRound size={18} color="black" />
-                  <TextInput
-                    placeholder="Enter unit"
-                    style={styles.inputFlex}
-                  />
-                </View>
-
-                <Text style={styles.inputLabel}>First Name</Text>
-                <View style={styles.inputIcon}>
-                  <User size={18} color="black" />
-                  <TextInput
-                    placeholder="Enter first name"
-                    style={styles.inputFlex}
-                  />
-                </View>
-
-                <Text style={styles.inputLabel}>Other Name</Text>
-                <View style={styles.inputIcon}>
-                  <User size={18} color="black" />
-                  <TextInput
-                    placeholder="Enter other name"
-                    style={styles.inputFlex}
-                  />
-                </View>
-
-                <Text style={styles.inputLabel}>Surname</Text>
-                <View style={styles.inputIcon}>
-                  <User size={18} color="black" />
-                  <TextInput
-                    placeholder="Enter surname"
-                    style={styles.inputFlex}
-                  />
-                </View>
-
-                <Text style={styles.inputLabel}>Gender</Text>
-                <View style={styles.inputIcon}>
-                  <VenusAndMars size={18} color="black" />
-                  <RNPickerSelect
-                    onValueChange={(value) => setGender(value)}
-                    placeholder={{ label: "Select gender", value: "" }}
-                    items={[
-                      { label: "MALE", value: "Male" },
-                      { label: "FEMALE", value: "Female" },
-                    ]}
-                    value={gender}
-                    style={pickerSelectStyles}
-                    useNativeAndroidPickerStyle={false}
-                  />
-                </View>
-              </View>
-            )}
-
-            {step === 1 && subStep === 2 && (
-              <View>
-                <Text style={styles.title}>Create Profile</Text>
-                <Text style={styles.subtitle}>
-                  Enter Your Contact Information
-                </Text>
-
-                <Text style={styles.inputLabel}>Date of Birth</Text>
-                <TouchableOpacity
-                  style={styles.inputIcon}
-                  onPress={showDatePicker}
-                >
-                  <Calendar size={18} color="black" />
-                  <Text style={[styles.inputFlex, styles.dobText]}>
-                    {dob || "Select date of birth"}
-                  </Text>
+          {step === 1 && subStep === 2 && (
+            <View>
+              <View style={styles.headerWithBack}>
+                <TouchableOpacity onPress={prevStep} style={styles.backButton}>
+                  <ChevronLeft size={24} color="black" />
                 </TouchableOpacity>
-
-                <DateTimePickerModal
-                  isVisible={isDatePickerVisible}
-                  mode="date"
-                  onConfirm={handleConfirm}
-                  onCancel={hideDatePicker}
-                />
-
-                <Text style={styles.inputLabel}>Phone Number</Text>
-                <View style={styles.inputIcon}>
-                  <Phone size={18} color="black" />
-                  <TextInput
-                    placeholder="Enter phone number"
-                    style={styles.inputFlex}
-                    keyboardType="phone-pad"
-                  />
-                </View>
-
-                <Text style={styles.inputLabel}>Email Address</Text>
-                <View style={styles.inputIcon}>
-                  <Mail size={18} color="black" />
-                  <TextInput
-                    placeholder="Enter email address"
-                    style={styles.inputFlex}
-                    keyboardType="email-address"
-                  />
-                </View>
-
-                <Text style={styles.inputLabel}>Home Address</Text>
-                <View style={styles.inputIcon}>
-                  <Home size={18} color="black" />
-                  <TextInput
-                    placeholder="Enter home address"
-                    style={styles.inputFlex}
-                  />
-                </View>
-              </View>
-            )}
-
-            {step === 1 && subStep === 3 && (
-              <View>
                 <Text style={styles.title}>Create Profile</Text>
-                <Text style={styles.subtitle}>
-                  Enter Your Financial Information
-                </Text>
-
-                <Text style={styles.inputLabel}>State of Origin</Text>
-                <View style={styles.inputIcon}>
-                  <MapPinHouse size={18} color="black" />
-                  <RNPickerSelect
-                    onValueChange={(value) => {
-                      setStateOrigin(value);
-                      setLga(""); // reset LGA when state changes
-                    }}
-                    placeholder={{ label: "Select state of origin", value: "" }}
-                    items={Object.keys(states).map((state) => ({
-                      label: state,
-                      value: state,
-                    }))}
-                    value={stateOrigin}
-                    style={pickerSelectStyles}
-                    useNativeAndroidPickerStyle={false}
-                  />
-                </View>
-
-                <Text style={styles.inputLabel}>LGA</Text>
-                <View style={styles.inputIcon}>
-                  <MapPinCheckInside size={18} color="black" />
-                  <RNPickerSelect
-                    onValueChange={(value) => setLga(value)}
-                    placeholder={{ label: "Select LGA", value: "" }}
-                    items={
-                      stateOrigin
-                        ? (states as Record<string, string[]>)[
-                            stateOrigin
-                          ]?.map((lgaItem: string) => ({
-                            label: lgaItem,
-                            value: lgaItem,
-                          })) || []
-                        : []
-                    }
-                    value={lga}
-                    style={pickerSelectStyles}
-                    useNativeAndroidPickerStyle={false}
-                  />
-                </View>
-
-                <Text style={styles.inputLabel}>Bank</Text>
-                <View style={styles.inputIcon}>
-                  <Building size={18} color="black" />
-                  <TextInput
-                    placeholder="Enter bank name"
-                    style={styles.inputFlex}
-                  />
-                </View>
-
-                <Text style={styles.inputLabel}>Account Number</Text>
-                <View style={styles.inputIcon}>
-                  <CreditCard size={18} color="black" />
-                  <TextInput
-                    placeholder="Enter account number"
-                    style={styles.inputFlex}
-                  />
-                </View>
-
-                <Text style={styles.inputLabel}>Account Name</Text>
-                <View style={styles.inputIcon}>
-                  <CreditCard size={18} color="black" />
-                  <TextInput
-                    placeholder="Enter account name"
-                    style={styles.inputFlex}
-                  />
-                </View>
-
-                <Text style={styles.inputLabel}>Amount to be deducted</Text>
-                <View style={styles.inputIcon}>
-                  <CreditCard size={18} color="black" />
-                  <TextInput
-                    placeholder="Enter amount"
-                    style={styles.inputFlex}
-                    keyboardType="numeric"
-                  />
-                </View>
               </View>
-            )}
-
-            {/* Step 2 - Next of Kin - Substep 1: Basic Information */}
-            {step === 2 && subStep === 1 && (
-              <View>
-                <Text style={styles.title}>Next of Kin</Text>
-                <Text style={styles.subtitle}>Enter Basic Information</Text>
-
-                <Text style={styles.inputLabel}>First Name</Text>
-                <View style={styles.inputIcon}>
-                  <User size={18} color="black" />
-                  <TextInput
-                    placeholder="Enter first name"
-                    style={styles.inputFlex}
-                  />
-                </View>
-
-                <Text style={styles.inputLabel}>Other Name</Text>
-                <View style={styles.inputIcon}>
-                  <User size={18} color="black" />
-                  <TextInput
-                    placeholder="Enter other name"
-                    style={styles.inputFlex}
-                  />
-                </View>
-
-                <Text style={styles.inputLabel}>Surname</Text>
-                <View style={styles.inputIcon}>
-                  <User size={18} color="black" />
-                  <TextInput
-                    placeholder="Enter surname"
-                    style={styles.inputFlex}
-                  />
-                </View>
-
-                <Text style={styles.inputLabel}>Gender</Text>
-                <View style={styles.inputIcon}>
-                  <VenusAndMars size={18} color="black" />
-                  <RNPickerSelect
-                    onValueChange={(value) => setKinGender(value)}
-                    placeholder={{ label: "Select gender", value: "" }}
-                    items={[
-                      { label: "MALE", value: "Male" },
-                      { label: "FEMALE", value: "Female" },
-                    ]}
-                    value={kinGender}
-                    style={pickerSelectStyles}
-                    useNativeAndroidPickerStyle={false}
-                  />
-                </View>
-
-                <Text style={styles.inputLabel}>Relationship</Text>
-                <View style={styles.inputIcon}>
-                  <Smile size={18} color="black" />
-                  <RNPickerSelect
-                    onValueChange={(value) => setRelationship(value)}
-                    placeholder={{ label: "Select relationship", value: "" }}
-                    items={[
-                      { label: "Brother", value: "Brother" },
-                      { label: "Sister", value: "Sister" },
-                      { label: "Father", value: "Father" },
-                      { label: "Mother", value: "Mother" },
-                      { label: "Son", value: "Son" },
-                      { label: "Daughter", value: "Daughter" },
-                      { label: "Spouse", value: "Spouse" },
-                      { label: "Uncle", value: "Uncle" },
-                      { label: "Aunt", value: "Aunt" },
-                      { label: "Friend", value: "Friend" },
-                    ]}
-                    value={relationship}
-                    style={pickerSelectStyles}
-                    useNativeAndroidPickerStyle={false}
-                  />
-                </View>
-              </View>
-            )}
-
-            {/* Step 2 - Next of Kin - Substep 2: Contact Information */}
-            {step === 2 && subStep === 2 && (
-              <View>
-                <Text style={styles.title}>Next of Kin</Text>
-                <Text style={styles.subtitle}>Enter Contact Information</Text>
-
-                <Text style={styles.inputLabel}>Date of Birth</Text>
-                <TouchableOpacity
-                  style={styles.inputIcon}
-                  onPress={showKinDatePicker}
-                >
-                  <Calendar size={18} color="black" />
-                  <Text style={[styles.inputFlex, styles.dobText]}>
-                    {kinDob || "Select date of birth"}
-                  </Text>
-                </TouchableOpacity>
-
-                <DateTimePickerModal
-                  isVisible={isKinDatePickerVisible}
-                  mode="date"
-                  onConfirm={handleKinConfirm}
-                  onCancel={hideKinDatePicker}
-                />
-
-                <Text style={styles.inputLabel}>Phone Number</Text>
-                <View style={styles.inputIcon}>
-                  <Phone size={18} color="black" />
-                  <TextInput
-                    placeholder="Enter phone number"
-                    style={styles.inputFlex}
-                    keyboardType="phone-pad"
-                  />
-                </View>
-
-                <Text style={styles.inputLabel}>Email Address</Text>
-                <View style={styles.inputIcon}>
-                  <Mail size={18} color="black" />
-                  <TextInput
-                    placeholder="Enter email address"
-                    style={styles.inputFlex}
-                    keyboardType="email-address"
-                  />
-                </View>
-
-                <Text style={styles.inputLabel}>Home Address</Text>
-                <View style={styles.inputIcon}>
-                  <Home size={18} color="black" />
-                  <TextInput
-                    placeholder="Enter home address"
-                    style={styles.inputFlex}
-                  />
-                </View>
-              </View>
-            )}
-
-            {/* Step 2 - Next of Kin - Substep 3: Additional Information */}
-            {step === 2 && subStep === 3 && (
-              <View>
-                <Text style={styles.title}>Next of Kin</Text>
-                <Text style={styles.subtitle}>
-                  Enter Additional Information
-                </Text>
-
-                <Text style={styles.inputLabel}>Guarantor Service Number</Text>
-                <View style={styles.inputIcon}>
-                  <ShieldUser size={18} color="black" />
-                  <TextInput
-                    placeholder="Enter guarantor service number"
-                    style={styles.inputFlex}
-                  />
-                </View>
-
-                <Text style={styles.inputLabel}>State of Origin</Text>
-                <View style={styles.inputIcon}>
-                  <MapPinHouse size={18} color="black" />
-                  <RNPickerSelect
-                    onValueChange={(value) => {
-                      setKinStateOrigin(value);
-                      setKinLga("");
-                    }}
-                    placeholder={{ label: "Select state of origin", value: "" }}
-                    items={Object.keys(states).map((state) => ({
-                      label: state,
-                      value: state,
-                    }))}
-                    value={kinStateOrigin}
-                    style={pickerSelectStyles}
-                    useNativeAndroidPickerStyle={false}
-                  />
-                </View>
-
-                <Text style={styles.inputLabel}>LGA</Text>
-                <View style={styles.inputIcon}>
-                  <MapPinCheckInside size={18} color="black" />
-                  <RNPickerSelect
-                    onValueChange={(value) => setKinLga(value)}
-                    placeholder={{ label: "Select LGA", value: "" }}
-                    items={
-                      kinStateOrigin
-                        ? (states as Record<string, string[]>)[
-                            kinStateOrigin
-                          ]?.map((lgaItem: string) => ({
-                            label: lgaItem,
-                            value: lgaItem,
-                          })) || []
-                        : []
-                    }
-                    value={kinLga}
-                    style={pickerSelectStyles}
-                    useNativeAndroidPickerStyle={false}
-                  />
-                </View>
-
-                <Text style={styles.inputLabel}>Guarantor's Unit</Text>
-                <View style={styles.inputIcon}>
-                  <UsersRound size={18} color="black" />
-                  <TextInput
-                    placeholder="Enter guarantor's unit"
-                    style={styles.inputFlex}
-                  />
-                </View>
-
-                <Text style={styles.inputLabel}>
-                  Relationship with Guarantor
-                </Text>
-                <View style={styles.inputIcon}>
-                  <Smile size={18} color="black" />
-                  <TextInput
-                    placeholder="Enter relationship with guarantor"
-                    style={styles.inputFlex}
-                  />
-                </View>
-              </View>
-            )}
-
-            {step === 3 && (
-              <View>
-                <Text style={styles.title}>Upload Document</Text>
-                <Text style={styles.subtitle}>
-                  Please provide your credentials to Signup to the platform.
-                </Text>
-
-                <View style={styles.uploadSection}>
-                  <Text style={styles.uploadLabel}>Upload your picture</Text>
-                  {renderDocumentPreview(profilePicture, setProfilePicture)}
-                  <TouchableOpacity
-                    style={styles.uploadBox}
-                    onPress={pickProfilePicture}
-                  >
-                    <Upload size={24} color="#666" />
-                    <Text style={styles.uploadText}>
-                      {profilePicture
-                        ? "Change Picture"
-                        : "Drop file here/Choose file"}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-
-                <View style={styles.uploadSection}>
-                  <Text style={styles.uploadLabel}>
-                    NIN of Next of kin (Optional)
-                  </Text>
-                  {renderDocumentPreview(ninDocument, setNinDocument)}
-                  <TouchableOpacity
-                    style={styles.uploadBox}
-                    onPress={() => pickDocument(setNinDocument)}
-                  >
-                    <Upload size={24} color="#666" />
-                    <Text style={styles.uploadText}>
-                      {ninDocument
-                        ? "Change Document"
-                        : "Drop file here/Choose file"}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-
-                <View style={styles.uploadSection}>
-                  <Text style={styles.uploadLabel}>
-                    Valid means of ID (NIN, Drivers License, International
-                    Passport)
-                  </Text>
-                  {renderDocumentPreview(idDocument, setIdDocument)}
-                  <TouchableOpacity
-                    style={styles.uploadBox}
-                    onPress={() => pickDocument(setIdDocument)}
-                  >
-                    <Upload size={24} color="#666" />
-                    <Text style={styles.uploadText}>
-                      {idDocument
-                        ? "Change Document"
-                        : "Drop file here/Choose file"}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-
-                <View style={styles.uploadSection}>
-                  <Text style={styles.uploadLabel}>Personnel ID Card</Text>
-                  {renderDocumentPreview(personnelId, setPersonnelId)}
-                  <TouchableOpacity
-                    style={styles.uploadBox}
-                    onPress={() => pickDocument(setPersonnelId)}
-                  >
-                    <Upload size={24} color="#666" />
-                    <Text style={styles.uploadText}>
-                      {personnelId
-                        ? "Change Document"
-                        : "Drop file here/Choose file"}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
-
-            {step === 4 && (
-              <View>
-                <Text style={styles.title}>Security Question</Text>
-                <Text style={styles.subtitle}>
-                  Enter Your Current Information
-                </Text>
-
-                <Text style={styles.inputLabel}>Security Question</Text>
-                <View style={styles.inputIcon}>
-                  <MessageCircleQuestion size={18} color="black" />
-                  <RNPickerSelect
-                    onValueChange={(value) => setSecurityQuestion(value)}
-                    placeholder={{
-                      label: "Select Security Question",
-                      value: "",
-                    }}
-                    items={[
-                      {
-                        label: "What is your mother's maiden name?",
-                        value: "mother_maiden",
-                      },
-                      {
-                        label: "What was the name of your first pet?",
-                        value: "first_pet",
-                      },
-                      {
-                        label: "What city were you born in?",
-                        value: "birth_city",
-                      },
-                      {
-                        label: "What is your favorite food?",
-                        value: "favorite_food",
-                      },
-                      {
-                        label: "What was your first school?",
-                        value: "first_school",
-                      },
-                    ]}
-                    value={securityQuestion}
-                    style={pickerSelectStyles}
-                    useNativeAndroidPickerStyle={false}
-                  />
-                </View>
-
-                <Text style={styles.inputLabel}>Security Answer</Text>
-                <View style={styles.inputIcon}>
-                  <MessageSquare size={18} color="black" />
-                  <TextInput
-                    placeholder="Enter security answer"
-                    style={styles.inputFlex}
-                  />
-                </View>
-              </View>
-            )}
-          </View>
-
-          {/* Buttons */}
-          <View style={styles.buttonRow}>
-            <TouchableOpacity style={styles.buttonPrimary} onPress={nextStep}>
-              <Text style={styles.buttonText}>
-                {step === 4 ? "Submit" : "Proceed"} →
+              <Text style={styles.subtitle}>
+                Enter Your Contact Information
               </Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </ImageBackground>
+
+              <Text style={styles.inputLabel}>Date of Birth</Text>
+              <TouchableOpacity
+                style={styles.inputIcon}
+                onPress={showDatePicker}
+              >
+                <Calendar size={18} color="black" />
+                <Text style={[styles.inputFlex, styles.dobText]}>
+                  {dob || "Select date of birth"}
+                </Text>
+              </TouchableOpacity>
+
+              <DateTimePickerModal
+                isVisible={isDatePickerVisible}
+                mode="date"
+                onConfirm={handleConfirm}
+                onCancel={hideDatePicker}
+              />
+
+              <Text style={styles.inputLabel}>Phone Number</Text>
+              <View style={styles.inputIcon}>
+                <Phone size={18} color="black" />
+                <TextInput
+                  placeholder="Enter phone number"
+                  style={styles.inputFlex}
+                  keyboardType="phone-pad"
+                />
+              </View>
+
+              <Text style={styles.inputLabel}>Email Address</Text>
+              <View style={styles.inputIcon}>
+                <Mail size={18} color="black" />
+                <TextInput
+                  placeholder="Enter email address"
+                  style={styles.inputFlex}
+                  keyboardType="email-address"
+                />
+              </View>
+
+              <Text style={styles.inputLabel}>Home Address</Text>
+              <View style={styles.inputIcon}>
+                <Home size={18} color="black" />
+                <TextInput
+                  placeholder="Enter home address"
+                  style={styles.inputFlex}
+                />
+              </View>
+            </View>
+          )}
+
+          {step === 1 && subStep === 3 && (
+            <View>
+              <View style={styles.headerWithBack}>
+                <TouchableOpacity onPress={prevStep} style={styles.backButton}>
+                  <ChevronLeft size={24} color="#82B921" />
+                </TouchableOpacity>
+                <Text style={styles.title}>Create Profile</Text>
+              </View>
+              <Text style={styles.subtitle}>
+                Enter Your Financial Information
+              </Text>
+
+              <Text style={styles.inputLabel}>State of Origin</Text>
+              <View style={styles.inputIcon}>
+                <MapPinHouse size={18} color="black" />
+                <RNPickerSelect
+                  onValueChange={(value) => {
+                    setStateOrigin(value);
+                    setLga("");
+                  }}
+                  placeholder={{ label: "Select state of origin", value: "" }}
+                  items={Object.keys(states).map((state) => ({
+                    label: state,
+                    value: state,
+                  }))}
+                  value={stateOrigin}
+                  style={pickerSelectStyles}
+                  useNativeAndroidPickerStyle={false}
+                />
+              </View>
+
+              <Text style={styles.inputLabel}>LGA</Text>
+              <View style={styles.inputIcon}>
+                <MapPinCheckInside size={18} color="black" />
+                <RNPickerSelect
+                  onValueChange={(value) => setLga(value)}
+                  placeholder={{ label: "Select LGA", value: "" }}
+                  items={
+                    stateOrigin
+                      ? (states as Record<string, string[]>)[stateOrigin]?.map(
+                          (lgaItem: string) => ({
+                            label: lgaItem,
+                            value: lgaItem,
+                          })
+                        ) || []
+                      : []
+                  }
+                  value={lga}
+                  style={pickerSelectStyles}
+                  useNativeAndroidPickerStyle={false}
+                />
+              </View>
+
+              <Text style={styles.inputLabel}>Bank</Text>
+              <View style={styles.inputIcon}>
+                <Building size={18} color="black" />
+                <TextInput
+                  placeholder="Enter bank name"
+                  style={styles.inputFlex}
+                />
+              </View>
+
+              <Text style={styles.inputLabel}>Account Number</Text>
+              <View style={styles.inputIcon}>
+                <CreditCard size={18} color="black" />
+                <TextInput
+                  placeholder="Enter account number"
+                  style={styles.inputFlex}
+                />
+              </View>
+
+              <Text style={styles.inputLabel}>Account Name</Text>
+              <View style={styles.inputIcon}>
+                <CreditCard size={18} color="black" />
+                <TextInput
+                  placeholder="Enter account name"
+                  style={styles.inputFlex}
+                />
+              </View>
+
+              <Text style={styles.inputLabel}>Amount to be deducted</Text>
+              <View style={styles.inputIcon}>
+                <CreditCard size={18} color="black" />
+                <TextInput
+                  placeholder="Enter amount"
+                  style={styles.inputFlex}
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
+          )}
+
+          {/* Step 2 - Next of Kin - Substep 1: Basic Information */}
+          {step === 2 && subStep === 1 && (
+            <View>
+              <View style={styles.headerWithBack}>
+                <TouchableOpacity onPress={prevStep} style={styles.backButton}>
+                  <ChevronLeft size={24} color="black" />
+                </TouchableOpacity>
+                <Text style={styles.title}>Next Of Kin</Text>
+              </View>
+              <Text style={styles.subtitle}>Enter Basic Information</Text>
+
+              <Text style={styles.inputLabel}>First Name</Text>
+              <View style={styles.inputIcon}>
+                <User size={18} color="black" />
+                <TextInput
+                  placeholder="Enter first name"
+                  style={styles.inputFlex}
+                />
+              </View>
+
+              <Text style={styles.inputLabel}>Other Name</Text>
+              <View style={styles.inputIcon}>
+                <User size={18} color="black" />
+                <TextInput
+                  placeholder="Enter other name"
+                  style={styles.inputFlex}
+                />
+              </View>
+
+              <Text style={styles.inputLabel}>Surname</Text>
+              <View style={styles.inputIcon}>
+                <User size={18} color="black" />
+                <TextInput
+                  placeholder="Enter surname"
+                  style={styles.inputFlex}
+                />
+              </View>
+
+              <Text style={styles.inputLabel}>Gender</Text>
+              <View style={styles.inputIcon}>
+                <VenusAndMars size={18} color="black" />
+                <RNPickerSelect
+                  onValueChange={(value) => setKinGender(value)}
+                  placeholder={{ label: "Select gender", value: "" }}
+                  items={[
+                    { label: "MALE", value: "Male" },
+                    { label: "FEMALE", value: "Female" },
+                  ]}
+                  value={kinGender}
+                  style={pickerSelectStyles}
+                  useNativeAndroidPickerStyle={false}
+                />
+              </View>
+
+              <Text style={styles.inputLabel}>Relationship</Text>
+              <View style={styles.inputIcon}>
+                <Smile size={18} color="black" />
+                <RNPickerSelect
+                  onValueChange={(value) => setRelationship(value)}
+                  placeholder={{ label: "Select relationship", value: "" }}
+                  items={[
+                    { label: "Brother", value: "Brother" },
+                    { label: "Sister", value: "Sister" },
+                    { label: "Father", value: "Father" },
+                    { label: "Mother", value: "Mother" },
+                    { label: "Son", value: "Son" },
+                    { label: "Daughter", value: "Daughter" },
+                    { label: "Spouse", value: "Spouse" },
+                    { label: "Uncle", value: "Uncle" },
+                    { label: "Aunt", value: "Aunt" },
+                    { label: "Friend", value: "Friend" },
+                  ]}
+                  value={relationship}
+                  style={pickerSelectStyles}
+                  useNativeAndroidPickerStyle={false}
+                />
+              </View>
+            </View>
+          )}
+
+          {/* Step 2 - Next of Kin - Substep 2: Contact Information */}
+          {step === 2 && subStep === 2 && (
+            <View>
+              <View style={styles.headerWithBack}>
+                <TouchableOpacity onPress={prevStep} style={styles.backButton}>
+                  <ChevronLeft size={24} color="black" />
+                </TouchableOpacity>
+                <Text style={styles.title}>Next of Kin</Text>
+              </View>
+              <Text style={styles.subtitle}>Enter Contact Information</Text>
+
+              <Text style={styles.inputLabel}>Date of Birth</Text>
+              <TouchableOpacity
+                style={styles.inputIcon}
+                onPress={showKinDatePicker}
+              >
+                <Calendar size={18} color="black" />
+                <Text style={[styles.inputFlex, styles.dobText]}>
+                  {kinDob || "Select date of birth"}
+                </Text>
+              </TouchableOpacity>
+
+              <DateTimePickerModal
+                isVisible={isKinDatePickerVisible}
+                mode="date"
+                onConfirm={handleKinConfirm}
+                onCancel={hideKinDatePicker}
+              />
+
+              <Text style={styles.inputLabel}>Phone Number</Text>
+              <View style={styles.inputIcon}>
+                <Phone size={18} color="black" />
+                <TextInput
+                  placeholder="Enter phone number"
+                  style={styles.inputFlex}
+                  keyboardType="phone-pad"
+                />
+              </View>
+
+              <Text style={styles.inputLabel}>Email Address</Text>
+              <View style={styles.inputIcon}>
+                <Mail size={18} color="black" />
+                <TextInput
+                  placeholder="Enter email address"
+                  style={styles.inputFlex}
+                  keyboardType="email-address"
+                />
+              </View>
+
+              <Text style={styles.inputLabel}>Home Address</Text>
+              <View style={styles.inputIcon}>
+                <Home size={18} color="black" />
+                <TextInput
+                  placeholder="Enter home address"
+                  style={styles.inputFlex}
+                />
+              </View>
+            </View>
+          )}
+
+          {step === 2 && subStep === 3 && (
+            <View>
+              <View style={styles.headerWithBack}>
+                <TouchableOpacity onPress={prevStep} style={styles.backButton}>
+                  <ChevronLeft size={24} color="black" />
+                </TouchableOpacity>
+                <Text style={styles.title}>Next Of Kin</Text>
+              </View>
+              <Text style={styles.subtitle}>Enter Additional Information</Text>
+
+              <Text style={styles.inputLabel}>Guarantor Service Number</Text>
+              <View style={styles.inputIcon}>
+                <ShieldUser size={18} color="black" />
+                <TextInput
+                  placeholder="Enter guarantor service number"
+                  style={styles.inputFlex}
+                />
+              </View>
+
+              <Text style={styles.inputLabel}>State of Origin</Text>
+              <View style={styles.inputIcon}>
+                <MapPinHouse size={18} color="black" />
+                <RNPickerSelect
+                  onValueChange={(value) => {
+                    setKinStateOrigin(value);
+                    setKinLga("");
+                  }}
+                  placeholder={{ label: "Select state of origin", value: "" }}
+                  items={Object.keys(states).map((state) => ({
+                    label: state,
+                    value: state,
+                  }))}
+                  value={kinStateOrigin}
+                  style={pickerSelectStyles}
+                  useNativeAndroidPickerStyle={false}
+                />
+              </View>
+
+              <Text style={styles.inputLabel}>LGA</Text>
+              <View style={styles.inputIcon}>
+                <MapPinCheckInside size={18} color="black" />
+                <RNPickerSelect
+                  onValueChange={(value) => setKinLga(value)}
+                  placeholder={{ label: "Select LGA", value: "" }}
+                  items={
+                    kinStateOrigin
+                      ? (states as Record<string, string[]>)[
+                          kinStateOrigin
+                        ]?.map((lgaItem: string) => ({
+                          label: lgaItem,
+                          value: lgaItem,
+                        })) || []
+                      : []
+                  }
+                  value={kinLga}
+                  style={pickerSelectStyles}
+                  useNativeAndroidPickerStyle={false}
+                />
+              </View>
+
+              <Text style={styles.inputLabel}>Guarantor's Unit</Text>
+              <View style={styles.inputIcon}>
+                <UsersRound size={18} color="black" />
+                <TextInput
+                  placeholder="Enter guarantor's unit"
+                  style={styles.inputFlex}
+                />
+              </View>
+
+              <Text style={styles.inputLabel}>Relationship with Guarantor</Text>
+              <View style={styles.inputIcon}>
+                <Smile size={18} color="black" />
+                <TextInput
+                  placeholder="Enter relationship with guarantor"
+                  style={styles.inputFlex}
+                />
+              </View>
+            </View>
+          )}
+
+          {step === 3 && (
+            <View>
+              <View style={styles.headerWithBack}>
+                <TouchableOpacity onPress={prevStep} style={styles.backButton}>
+                  <ChevronLeft size={24} color="black" />
+                </TouchableOpacity>
+                <Text style={styles.title}>Upload Document</Text>
+              </View>
+              <Text style={styles.subtitle}>
+                Please provide your credentials to Signup to the platform.
+              </Text>
+
+              <View style={styles.uploadSection}>
+                <Text style={styles.uploadLabel}>Upload your picture</Text>
+                {renderDocumentPreview(profilePicture, setProfilePicture)}
+                <TouchableOpacity
+                  style={styles.uploadBox}
+                  onPress={pickProfilePicture}
+                >
+                  <Upload size={24} color="#666" />
+                  <Text style={styles.uploadText}>
+                    {profilePicture
+                      ? "Change Picture"
+                      : "Drop file here/Choose file"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.uploadSection}>
+                <Text style={styles.uploadLabel}>
+                  NIN of Next of kin
+                </Text>
+                {renderDocumentPreview(ninDocument, setNinDocument)}
+                <TouchableOpacity
+                  style={styles.uploadBox}
+                  onPress={() => pickDocument(setNinDocument)}
+                >
+                  <Upload size={24} color="#666" />
+                  <Text style={styles.uploadText}>
+                    {ninDocument
+                      ? "Change Document"
+                      : "Drop file here/Choose file"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.uploadSection}>
+                <Text style={styles.uploadLabel}>
+                  Valid means of ID (NIN, Drivers License, International
+                  Passport)
+                </Text>
+                {renderDocumentPreview(idDocument, setIdDocument)}
+                <TouchableOpacity
+                  style={styles.uploadBox}
+                  onPress={() => pickDocument(setIdDocument)}
+                >
+                  <Upload size={24} color="#666" />
+                  <Text style={styles.uploadText}>
+                    {idDocument
+                      ? "Change Document"
+                      : "Drop file here/Choose file"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.uploadSection}>
+                <Text style={styles.uploadLabel}>Personnel ID Card</Text>
+                {renderDocumentPreview(personnelId, setPersonnelId)}
+                <TouchableOpacity
+                  style={styles.uploadBox}
+                  onPress={() => pickDocument(setPersonnelId)}
+                >
+                  <Upload size={24} color="#666" />
+                  <Text style={styles.uploadText}>
+                    {personnelId
+                      ? "Change Document"
+                      : "Drop file here/Choose file"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          {step === 4 && (
+            <View>
+              <View style={styles.headerWithBack}>
+                <TouchableOpacity onPress={prevStep} style={styles.backButton}>
+                  <ChevronLeft size={24} color="black" />
+                </TouchableOpacity>
+                <Text style={styles.title}>Security Question</Text>
+              </View>
+              <Text style={styles.subtitle}>
+                Enter Your Current Information
+              </Text>
+
+              <Text style={styles.inputLabel}>Security Question</Text>
+              <View style={styles.inputIcon}>
+                <MessageCircleQuestion size={18} color="black" />
+                <RNPickerSelect
+                  onValueChange={(value) => setSecurityQuestion(value)}
+                  placeholder={{
+                    label: "Select Security Question",
+                    value: "",
+                  }}
+                  items={[
+                    {
+                      label: "What is your mother's maiden name?",
+                      value: "mother_maiden",
+                    },
+                    {
+                      label: "What was the name of your first pet?",
+                      value: "first_pet",
+                    },
+                    {
+                      label: "What city were you born in?",
+                      value: "birth_city",
+                    },
+                    {
+                      label: "What is your favorite food?",
+                      value: "favorite_food",
+                    },
+                    {
+                      label: "What was your first school?",
+                      value: "first_school",
+                    },
+                  ]}
+                  value={securityQuestion}
+                  style={pickerSelectStyles}
+                  useNativeAndroidPickerStyle={false}
+                />
+              </View>
+
+              <Text style={styles.inputLabel}>Security Answer</Text>
+              <View style={styles.inputIcon}>
+                <MessageSquare size={18} color="black" />
+                <TextInput
+                  placeholder="Enter security answer"
+                  style={styles.inputFlex}
+                />
+              </View>
+            </View>
+          )}
+        </View>
+
+        {/* Buttons */}
+        <View style={styles.buttonRow}>
+          <TouchableOpacity style={styles.buttonPrimary} onPress={nextStep}>
+            <Text style={styles.buttonText}>
+              {step === 4 ? "Submit" : "Proceed"} →
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -1073,6 +1087,18 @@ const styles = StyleSheet.create({
   activeStepLabel: {
     color: "#82B921",
     fontWeight: "bold",
+  },
+  headerWithBack: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 10,
+    position: "relative",
+  },
+  backButton: {
+    position: "absolute",
+    left: 0,
+    padding: 5,
   },
   title: {
     fontSize: 20,

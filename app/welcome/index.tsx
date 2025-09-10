@@ -26,20 +26,13 @@ export default function Onboarding1() {
     >
       <View style={styles.mainContent}>
         <Image
-          source={require("../../assets/images/atm.png")}
+          source={require("../../assets/images/logobox.png")}
           style={styles.atmImage}
           resizeMode="cover"
         />
       </View>
 
       <View style={styles.bottomSection}>
-        <View style={styles.logoContainer}>
-          <Image
-            source={require("../../assets/images/logo.jpg")}
-            style={styles.logoImage}
-          />
-        </View>
-
         <View style={styles.content}>
           <Text style={styles.welcomeText}>Welcome To</Text>
           <Text style={styles.title}>Sappers Multipurpose</Text>

@@ -25,31 +25,26 @@ export default function Onboarding2() {
       resizeMode="cover"
     >
       <View style={styles.mainContent}>
-        <Image 
-          source={require("../../assets/images/soldier-one.png")} 
-          style={styles.soldierImage}
-          resizeMode="contain"
-        />
+        <Text style={styles.title}>
+          Access savings, Loans, and opportunities that put you in control.
+        </Text>
+        <Text style={styles.subtitle}>
+          Our cooperative stands as a pillar of trust, unity, and shared
+          strength
+        </Text>
       </View>
 
       <View style={styles.bottomSection}>
-        <View style={styles.content}>
-          <Text style={styles.title}>
-            Welcome to Sappers Multipurpose Cooperative Society
-          </Text>
-          <Text style={styles.subtitle}>
-            Marching Together Towards Financial Victory
-          </Text>
+        <View style={styles.content}></View>
+        <View style={styles.indicators}>
+          <View style={styles.indicator} />
+          <View style={[styles.indicator, styles.activeIndicator]} />
+          <View style={styles.indicator} />
         </View>
-          <View style={styles.indicators}>
-            <View style={styles.indicator} />
-            <View style={[styles.indicator, styles.activeIndicator]} />
-            <View style={styles.indicator} />
-          </View>
 
         <View style={styles.navigation}>
           <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-           <ArrowRight color="black" />
+            <ArrowRight color="black" />
           </TouchableOpacity>
         </View>
       </View>
@@ -85,7 +80,7 @@ const styles = StyleSheet.create({
   bottomSection: {
     paddingBottom: 50,
     paddingHorizontal: 20,
-    position: 'relative',
+    position: "relative",
     zIndex: 2, // Ensure content stays above the bottom image
   },
   content: {
@@ -112,7 +107,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 40,
     gap: 10,
-    justifyContent: "flex-end"
+    justifyContent: "flex-end",
   },
   indicator: {
     width: 8,
@@ -156,7 +151,7 @@ const styles = StyleSheet.create({
   },
   // New styles for bottom image
   bottomImageContainer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,

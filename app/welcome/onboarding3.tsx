@@ -26,7 +26,7 @@ export default function Onboarding3() {
     >
       <View style={styles.mainContent}>
         <Image
-          source={require("../../assets/images/soldier-two.png")}
+          source={require("../../assets/images/chain.png")}
           style={styles.soldierImage}
           resizeMode="contain"
         />
