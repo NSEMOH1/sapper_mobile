@@ -877,35 +877,33 @@ const RegistrationForm = () => {
               <View style={styles.uploadSection}>
                 <Text style={styles.uploadLabel}>Upload your picture</Text>
                 {renderDocumentPreview(profilePicture, setProfilePicture)}
-                <TouchableOpacity
-                  style={styles.uploadBox}
-                  onPress={pickProfilePicture}
-                >
-                  <Upload size={24} color="#666" />
-                  <Text style={styles.uploadText}>
-                    {profilePicture
-                      ? "Change Picture"
-                      : "Drop file here/Choose file"}
-                  </Text>
-                </TouchableOpacity>
+                {!profilePicture && (
+                  <TouchableOpacity
+                    style={styles.uploadBox}
+                    onPress={pickProfilePicture}
+                  >
+                    <Upload size={24} color="#666" />
+                    <Text style={styles.uploadText}>
+                      Drop file here/Choose file
+                    </Text>
+                  </TouchableOpacity>
+                )}
               </View>
 
               <View style={styles.uploadSection}>
-                <Text style={styles.uploadLabel}>
-                  NIN of Next of kin
-                </Text>
+                <Text style={styles.uploadLabel}>NIN of Next of kin</Text>
                 {renderDocumentPreview(ninDocument, setNinDocument)}
-                <TouchableOpacity
-                  style={styles.uploadBox}
-                  onPress={() => pickDocument(setNinDocument)}
-                >
-                  <Upload size={24} color="#666" />
-                  <Text style={styles.uploadText}>
-                    {ninDocument
-                      ? "Change Document"
-                      : "Drop file here/Choose file"}
-                  </Text>
-                </TouchableOpacity>
+                {!ninDocument && (
+                  <TouchableOpacity
+                    style={styles.uploadBox}
+                    onPress={() => pickDocument(setNinDocument)}
+                  >
+                    <Upload size={24} color="#666" />
+                    <Text style={styles.uploadText}>
+                      Drop file here/Choose file
+                    </Text>
+                  </TouchableOpacity>
+                )}
               </View>
 
               <View style={styles.uploadSection}>
@@ -914,33 +912,33 @@ const RegistrationForm = () => {
                   Passport)
                 </Text>
                 {renderDocumentPreview(idDocument, setIdDocument)}
-                <TouchableOpacity
-                  style={styles.uploadBox}
-                  onPress={() => pickDocument(setIdDocument)}
-                >
-                  <Upload size={24} color="#666" />
-                  <Text style={styles.uploadText}>
-                    {idDocument
-                      ? "Change Document"
-                      : "Drop file here/Choose file"}
-                  </Text>
-                </TouchableOpacity>
+                {!idDocument && (
+                  <TouchableOpacity
+                    style={styles.uploadBox}
+                    onPress={() => pickDocument(setIdDocument)}
+                  >
+                    <Upload size={24} color="#666" />
+                    <Text style={styles.uploadText}>
+                      Drop file here/Choose file
+                    </Text>
+                  </TouchableOpacity>
+                )}
               </View>
 
               <View style={styles.uploadSection}>
                 <Text style={styles.uploadLabel}>Personnel ID Card</Text>
                 {renderDocumentPreview(personnelId, setPersonnelId)}
-                <TouchableOpacity
-                  style={styles.uploadBox}
-                  onPress={() => pickDocument(setPersonnelId)}
-                >
-                  <Upload size={24} color="#666" />
-                  <Text style={styles.uploadText}>
-                    {personnelId
-                      ? "Change Document"
-                      : "Drop file here/Choose file"}
-                  </Text>
-                </TouchableOpacity>
+                {!personnelId && (
+                  <TouchableOpacity
+                    style={styles.uploadBox}
+                    onPress={() => pickDocument(setPersonnelId)}
+                  >
+                    <Upload size={24} color="#666" />
+                    <Text style={styles.uploadText}>
+                      Drop file here/Choose file
+                    </Text>
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
           )}
@@ -1122,7 +1120,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#000", // Changed to black
+    borderColor: "#000",
     paddingHorizontal: 10,
     borderRadius: 8,
     marginBottom: 12,
@@ -1144,7 +1142,7 @@ const styles = StyleSheet.create({
   },
   uploadBox: {
     borderWidth: 2,
-    borderColor: "#000", // Changed to black
+    borderColor: "#000",
     borderStyle: "dashed",
     borderRadius: 8,
     padding: 20,
