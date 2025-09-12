@@ -55,7 +55,7 @@ const PaymentFlow = () => {
 
     popup.newTransaction({
       email: testUser.email,
-      amount: parseFloat(amount) * 100,
+      amount: parseInt(amount),
       reference: generateTransactionReference(),
       onSuccess: async (res: any) => {
         console.log("Payment Success:", res);
