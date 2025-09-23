@@ -20,19 +20,16 @@ const ContactUs = () => {
   const handleWhatsApp = () => {
     const whatsappUrl = "whatsapp://send?phone=2348012345678&text=Hello, I need assistance";
     Linking.openURL(whatsappUrl).catch(() => {
-      // Fallback to web WhatsApp
       Linking.openURL('https://wa.me/2348012345678?text=Hello, I need assistance');
     });
   };
 
   const handleFAQ = () => {
     console.log("Navigate to FAQ screen");
-    // Navigate to FAQ screen
   };
 
   const handleContinue = () => {
     console.log("Continue pressed");
-    // Handle continue action
   };
 
   return (

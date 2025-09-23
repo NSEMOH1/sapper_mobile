@@ -11,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import LoanEnrollmentFlow from "@/features/loan-enrollment";
 import { router } from "expo-router";
+import { TrendingUp } from "lucide-react-native";
 
 export default function HomeScreen() {
   const [showLoanModal, setShowLoanModal] = useState(false);
@@ -23,44 +24,44 @@ export default function HomeScreen() {
     router.push("/payments");
   };
 
-  // const financialRecords = [
-  //   {
-  //     id: 1,
-  //     title: "Regular Loan",
-  //     amount: "107,265",
-  //     status: "active",
-  //     color: "white",
-  //     bgColor: "#53B175",
-  //   },
-  //   {
-  //     id: 2,
-  //     title: "Housing Loan",
-  //     status: "Coming Soon",
-  //     color: "white",
-  //     bgColor: "#444012",
-  //   },
-  //   {
-  //     id: 3,
-  //     title: "Commodity Loan",
-  //     status: "Coming Soon",
-  //     color: "white",
-  //     bgColor: "#057392",
-  //   },
-  //   {
-  //     id: 4,
-  //     title: "Emergency Loan",
-  //     status: "Coming Soon",
-  //     color: "white",
-  //     bgColor: "#EBB9A1",
-  //   },
-  //   {
-  //     id: 5,
-  //     title: "Home Appliance Loan",
-  //     status: "Coming Soon",
-  //     color: "white",
-  //     bgColor: "#060402",
-  //   },
-  // ];
+  const financialRecords = [
+    {
+      id: 1,
+      title: "Regular Loan",
+      amount: "107,265",
+      status: "active",
+      color: "white",
+      bgColor: "#53B175",
+    },
+    {
+      id: 2,
+      title: "Housing Loan",
+      status: "Coming Soon",
+      color: "white",
+      bgColor: "#444012",
+    },
+    {
+      id: 3,
+      title: "Commodity Loan",
+      status: "Coming Soon",
+      color: "white",
+      bgColor: "#057392",
+    },
+    {
+      id: 4,
+      title: "Emergency Loan",
+      status: "Coming Soon",
+      color: "white",
+      bgColor: "#EBB9A1",
+    },
+    {
+      id: 5,
+      title: "Home Appliance Loan",
+      status: "Coming Soon",
+      color: "white",
+      bgColor: "#060402",
+    },
+  ];
 
   const savingsCards = [
     {
@@ -184,7 +185,7 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Financial Record
+        Financial Record
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Financial Record</Text>
           <View style={styles.financialGrid}>
@@ -224,7 +225,7 @@ export default function HomeScreen() {
               </TouchableOpacity>
             ))}
           </View>
-        </View> */}
+        </View>
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>

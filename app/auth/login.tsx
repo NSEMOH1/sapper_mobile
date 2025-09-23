@@ -11,22 +11,35 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
+import api from "@/constants/api";
 
 export default function LoginScreen() {
   const [serviceNumber, setServiceNumber] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleSignup = () => {
-    router.push('/auth/signup')
-  }
-
-  const handleSignin = () => {
-    router.push('/(tabs)')
-  }
+    router.push("/auth/signup");
+  };
 
   const handleForgotPassword = () => {
-    router.push('/auth/forgot-password')
-  }
+    router.push("/auth/forgot-password");
+  };
+
+  const payload = {
+    service_number: serviceNumber,
+    password: password,
+  };
+
+  const handleSignin = async () => {
+    try {
+      await api.post("/auth/login", payload);
+      router.push("/(tabs)");
+    } catch (e) {
+      console.error(e);
+      setErrorMessage("Login failed. Please check your credentials.");
+    }
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#f8f8f8" }}>
@@ -50,6 +63,13 @@ export default function LoginScreen() {
         </View>
 
         <View style={styles.formCard}>
+          {errorMessage ? (
+            <Text
+              style={{ color: "red", textAlign: "center", marginBottom: 10 }}
+            >
+              {errorMessage}
+            </Text>
+          ) : null}
           <View style={styles.headerRow}>
             <Text style={styles.welcomeText}>
               Welcome to <Text style={{ fontWeight: "bold" }}>Sappers</Text>
@@ -101,7 +121,10 @@ export default function LoginScreen() {
             onChangeText={setPassword}
             style={styles.input}
           />
-          <TouchableOpacity style={{ alignSelf: "flex-end", marginBottom: 20 }} onPress={handleForgotPassword}>
+          <TouchableOpacity
+            style={{ alignSelf: "flex-end", marginBottom: 20 }}
+            onPress={handleForgotPassword}
+          >
             <Text style={{ color: "#007BFF", fontSize: 12 }}>
               Forgot Password
             </Text>
