@@ -33,12 +33,15 @@ import {
   Smile,
   MessageCircleQuestion,
   MessageSquare,
-  ChevronLeft, // Added back icon
+  ChevronLeft,
+  Key,
 } from "lucide-react-native";
 import { router } from "expo-router";
 import { states } from "../../constants/data";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
+import { Gender, Ranks, Relationship, securityQuestions } from "./data";
+import api from "@/constants/api";
 
 interface Document {
   uri: string;
@@ -50,40 +53,254 @@ const RegistrationForm = () => {
   const [step, setStep] = useState(1);
   const [subStep, setSubStep] = useState(1);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [dob, setDob] = useState("");
-  const [kinDob, setKinDob] = useState("");
+  const [unit, setUnit] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [otherName, setOtherName] = useState("");
   const [isDatePickerVisible, setDatePickerVisible] = useState(false);
-  const [isKinDatePickerVisible, setKinDatePickerVisible] = useState(false);
   const [gender, setGender] = useState("");
+  const [rank, setRank] = useState("");
+  const [kinFirstName, setKinFirstName] = useState("");
+  const [kinLastName, setKinLastName] = useState("");
+  const [kinPhone, setKinPhone] = useState("");
   const [kinGender, setKinGender] = useState("");
+  const [kinEmail, setKinEmail] = useState("");
   const [stateOrigin, setStateOrigin] = useState("");
   const [lga, setLga] = useState("");
-  const [kinStateOrigin, setKinStateOrigin] = useState("");
-  const [kinLga, setKinLga] = useState("");
-  const [title, setTitle] = useState("");
-  const [kinTitle, setKinTitle] = useState("");
+  const [kinAddress, setKinAddress] = useState("");
   const [relationship, setRelationship] = useState("");
   const [securityQuestion, setSecurityQuestion] = useState("");
-
-  // State for uploaded documents
+  const [securityAnswer, setSecurityAnswer] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [address, setAddress] = useState("");
+  const [transactionPin, setTransactionPin] = useState("");
+  const [serviceNumber, setServiceNumber] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [accountName, setAccountName] = useState("");
+  const [monthlyDeduction, setMonthlyDeduction] = useState("");
   const [profilePicture, setProfilePicture] = useState<Document | null>(null);
   const [ninDocument, setNinDocument] = useState<Document | null>(null);
   const [idDocument, setIdDocument] = useState<Document | null>(null);
   const [personnelId, setPersonnelId] = useState<Document | null>(null);
 
+  const validateCurrentStep = () => {
+    if (step === 1) {
+      if (subStep === 1) {
+        if (
+          !serviceNumber ||
+          !rank ||
+          !unit ||
+          !firstName ||
+          !lastName ||
+          !gender
+        ) {
+          Alert.alert("Error", "Please fill in all required fields");
+          return false;
+        }
+      } else if (subStep === 2) {
+        if (!dob || !phone || !email || !address || !transactionPin) {
+          Alert.alert("Error", "Please fill in all required fields");
+          return false;
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          Alert.alert("Error", "Please enter a valid email address");
+          return false;
+        }
+        if (phone.length < 10) {
+          Alert.alert("Error", "Please enter a valid phone number");
+          return false;
+        }
+      } else if (subStep === 3) {
+        if (
+          !stateOrigin ||
+          !lga ||
+          !bankName ||
+          !accountNumber ||
+          !accountName ||
+          !monthlyDeduction
+        ) {
+          Alert.alert("Error", "Please fill in all required fields");
+          return false;
+        }
+      }
+    } else if (step === 2) {
+      if (subStep === 1) {
+        if (!kinFirstName || !kinLastName || !kinGender || !relationship) {
+          Alert.alert(
+            "Error",
+            "Please fill in all next of kin basic information"
+          );
+          return false;
+        }
+      } else if (subStep === 2) {
+        if (!kinPhone || !kinEmail || !kinAddress) {
+          Alert.alert(
+            "Error",
+            "Please fill in all next of kin contact information"
+          );
+          return false;
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(kinEmail)) {
+          Alert.alert(
+            "Error",
+            "Please enter a valid email address for next of kin"
+          );
+          return false;
+        }
+      }
+    } else if (step === 3) {
+      if (!profilePicture || !ninDocument || !idDocument || !personnelId) {
+        Alert.alert("Error", "Please upload all required documents");
+        return false;
+      }
+    } else if (step === 4) {
+      if (!securityQuestion || !securityAnswer) {
+        Alert.alert(
+          "Error",
+          "Please select a security question and provide an answer"
+        );
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const createFormData = () => {
+    const formData = new FormData();
+    const payload = {
+      service_number: serviceNumber,
+      rank: rank,
+      unit: unit,
+      first_name: firstName,
+      other_name: otherName,
+      last_name: lastName,
+      gender: gender,
+      date_of_birth: new Date(dob),
+      phone: phone,
+      email: email,
+      address: address,
+      pin: transactionPin,
+      state_of_origin: stateOrigin,
+      lga: lga,
+      account_name: accountName,
+      account_number: accountNumber,
+      bankName: bankName,
+      monthlyDeduction: monthlyDeduction,
+      kinFirstName: kinFirstName,
+      kinLastName: kinLastName,
+      kinGender: kinGender,
+      kinPhone: kinPhone,
+      kinAddress: kinAddress,
+      kinEmail: kinEmail,
+      relationship: relationship,
+      securityQuestion: securityQuestion,
+      securityAnswer: securityAnswer,
+    };
+
+    formData.append("data", JSON.stringify(payload));
+    if (profilePicture) {
+      console.log("Profile Picture:", profilePicture);
+      formData.append("profile_picture", {
+        uri: profilePicture.uri,
+        type: profilePicture.type || "image/jpeg",
+        name: profilePicture.name,
+      } as any);
+    }
+
+    if (ninDocument) {
+      formData.append("identification", {
+        uri: ninDocument.uri,
+        type: ninDocument.type || "application/pdf",
+        name: ninDocument.name,
+      } as any);
+    }
+
+    if (idDocument) {
+      formData.append("signature", {
+        uri: idDocument.uri,
+        type: idDocument.type || "application/pdf",
+        name: idDocument.name,
+      } as any);
+    }
+
+    if (personnelId) {
+      formData.append("id_card", {
+        uri: personnelId.uri,
+        type: personnelId.type || "application/pdf",
+        name: personnelId.name,
+      } as any);
+    }
+
+    return formData;
+  };
+
+  const handleRegister = async () => {
+    try {
+      setIsLoading(true);
+      if (!validateCurrentStep()) {
+        setIsLoading(false);
+        return;
+      }
+
+      const formData = createFormData();
+      console.log("data", formData);
+
+      console.log("Submitting registration data...");
+      const response = await api.post("/api/auth/member/register", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        timeout: 30000,
+      });
+      console.log("Registration response:", response.data);
+
+      if (response.status === 200 || response.status === 201) {
+        setShowSuccess(true);
+      } else {
+        throw new Error(response.data?.message || "Registration failed");
+      }
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      let errorMessage = "Registration failed. Please try again.";
+      if (error.response) {
+        errorMessage =
+          error.response.data?.message ||
+          error.response.data?.error ||
+          `Server error: ${error.response.status}`;
+      } else if (error.request) {
+        errorMessage = "Network error. Please check your internet connection.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      Alert.alert("Registration Error", errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const nextStep = () => {
+    if (!validateCurrentStep()) {
+      return;
+    }
+
     if (step === 1 && subStep < 3) {
       setSubStep((prev) => prev + 1);
     } else if (step === 1 && subStep === 3) {
       setStep(2);
       setSubStep(1);
-    } else if (step === 2 && subStep < 3) {
+    } else if (step === 2 && subStep < 2) {
       setSubStep((prev) => prev + 1);
-    } else if (step === 2 && subStep === 3) {
+    } else if (step === 2 && subStep === 2) {
       setStep(3);
-      setSubStep(1);
     } else if (step === 4) {
-      setShowSuccess(true);
+      handleRegister();
     } else {
       setStep((prev) => Math.min(prev + 1, 4));
     }
@@ -97,9 +314,9 @@ const RegistrationForm = () => {
     } else if (step === 2 && subStep === 1) {
       setStep(1);
       setSubStep(3);
-    } else if (step === 3 && subStep === 1) {
+    } else if (step === 3) {
       setStep(2);
-      setSubStep(3);
+      setSubStep(2);
     } else {
       setStep((prev) => Math.max(prev - 1, 1));
     }
@@ -108,17 +325,9 @@ const RegistrationForm = () => {
   const showDatePicker = () => setDatePickerVisible(true);
   const hideDatePicker = () => setDatePickerVisible(false);
 
-  const showKinDatePicker = () => setKinDatePickerVisible(true);
-  const hideKinDatePicker = () => setKinDatePickerVisible(false);
-
   const handleConfirm = (date: Date) => {
     setDob(date.toISOString().split("T")[0]);
     hideDatePicker();
-  };
-
-  const handleKinConfirm = (date: Date) => {
-    setKinDob(date.toISOString().split("T")[0]);
-    hideKinDatePicker();
   };
 
   const handleLogin = () => {
@@ -126,6 +335,41 @@ const RegistrationForm = () => {
     setShowSuccess(false);
     setStep(1);
     setSubStep(1);
+    resetForm();
+  };
+
+  const resetForm = () => {
+    setServiceNumber("");
+    setRank("");
+    setUnit("");
+    setFirstName("");
+    setOtherName("");
+    setLastName("");
+    setGender("");
+    setDob("");
+    setPhone("");
+    setEmail("");
+    setAddress("");
+    setTransactionPin("");
+    setStateOrigin("");
+    setLga("");
+    setAccountName("");
+    setAccountNumber("");
+    setBankName("");
+    setMonthlyDeduction("");
+    setKinFirstName("");
+    setKinLastName("");
+    setKinGender("");
+    setKinPhone("");
+    setKinAddress("");
+    setKinEmail("");
+    setRelationship("");
+    setSecurityQuestion("");
+    setSecurityAnswer("");
+    setProfilePicture(null);
+    setNinDocument(null);
+    setIdDocument(null);
+    setPersonnelId(null);
   };
 
   const pickProfilePicture = async () => {
@@ -134,17 +378,21 @@ const RegistrationForm = () => {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [1, 1],
-        quality: 0.5,
+        quality: 0.7,
+        allowsMultipleSelection: false,
       });
 
       if (!result.canceled && result.assets[0]) {
+        const asset = result.assets[0];
         setProfilePicture({
-          uri: result.assets[0].uri,
-          name: result.assets[0].fileName || "profile.jpg",
+          uri: asset.uri,
+          name: asset.fileName || `profile_${Date.now()}.jpg`,
+          type: asset.mimeType || "image/jpeg",
         });
         Alert.alert("Success", "Profile picture selected");
       }
     } catch (error) {
+      console.error("Error picking image:", error);
       Alert.alert("Error", "Failed to pick image");
     }
   };
@@ -155,17 +403,21 @@ const RegistrationForm = () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: "*/*",
+        copyToCacheDirectory: true,
+        multiple: false,
       });
 
-      if (result.assets && result.assets[0]) {
+      if (!result.canceled && result.assets && result.assets[0]) {
+        const asset = result.assets[0];
         setDocumentFunction({
-          uri: result.assets[0].uri,
-          name: result.assets[0].name || "document",
-          type: result.assets[0].mimeType,
+          uri: asset.uri,
+          name: asset.name || `document_${Date.now()}`,
+          type: asset.mimeType || "application/pdf",
         });
         Alert.alert("Success", "Document selected");
       }
     } catch (error) {
+      console.error("Error picking document:", error);
       Alert.alert("Error", "Failed to pick document");
     }
   };
@@ -420,34 +672,49 @@ const RegistrationForm = () => {
           {step === 1 && subStep === 1 && (
             <View>
               <Text style={styles.title}>Create Profile</Text>
-
               <Text style={styles.subtitle}>Enter Your Basic Information</Text>
 
-              <Text style={styles.inputLabel}>Service Number</Text>
+              <Text style={styles.inputLabel}>Service Number *</Text>
               <View style={styles.inputIcon}>
                 <ShieldUser size={18} color="black" />
                 <TextInput
+                  value={serviceNumber}
                   placeholder="Enter service number"
+                  style={styles.inputFlex}
+                  onChangeText={setServiceNumber}
+                />
+              </View>
+
+              <Text style={styles.inputLabel}>Rank *</Text>
+              <View style={styles.inputIcon}>
+                <VenusAndMars size={18} color="black" />
+                <RNPickerSelect
+                  onValueChange={(value) => setRank(value)}
+                  placeholder={{ label: "Select rank", value: "" }}
+                  items={Ranks}
+                  value={rank}
+                  style={pickerSelectStyles}
+                  useNativeAndroidPickerStyle={false}
+                />
+              </View>
+
+              <Text style={styles.inputLabel}>Unit *</Text>
+              <View style={styles.inputIcon}>
+                <UsersRound size={18} color="black" />
+                <TextInput
+                  value={unit}
+                  onChangeText={setUnit}
+                  placeholder="Enter unit"
                   style={styles.inputFlex}
                 />
               </View>
 
-              <Text style={styles.inputLabel}>Rank</Text>
-              <View style={styles.inputIcon}>
-                <ShieldHalf size={18} color="black" />
-                <TextInput placeholder="Enter rank" style={styles.inputFlex} />
-              </View>
-
-              <Text style={styles.inputLabel}>Unit</Text>
-              <View style={styles.inputIcon}>
-                <UsersRound size={18} color="black" />
-                <TextInput placeholder="Enter unit" style={styles.inputFlex} />
-              </View>
-
-              <Text style={styles.inputLabel}>First Name</Text>
+              <Text style={styles.inputLabel}>First Name *</Text>
               <View style={styles.inputIcon}>
                 <User size={18} color="black" />
                 <TextInput
+                  value={firstName}
+                  onChangeText={setFirstName}
                   placeholder="Enter first name"
                   style={styles.inputFlex}
                 />
@@ -457,30 +724,31 @@ const RegistrationForm = () => {
               <View style={styles.inputIcon}>
                 <User size={18} color="black" />
                 <TextInput
+                  value={otherName}
+                  onChangeText={setOtherName}
                   placeholder="Enter other name"
                   style={styles.inputFlex}
                 />
               </View>
 
-              <Text style={styles.inputLabel}>Surname</Text>
+              <Text style={styles.inputLabel}>Surname *</Text>
               <View style={styles.inputIcon}>
                 <User size={18} color="black" />
                 <TextInput
+                  value={lastName}
+                  onChangeText={setLastName}
                   placeholder="Enter surname"
                   style={styles.inputFlex}
                 />
               </View>
 
-              <Text style={styles.inputLabel}>Gender</Text>
+              <Text style={styles.inputLabel}>Gender *</Text>
               <View style={styles.inputIcon}>
                 <VenusAndMars size={18} color="black" />
                 <RNPickerSelect
                   onValueChange={(value) => setGender(value)}
                   placeholder={{ label: "Select gender", value: "" }}
-                  items={[
-                    { label: "MALE", value: "Male" },
-                    { label: "FEMALE", value: "Female" },
-                  ]}
+                  items={Gender}
                   value={gender}
                   style={pickerSelectStyles}
                   useNativeAndroidPickerStyle={false}
@@ -501,7 +769,7 @@ const RegistrationForm = () => {
                 Enter Your Contact Information
               </Text>
 
-              <Text style={styles.inputLabel}>Date of Birth</Text>
+              <Text style={styles.inputLabel}>Date of Birth *</Text>
               <TouchableOpacity
                 style={styles.inputIcon}
                 onPress={showDatePicker}
@@ -517,34 +785,58 @@ const RegistrationForm = () => {
                 mode="date"
                 onConfirm={handleConfirm}
                 onCancel={hideDatePicker}
+                maximumDate={new Date()}
               />
 
-              <Text style={styles.inputLabel}>Phone Number</Text>
+              <Text style={styles.inputLabel}>Phone Number *</Text>
               <View style={styles.inputIcon}>
                 <Phone size={18} color="black" />
                 <TextInput
+                  value={phone}
                   placeholder="Enter phone number"
                   style={styles.inputFlex}
                   keyboardType="phone-pad"
+                  onChangeText={setPhone}
                 />
               </View>
 
-              <Text style={styles.inputLabel}>Email Address</Text>
+              <Text style={styles.inputLabel}>Email Address *</Text>
               <View style={styles.inputIcon}>
                 <Mail size={18} color="black" />
                 <TextInput
+                  value={email}
+                  onChangeText={setEmail}
                   placeholder="Enter email address"
                   style={styles.inputFlex}
                   keyboardType="email-address"
+                  autoCapitalize="none"
                 />
               </View>
 
-              <Text style={styles.inputLabel}>Home Address</Text>
+              <Text style={styles.inputLabel}>Home Address *</Text>
               <View style={styles.inputIcon}>
                 <Home size={18} color="black" />
                 <TextInput
+                  value={address}
+                  onChangeText={setAddress}
                   placeholder="Enter home address"
                   style={styles.inputFlex}
+                  multiline={true}
+                  numberOfLines={2}
+                />
+              </View>
+
+              <Text style={styles.inputLabel}>Transaction Pin *</Text>
+              <View style={styles.inputIcon}>
+                <Key size={18} color="black" />
+                <TextInput
+                  value={transactionPin}
+                  placeholder="Enter 4-digit transaction pin"
+                  style={styles.inputFlex}
+                  onChangeText={setTransactionPin}
+                  secureTextEntry={true}
+                  keyboardType="numeric"
+                  maxLength={4}
                 />
               </View>
             </View>
@@ -562,7 +854,7 @@ const RegistrationForm = () => {
                 Enter Your Financial Information
               </Text>
 
-              <Text style={styles.inputLabel}>State of Origin</Text>
+              <Text style={styles.inputLabel}>State of Origin *</Text>
               <View style={styles.inputIcon}>
                 <MapPinHouse size={18} color="black" />
                 <RNPickerSelect
@@ -581,7 +873,7 @@ const RegistrationForm = () => {
                 />
               </View>
 
-              <Text style={styles.inputLabel}>LGA</Text>
+              <Text style={styles.inputLabel}>LGA *</Text>
               <View style={styles.inputIcon}>
                 <MapPinCheckInside size={18} color="black" />
                 <RNPickerSelect
@@ -603,40 +895,49 @@ const RegistrationForm = () => {
                 />
               </View>
 
-              <Text style={styles.inputLabel}>Bank</Text>
+              <Text style={styles.inputLabel}>Bank Name *</Text>
               <View style={styles.inputIcon}>
                 <Building size={18} color="black" />
                 <TextInput
+                  value={bankName}
                   placeholder="Enter bank name"
                   style={styles.inputFlex}
+                  onChangeText={setBankName}
                 />
               </View>
 
-              <Text style={styles.inputLabel}>Account Number</Text>
+              <Text style={styles.inputLabel}>Account Number *</Text>
               <View style={styles.inputIcon}>
                 <CreditCard size={18} color="black" />
                 <TextInput
+                  value={accountNumber}
+                  onChangeText={setAccountNumber}
                   placeholder="Enter account number"
                   style={styles.inputFlex}
+                  keyboardType="numeric"
                 />
               </View>
 
-              <Text style={styles.inputLabel}>Account Name</Text>
+              <Text style={styles.inputLabel}>Account Name *</Text>
               <View style={styles.inputIcon}>
                 <CreditCard size={18} color="black" />
                 <TextInput
+                  value={accountName}
+                  onChangeText={setAccountName}
                   placeholder="Enter account name"
                   style={styles.inputFlex}
                 />
               </View>
 
-              <Text style={styles.inputLabel}>Amount to be deducted</Text>
+              <Text style={styles.inputLabel}>Monthly Deduction Amount *</Text>
               <View style={styles.inputIcon}>
                 <CreditCard size={18} color="black" />
                 <TextInput
+                  value={monthlyDeduction}
                   placeholder="Enter amount"
                   style={styles.inputFlex}
                   keyboardType="numeric"
+                  onChangeText={setMonthlyDeduction}
                 />
               </View>
             </View>
@@ -653,67 +954,48 @@ const RegistrationForm = () => {
               </View>
               <Text style={styles.subtitle}>Enter Basic Information</Text>
 
-              <Text style={styles.inputLabel}>First Name</Text>
+              <Text style={styles.inputLabel}>First Name *</Text>
               <View style={styles.inputIcon}>
                 <User size={18} color="black" />
                 <TextInput
+                  value={kinFirstName}
+                  onChangeText={setKinFirstName}
                   placeholder="Enter first name"
                   style={styles.inputFlex}
                 />
               </View>
 
-              <Text style={styles.inputLabel}>Other Name</Text>
+              <Text style={styles.inputLabel}>Last Name *</Text>
               <View style={styles.inputIcon}>
                 <User size={18} color="black" />
                 <TextInput
-                  placeholder="Enter other name"
+                  value={kinLastName}
+                  onChangeText={setKinLastName}
+                  placeholder="Enter last name"
                   style={styles.inputFlex}
                 />
               </View>
 
-              <Text style={styles.inputLabel}>Surname</Text>
-              <View style={styles.inputIcon}>
-                <User size={18} color="black" />
-                <TextInput
-                  placeholder="Enter surname"
-                  style={styles.inputFlex}
-                />
-              </View>
-
-              <Text style={styles.inputLabel}>Gender</Text>
+              <Text style={styles.inputLabel}>Gender *</Text>
               <View style={styles.inputIcon}>
                 <VenusAndMars size={18} color="black" />
                 <RNPickerSelect
                   onValueChange={(value) => setKinGender(value)}
                   placeholder={{ label: "Select gender", value: "" }}
-                  items={[
-                    { label: "MALE", value: "Male" },
-                    { label: "FEMALE", value: "Female" },
-                  ]}
+                  items={Gender}
                   value={kinGender}
                   style={pickerSelectStyles}
                   useNativeAndroidPickerStyle={false}
                 />
               </View>
 
-              <Text style={styles.inputLabel}>Relationship</Text>
+              <Text style={styles.inputLabel}>Relationship *</Text>
               <View style={styles.inputIcon}>
                 <Smile size={18} color="black" />
                 <RNPickerSelect
                   onValueChange={(value) => setRelationship(value)}
                   placeholder={{ label: "Select relationship", value: "" }}
-                  items={[
-                    { label: "Brother", value: "Brother" },
-                    { label: "Sister", value: "Sister" },
-                    { label: "Father", value: "Father" },
-                    { label: "Mother", value: "Mother" },
-                    { label: "Son", value: "Son" },
-                    { label: "Daughter", value: "Daughter" },
-                    { label: "Spouse", value: "Spouse" },
-                    { label: "Uncle", value: "Uncle" },
-                    { label: "Aunt", value: "Aunt" },
-                    { label: "Friend", value: "Friend" },
-                  ]}
+                  items={Relationship}
                   value={relationship}
                   style={pickerSelectStyles}
                   useNativeAndroidPickerStyle={false}
@@ -733,130 +1015,41 @@ const RegistrationForm = () => {
               </View>
               <Text style={styles.subtitle}>Enter Contact Information</Text>
 
-              <Text style={styles.inputLabel}>Date of Birth</Text>
-              <TouchableOpacity
-                style={styles.inputIcon}
-                onPress={showKinDatePicker}
-              >
-                <Calendar size={18} color="black" />
-                <Text style={[styles.inputFlex, styles.dobText]}>
-                  {kinDob || "Select date of birth"}
-                </Text>
-              </TouchableOpacity>
-
-              <DateTimePickerModal
-                isVisible={isKinDatePickerVisible}
-                mode="date"
-                onConfirm={handleKinConfirm}
-                onCancel={hideKinDatePicker}
-              />
-
-              <Text style={styles.inputLabel}>Phone Number</Text>
+              <Text style={styles.inputLabel}>Phone Number *</Text>
               <View style={styles.inputIcon}>
                 <Phone size={18} color="black" />
                 <TextInput
+                  value={kinPhone}
+                  onChangeText={setKinPhone}
                   placeholder="Enter phone number"
                   style={styles.inputFlex}
                   keyboardType="phone-pad"
                 />
               </View>
 
-              <Text style={styles.inputLabel}>Email Address</Text>
+              <Text style={styles.inputLabel}>Email Address *</Text>
               <View style={styles.inputIcon}>
                 <Mail size={18} color="black" />
                 <TextInput
+                  value={kinEmail}
+                  onChangeText={setKinEmail}
                   placeholder="Enter email address"
                   style={styles.inputFlex}
                   keyboardType="email-address"
+                  autoCapitalize="none"
                 />
               </View>
 
-              <Text style={styles.inputLabel}>Home Address</Text>
+              <Text style={styles.inputLabel}>Address *</Text>
               <View style={styles.inputIcon}>
                 <Home size={18} color="black" />
                 <TextInput
+                  value={kinAddress}
+                  onChangeText={setKinAddress}
                   placeholder="Enter home address"
                   style={styles.inputFlex}
-                />
-              </View>
-            </View>
-          )}
-
-          {step === 2 && subStep === 3 && (
-            <View>
-              <View style={styles.headerWithBack}>
-                <TouchableOpacity onPress={prevStep} style={styles.backButton}>
-                  <ChevronLeft size={24} color="black" />
-                </TouchableOpacity>
-                <Text style={styles.title}>Next Of Kin</Text>
-              </View>
-              <Text style={styles.subtitle}>Enter Additional Information</Text>
-
-              <Text style={styles.inputLabel}>Guarantor Service Number</Text>
-              <View style={styles.inputIcon}>
-                <ShieldUser size={18} color="black" />
-                <TextInput
-                  placeholder="Enter guarantor service number"
-                  style={styles.inputFlex}
-                />
-              </View>
-
-              <Text style={styles.inputLabel}>State of Origin</Text>
-              <View style={styles.inputIcon}>
-                <MapPinHouse size={18} color="black" />
-                <RNPickerSelect
-                  onValueChange={(value) => {
-                    setKinStateOrigin(value);
-                    setKinLga("");
-                  }}
-                  placeholder={{ label: "Select state of origin", value: "" }}
-                  items={Object.keys(states).map((state) => ({
-                    label: state,
-                    value: state,
-                  }))}
-                  value={kinStateOrigin}
-                  style={pickerSelectStyles}
-                  useNativeAndroidPickerStyle={false}
-                />
-              </View>
-
-              <Text style={styles.inputLabel}>LGA</Text>
-              <View style={styles.inputIcon}>
-                <MapPinCheckInside size={18} color="black" />
-                <RNPickerSelect
-                  onValueChange={(value) => setKinLga(value)}
-                  placeholder={{ label: "Select LGA", value: "" }}
-                  items={
-                    kinStateOrigin
-                      ? (states as Record<string, string[]>)[
-                          kinStateOrigin
-                        ]?.map((lgaItem: string) => ({
-                          label: lgaItem,
-                          value: lgaItem,
-                        })) || []
-                      : []
-                  }
-                  value={kinLga}
-                  style={pickerSelectStyles}
-                  useNativeAndroidPickerStyle={false}
-                />
-              </View>
-
-              <Text style={styles.inputLabel}>Guarantor's Unit</Text>
-              <View style={styles.inputIcon}>
-                <UsersRound size={18} color="black" />
-                <TextInput
-                  placeholder="Enter guarantor's unit"
-                  style={styles.inputFlex}
-                />
-              </View>
-
-              <Text style={styles.inputLabel}>Relationship with Guarantor</Text>
-              <View style={styles.inputIcon}>
-                <Smile size={18} color="black" />
-                <TextInput
-                  placeholder="Enter relationship with guarantor"
-                  style={styles.inputFlex}
+                  multiline={true}
+                  numberOfLines={2}
                 />
               </View>
             </View>
@@ -871,11 +1064,11 @@ const RegistrationForm = () => {
                 <Text style={styles.title}>Upload Document</Text>
               </View>
               <Text style={styles.subtitle}>
-                Please provide your credentials to Signup to the platform.
+                Please provide your credentials to signup to the platform.
               </Text>
 
               <View style={styles.uploadSection}>
-                <Text style={styles.uploadLabel}>Upload your picture</Text>
+                <Text style={styles.uploadLabel}>Upload your picture *</Text>
                 {renderDocumentPreview(profilePicture, setProfilePicture)}
                 {!profilePicture && (
                   <TouchableOpacity
@@ -884,14 +1077,14 @@ const RegistrationForm = () => {
                   >
                     <Upload size={24} color="#666" />
                     <Text style={styles.uploadText}>
-                      Drop file here/Choose file
+                      Tap to select profile picture
                     </Text>
                   </TouchableOpacity>
                 )}
               </View>
 
               <View style={styles.uploadSection}>
-                <Text style={styles.uploadLabel}>NIN of Next of kin</Text>
+                <Text style={styles.uploadLabel}>NIN of Next of kin *</Text>
                 {renderDocumentPreview(ninDocument, setNinDocument)}
                 {!ninDocument && (
                   <TouchableOpacity
@@ -900,7 +1093,7 @@ const RegistrationForm = () => {
                   >
                     <Upload size={24} color="#666" />
                     <Text style={styles.uploadText}>
-                      Drop file here/Choose file
+                      Tap to select NIN document
                     </Text>
                   </TouchableOpacity>
                 )}
@@ -909,7 +1102,7 @@ const RegistrationForm = () => {
               <View style={styles.uploadSection}>
                 <Text style={styles.uploadLabel}>
                   Valid means of ID (NIN, Drivers License, International
-                  Passport)
+                  Passport) *
                 </Text>
                 {renderDocumentPreview(idDocument, setIdDocument)}
                 {!idDocument && (
@@ -919,14 +1112,14 @@ const RegistrationForm = () => {
                   >
                     <Upload size={24} color="#666" />
                     <Text style={styles.uploadText}>
-                      Drop file here/Choose file
+                      Tap to select ID document
                     </Text>
                   </TouchableOpacity>
                 )}
               </View>
 
               <View style={styles.uploadSection}>
-                <Text style={styles.uploadLabel}>Personnel ID Card</Text>
+                <Text style={styles.uploadLabel}>Personnel ID Card *</Text>
                 {renderDocumentPreview(personnelId, setPersonnelId)}
                 {!personnelId && (
                   <TouchableOpacity
@@ -935,7 +1128,7 @@ const RegistrationForm = () => {
                   >
                     <Upload size={24} color="#666" />
                     <Text style={styles.uploadText}>
-                      Drop file here/Choose file
+                      Tap to select Personnel ID
                     </Text>
                   </TouchableOpacity>
                 )}
@@ -952,10 +1145,10 @@ const RegistrationForm = () => {
                 <Text style={styles.title}>Security Question</Text>
               </View>
               <Text style={styles.subtitle}>
-                Enter Your Current Information
+                Setup your security question for account recovery
               </Text>
 
-              <Text style={styles.inputLabel}>Security Question</Text>
+              <Text style={styles.inputLabel}>Security Question *</Text>
               <View style={styles.inputIcon}>
                 <MessageCircleQuestion size={18} color="black" />
                 <RNPickerSelect
@@ -964,38 +1157,19 @@ const RegistrationForm = () => {
                     label: "Select Security Question",
                     value: "",
                   }}
-                  items={[
-                    {
-                      label: "What is your mother's maiden name?",
-                      value: "mother_maiden",
-                    },
-                    {
-                      label: "What was the name of your first pet?",
-                      value: "first_pet",
-                    },
-                    {
-                      label: "What city were you born in?",
-                      value: "birth_city",
-                    },
-                    {
-                      label: "What is your favorite food?",
-                      value: "favorite_food",
-                    },
-                    {
-                      label: "What was your first school?",
-                      value: "first_school",
-                    },
-                  ]}
+                  items={securityQuestions}
                   value={securityQuestion}
                   style={pickerSelectStyles}
                   useNativeAndroidPickerStyle={false}
                 />
               </View>
 
-              <Text style={styles.inputLabel}>Security Answer</Text>
+              <Text style={styles.inputLabel}>Security Answer *</Text>
               <View style={styles.inputIcon}>
                 <MessageSquare size={18} color="black" />
                 <TextInput
+                  value={securityAnswer}
+                  onChangeText={setSecurityAnswer}
                   placeholder="Enter security answer"
                   style={styles.inputFlex}
                 />
@@ -1006,9 +1180,14 @@ const RegistrationForm = () => {
 
         {/* Buttons */}
         <View style={styles.buttonRow}>
-          <TouchableOpacity style={styles.buttonPrimary} onPress={nextStep}>
+          <TouchableOpacity
+            style={[styles.buttonPrimary, isLoading && styles.buttonDisabled]}
+            onPress={nextStep}
+            disabled={isLoading}
+          >
             <Text style={styles.buttonText}>
-              {step === 4 ? "Submit" : "Proceed"} →
+              {isLoading ? "Submitting..." : step === 4 ? "Submit" : "Proceed"}
+              {!isLoading && " →"}
             </Text>
           </TouchableOpacity>
         </View>
@@ -1124,6 +1303,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 8,
     marginBottom: 12,
+    minHeight: 40,
   },
   inputFlex: {
     flex: 1,
@@ -1131,6 +1311,7 @@ const styles = StyleSheet.create({
   },
   dobText: {
     paddingVertical: 10,
+    color: "#999",
   },
   uploadSection: {
     marginBottom: 15,
@@ -1207,6 +1388,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginLeft: 5,
     width: "100%",
+  },
+  buttonDisabled: {
+    backgroundColor: "#ccc",
+    opacity: 0.7,
   },
   buttonSecondary: {
     backgroundColor: "#ccc",

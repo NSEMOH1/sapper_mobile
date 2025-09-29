@@ -12,9 +12,13 @@ import { Ionicons } from "@expo/vector-icons";
 import LoanEnrollmentFlow from "@/features/loan-enrollment";
 import { router } from "expo-router";
 import { TrendingUp } from "lucide-react-native";
+import { useSavingsBalance } from "@/hooks/useSavings";
+import { useLoanBalances } from "@/hooks/useLoan";
 
 export default function HomeScreen() {
   const [showLoanModal, setShowLoanModal] = useState(false);
+  const { balance } = useSavingsBalance();
+  const { summary, getCollectedAmount } = useLoanBalances();
 
   const handleSavings = () => {
     router.push("/(tabs)/savings");
@@ -28,7 +32,7 @@ export default function HomeScreen() {
     {
       id: 1,
       title: "Regular Loan",
-      amount: "107,265",
+      amount: `₦${getCollectedAmount("REGULAR")}`,
       status: "active",
       color: "white",
       bgColor: "#53B175",
@@ -67,13 +71,13 @@ export default function HomeScreen() {
     {
       id: 1,
       title: "Total Savings",
-      amount: "₦ 3,000,000",
+      amount: `₦${balance?.totalSavings}`,
       bgColor: "#6A7814",
     },
     {
       id: 2,
       title: "Loan Balance",
-      amount: "₦ 1,500,000",
+      amount: `₦${summary.totalOutstanding.toString()}`,
       bgColor: "#6A1447",
     },
   ];
@@ -124,10 +128,16 @@ export default function HomeScreen() {
               <Text style={styles.savingsTitle}>{card.title}</Text>
               <Text style={styles.savingsAmount}>{card.amount}</Text>
               <View style={styles.btnContainer}>
-                <TouchableOpacity style={styles.viewMoreButton} onPress={handleMakePayment}>
+                <TouchableOpacity
+                  style={styles.viewMoreButton}
+                  onPress={handleMakePayment}
+                >
                   <Text style={styles.viewMoreText}>Pay Now</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.viewMoreButton} onPress={handleMakePayment}>
+                <TouchableOpacity
+                  style={styles.viewMoreButton}
+                  onPress={handleMakePayment}
+                >
                   <Text style={styles.viewMoreText}>Pay Off</Text>
                 </TouchableOpacity>
               </View>
@@ -185,7 +195,6 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        Financial Record
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Financial Record</Text>
           <View style={styles.financialGrid}>

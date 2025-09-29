@@ -1,6 +1,7 @@
+import api from "@/constants/api";
+import { useSavingsBalance } from "@/hooks/useSavings";
 import React, { useState } from "react";
 import {
-  SafeAreaView,
   Text,
   TextInput,
   StyleSheet,
@@ -9,10 +10,12 @@ import {
   Modal,
   Alert,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Termination() {
   const [reason, setReason] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const { balance } = useSavingsBalance();
 
   const handleTerminate = () => {
     if (!reason.trim()) {
@@ -22,14 +25,25 @@ export default function Termination() {
     setShowModal(true);
   };
 
-  const handleProceed = () => {
-    console.log("Account Termination Proceeded:", reason);
+  const payload = {
+    reason,
+  };
+
+  const handleProceed = async () => {
     setShowModal(false);
-    // API call here for termination
-    Alert.alert(
-      "Success",
-      "Your account termination request has been submitted"
-    );
+    try {
+      await api.post("/api/termination", payload);
+      Alert.alert(
+        "Success",
+        "Your account termination request has been submitted"
+      );
+    } catch (e) {
+      console.error(e);
+      Alert.alert(
+        "Error",
+        "Your account termination request failed"
+      );
+    }
   };
 
   const handleCancel = () => {
@@ -58,7 +72,6 @@ export default function Termination() {
         <Text style={styles.buttonText}>Terminate Account</Text>
       </TouchableOpacity>
 
-      {/* Termination Confirmation Modal */}
       <Modal
         visible={showModal}
         transparent={true}
@@ -67,23 +80,22 @@ export default function Termination() {
       >
         <View style={modalStyles.overlay}>
           <View style={modalStyles.modalContainer}>
-            {/* Warning Icon */}
             <View style={modalStyles.iconContainer}>
               <View style={modalStyles.warningIcon}>
                 <Text style={modalStyles.exclamationMark}>!</Text>
               </View>
             </View>
 
-            {/* Modal Content */}
             <Text style={modalStyles.title}>Account Balance Remaining</Text>
 
             <Text style={modalStyles.description}>
               You still have a total of{" "}
-              <Text style={modalStyles.amount}>₦ 5,000,000</Text>
+              <Text style={modalStyles.amount}>
+                ₦ {balance?.cooperativeSavings.toString()}
+              </Text>
               {"\n"}in your Cooperative account.
             </Text>
 
-            {/* Action Buttons */}
             <View style={modalStyles.buttonContainer}>
               <TouchableOpacity
                 style={modalStyles.proceedButton}

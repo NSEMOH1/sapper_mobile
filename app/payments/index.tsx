@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   Modal,
   Alert,
@@ -14,6 +13,8 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { usePaystack } from "react-native-paystack-webview";
+import { useAuthStore } from "@/hooks/useAuth";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const PaymentFlow = () => {
   const [selectedType, setSelectedType] = useState<string>("Loan Payment");
@@ -21,13 +22,10 @@ const PaymentFlow = () => {
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { user } = useAuthStore();
 
   const quickAmounts = [5000, 10000, 15000, 20000, 30000];
   const paymentTypes = ["Loan Payment", "Savings Deposit"];
-
-  const testUser = {
-    email: "test@example.com",
-  };
 
   const { popup } = usePaystack();
 
@@ -54,7 +52,7 @@ const PaymentFlow = () => {
     setIsLoading(true);
 
     popup.newTransaction({
-      email: testUser.email,
+      email: user?.email,
       amount: parseInt(amount),
       reference: generateTransactionReference(),
       onSuccess: async (res: any) => {

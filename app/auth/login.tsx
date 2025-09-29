@@ -12,11 +12,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import api from "@/constants/api";
+import { useAuthStore } from "@/hooks/useAuth";
 
 export default function LoginScreen() {
   const [serviceNumber, setServiceNumber] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const { setUser } = useAuthStore();
 
   const handleSignup = () => {
     router.push("/auth/signup");
@@ -33,7 +35,8 @@ export default function LoginScreen() {
 
   const handleSignin = async () => {
     try {
-      await api.post("/auth/login", payload);
+      const res = await api.post("/api/auth/login", payload);
+      setUser(res.data.user);
       router.push("/(tabs)");
     } catch (e) {
       console.error(e);

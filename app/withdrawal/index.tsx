@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  SafeAreaView,
   Text,
   TextInput,
   StyleSheet,
@@ -14,27 +13,15 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-
-interface FormData {
-  serviceNumber: string;
-  rank: string;
-  corpsUnit: string;
-  firstName: string;
-  lastName: string;
-  dateOfBirth: string;
-  phoneNumber: string;
-  salaryAccountName: string;
-  salaryAccountNumber: string;
-  bankName: string;
-  branch: string;
-  amount: number
-}
+import { Ranks } from "../auth/data";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { WithdrawalFormData } from "@/types";
 
 const WithdrawalApplication = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [showRankDropdown, setShowRankDropdown] = useState(false);
   const [showCorpsDropdown, setShowCorpsDropdown] = useState(false);
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<WithdrawalFormData>({
     serviceNumber: "",
     rank: "",
     corpsUnit: "",
@@ -46,17 +33,9 @@ const WithdrawalApplication = () => {
     salaryAccountNumber: "",
     bankName: "",
     branch: "",
-    amount: 0
+    amount: 0,
   });
 
-  const ranks = [
-    "Major",
-    "Captain",
-    "Lieutenant",
-    "Colonel",
-    "Brigadier",
-    "General",
-  ];
   const corpsUnits = [
     "Infantry",
     "Artillery",
@@ -66,7 +45,10 @@ const WithdrawalApplication = () => {
     "Medical",
   ];
 
-  const handleInputChange = (field: keyof FormData, value: string) => {
+  const handleInputChange = (
+    field: keyof WithdrawalFormData,
+    value: string
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -84,7 +66,6 @@ const WithdrawalApplication = () => {
     if (currentStep === 1) {
       setCurrentStep(2);
     } else if (currentStep === 2) {
-      // Submit form without validation
       Alert.alert("Success", "Withdrawal application submitted successfully", [
         {
           text: "OK",
@@ -362,11 +343,10 @@ const WithdrawalApplication = () => {
             )}
           </View>
 
-          {/* Dropdown Modals - Disabled */}
           {renderDropdownModal(
             showRankDropdown,
             () => setShowRankDropdown(false),
-            ranks,
+            Ranks.map((data) => data.label),
             handleRankSelect,
             formData.rank
           )}

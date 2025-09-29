@@ -10,14 +10,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import LoanEnrollmentFlow from "@/features/loan-enrollment";
-
-interface LoanRecord {
-  type: string;
-  amount: string;
-  percentage: number;
-  current: string;
-  total: string;
-}
+import { useLoanBalances } from "@/hooks/useLoan";
+import { CircularProgressProps, LoanRecord } from "@/types";
 
 interface LoanCategory {
   title: string;
@@ -29,17 +23,13 @@ interface LoanCategory {
   backgroundColor: string;
 }
 
-interface CircularProgressProps {
-  percentage: number;
-  size?: number;
-}
-
 export default function Loan() {
   const [showLoanModal, setShowLoanModal] = useState(false);
+  const { summary, getCollectedAmount } = useLoanBalances();
   const loanRecords: LoanRecord[] = [
     {
       type: "Regular Loan",
-      amount: "₦1,000,175.00",
+      amount: `₦${getCollectedAmount("REGULAR")}`,
       percentage: 75,
       current: "3,000,525.00",
       total: "100%",
@@ -48,21 +38,21 @@ export default function Loan() {
       type: "Emergency Loan",
       amount: "Coming Soon",
       percentage: 0,
-      current: "3,000,525.00",
+      current: "0",
       total: "100%",
     },
     {
       type: "Commodity Loan",
       amount: "Coming Soon",
       percentage: 0,
-      current: "3,000,525.00",
+      current: "0",
       total: "100%",
     },
     {
       type: "Emergency Loan",
       amount: "Coming Soon",
       percentage: 0,
-      current: "3,000,525.00",
+      current: "0",
       total: "100%",
     },
   ];
@@ -116,7 +106,6 @@ export default function Loan() {
     const circumference = normalizedRadius * 2 * Math.PI;
     const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
-    // Create multiple small circles to simulate progress arc
     const createProgressCircles = () => {
       const circles = [];
       const totalDots = 20;
@@ -146,7 +135,6 @@ export default function Loan() {
 
     return (
       <View style={[styles.progressContainer, { width: size, height: size }]}>
-        {/* Background circle */}
         <View
           style={[
             styles.progressBackground,
@@ -194,7 +182,11 @@ export default function Loan() {
     category: LoanCategory,
     index: number
   ): JSX.Element => (
-    <TouchableOpacity key={index} style={styles.categoryCard} onPress={() => setShowLoanModal(true)}>
+    <TouchableOpacity
+      key={index}
+      style={styles.categoryCard}
+      onPress={() => setShowLoanModal(true)}
+    >
       <Text style={styles.categoryTitle}>{category.title}</Text>
       <View
         style={[
@@ -257,7 +249,7 @@ export default function Loan() {
         {/* Balance Card */}
         <View style={styles.balanceCard}>
           <Text style={styles.balanceLabel}>Loan Balance</Text>
-          <Text style={styles.balanceAmount}>₦ 5,000,000</Text>
+          <Text style={styles.balanceAmount}>₦{summary.totalOutstanding}</Text>
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.payButton}>
               <Ionicons name="card" size={16} color="#fff" />
@@ -270,7 +262,6 @@ export default function Loan() {
           </View>
         </View>
 
-        {/* Loan Records Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Loan Records</Text>
           <View style={styles.loanRecordsGrid}>
@@ -278,7 +269,6 @@ export default function Loan() {
           </View>
         </View>
 
-        {/* Loan Categories Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Loan Category</Text>
           <View style={styles.categoriesGrid}>

@@ -19,7 +19,8 @@
         "image": "./assets/images/sappper-logo.png",
         "resizeMode": "contain",
         "backgroundColor": "#6A7814"
-      }
+      },
+      "bundleIdentifier": "com.codieprodigy.sappers"
     },
     "android": {
       "adaptiveIcon": {

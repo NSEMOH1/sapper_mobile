@@ -1,6 +1,6 @@
+import api from "@/constants/api";
 import React, { useState } from "react";
 import {
-  SafeAreaView,
   Text,
   TextInput,
   StyleSheet,
@@ -8,13 +8,19 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const ChangePassword = () => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleSubmit = () => {
+  const payload = {
+    oldPassword: currentPassword,
+    newPassword,
+  };
+
+  const handleSubmit = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
       Alert.alert("Error", "Please fill in all fields");
       return;
@@ -30,9 +36,13 @@ const ChangePassword = () => {
       return;
     }
 
-    console.log("Change Password:", { currentPassword, newPassword });
-    Alert.alert("Success", "Password changed successfully");
-    // API call here
+    try {
+      await api.post("/api/auth/change-password", payload);
+      Alert.alert("Success", "Password changed successfully");
+    } catch (e) {
+      console.error(e);
+      Alert.alert("Failed", "Please try again later");
+    }
   };
 
   return (

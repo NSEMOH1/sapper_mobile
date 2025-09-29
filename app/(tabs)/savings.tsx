@@ -12,11 +12,16 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { TrendingUp } from "lucide-react-native";
 import { router } from "expo-router";
+import { useSavingsBalance } from "@/hooks/useSavings";
+import api from "@/constants/api";
 
 export default function Savings() {
   const [current, setCurrent] = useState("10000");
+  const { balance } = useSavingsBalance();
   const [newSavings, setNewSavings] = useState("");
   const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleDeposit = () => {
     router.push("/payments");
@@ -24,12 +29,27 @@ export default function Savings() {
   const handleWithdrawal = () => {
     router.push("/withdrawal");
   };
+  const payload = {
+    amount: newSavings,
+  };
+
+  const handleMonthlyDeduction = async () => {
+    setLoading(true);
+    try {
+      await api.post("/api/savings/deduction", payload);
+      setSuccess(true);
+    } catch (e: any) {
+      setErrorMessage(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const financialRecords = [
     {
       id: 1,
       title: "Monthly Deduction",
-      amount: "₦50,265",
+      amount: `₦${balance?.monthlyDeduction}`,
       status: "active",
       color: "white",
       bgColor: "#ADB7F0",
@@ -235,13 +255,16 @@ export default function Savings() {
 
         <View style={styles.balanceCard}>
           <Text style={styles.balanceLabel}>Savings Balance</Text>
-          <Text style={styles.balanceAmount}>₦5,000,000</Text>
+          <Text style={styles.balanceAmount}>₦{balance?.totalSavings}</Text>
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.payButton} onPress={handleDeposit}>
               <Ionicons name="card" size={16} color="#fff" />
               <Text style={styles.payButtonText}>Deposit</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.payOffButton} onPress={handleWithdrawal}>
+            <TouchableOpacity
+              style={styles.payOffButton}
+              onPress={handleWithdrawal}
+            >
               <Ionicons name="download" size={16} color="#fff" />
               <Text style={styles.payOffButtonText}>Withdrawal</Text>
             </TouchableOpacity>
@@ -299,7 +322,7 @@ export default function Savings() {
             onChangeText={setCurrent}
             keyboardType="numeric"
             editable={false}
-            placeholder="100000"
+            placeholder={balance?.monthlyDeduction.toString()}
           />
 
           <Text style={styles.label}>New Monthly Savings</Text>
@@ -310,12 +333,16 @@ export default function Savings() {
             keyboardType="numeric"
           />
 
+          <Text style={styles.error}>{errorMessage}</Text>
+
           <View style={styles.row}>
             <TouchableOpacity
               style={[styles.button, { backgroundColor: "#4CAF50" }]}
-              onPress={() => setSuccess(true)}
+              onPress={handleMonthlyDeduction}
             >
-              <Text style={{ color: "#fff" }}>Save</Text>
+              <Text style={{ color: "#fff" }}>
+                {loading ? "Submitting" : "Save"}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -385,6 +412,10 @@ const styles = StyleSheet.create({
   avatarText: {
     color: "#fff",
     fontSize: 14,
+    fontWeight: "bold",
+  },
+  error: {
+    color: "red",
     fontWeight: "bold",
   },
   greeting: {

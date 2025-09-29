@@ -1,13 +1,38 @@
+import api from "@/constants/api";
 import React, { useState } from "react";
-import { SafeAreaView, Text, TextInput, StyleSheet, View, TouchableOpacity } from "react-native";
+import {
+  Text,
+  TextInput,
+  StyleSheet,
+  View,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Refund() {
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
 
-  const handleSubmit = () => {
-    console.log("Refund Request:", { amount, reason });
-    // API call here
+  const payload = {
+    amount,
+    reason,
+  };
+
+  const handleSubmit = async () => {
+    try {
+      await api.post("/api/requests", payload);
+      Alert.alert(
+        "Success",
+        "Your request has been submitted"
+      );
+    } catch (e) {
+      console.error(e);
+      Alert.alert(
+        "Error",
+        "Your request failed, please try again later"
+      );
+    }
   };
 
   return (

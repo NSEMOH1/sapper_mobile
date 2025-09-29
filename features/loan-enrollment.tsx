@@ -10,31 +10,7 @@ import {
   Alert,
 } from "react-native";
 import { X, Check, ArrowLeft, Upload, User } from "lucide-react-native";
-
-interface LoanEnrollmentFlowProps {
-  visible: boolean;
-  onClose: () => void;
-}
-
-interface FormData {
-  servicingLoan: string;
-  totalSavings: string;
-  monthlyDeduction: string;
-  authorizedSignature: string;
-  bankName: string;
-  accountNumber: string;
-  accountName: string;
-  amount: string;
-  rank: string;
-  tenure: string;
-}
-
-interface UploadedFiles {
-  recommendation: boolean;
-  nonIndebtedness: boolean;
-  application: boolean;
-  personnelId: boolean;
-}
+import { LoanEnrollmentFlowProps, UploadedFiles, FormData } from "@/types";
 
 const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
   visible,
