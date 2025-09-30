@@ -5,6 +5,7 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  SafeAreaView,
   ScrollView,
   Modal,
   Alert,
@@ -14,7 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { usePaystack } from "react-native-paystack-webview";
 import { useAuthStore } from "@/hooks/useAuth";
-import { SafeAreaView } from "react-native-safe-area-context";
+import api from "@/constants/api";
 
 const PaymentFlow = () => {
   const [selectedType, setSelectedType] = useState<string>("Loan Payment");
@@ -44,28 +45,51 @@ const PaymentFlow = () => {
     }
   };
 
+  const payload = {
+    category_name: "QUICK",
+    amount: amount,
+  };
+
+  const handleDeposit = async () => {
+    try {
+      await api.post("/api/savings/deposit", payload);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const handlePayNow = () => {
     if (!amount || parseInt(amount) < 5000) {
       Alert.alert("Error", "Please enter a valid amount (minimum ₦5,000)");
       return;
     }
     setIsLoading(true);
+    console.log("email", user?.email)
 
     popup.newTransaction({
-      email: user?.email,
+      email: user?.email || "",
       amount: parseInt(amount),
       reference: generateTransactionReference(),
       onSuccess: async (res: any) => {
-        console.log("Payment Success:", res);
-        setIsLoading(false);
-        setShowSuccessModal(true);
-        Alert.alert(
-          "Payment Successful! 🎉",
-          `Reference: ${res.data.reference}\nAmount: ₦${formatAmount(
-            amount
-          )}\nStatus: ${res.data.status}`,
-          [{ text: "OK", onPress: () => console.log("Payment completed") }]
-        );
+        try {
+          await handleDeposit();
+          setShowSuccessModal(true);
+          Alert.alert(
+            "Payment Successful! 🎉",
+            `Reference: ${res.data.reference}\nAmount: ₦${formatAmount(
+              amount
+            )}\nStatus: ${res.data.status}`,
+            [{ text: "OK", onPress: () => console.log("Payment completed") }]
+          );
+        } catch (error) {
+          console.error("Deposit Error:", error);
+          Alert.alert(
+            "Deposit Error",
+            "There was an error updating your balance."
+          );
+        } finally {
+          setIsLoading(false);
+        }
       },
       onCancel: async () => {
         console.log("Payment Cancelled");
@@ -301,15 +325,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#E65100",
     fontWeight: "600",
+    fontFamily: "Poppins_400Regular",
   },
   inputGroup: {
     marginBottom: 20,
+    fontFamily: "Poppins_400Regular",
   },
   label: {
     fontSize: 16,
     color: "#333",
     marginBottom: 8,
     fontWeight: "500",
+    fontFamily: "Poppins_400Regular",
   },
   dropdown: {
     flexDirection: "row",
@@ -321,11 +348,13 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
     paddingHorizontal: 16,
     paddingVertical: 12,
+    fontFamily: "Poppins_400Regular",
   },
   dropdownText: {
     fontSize: 16,
     color: "#333",
     fontWeight: "500",
+    fontFamily: "Poppins_400Regular",
   },
   dropdownOverlay: {
     flex: 1,
@@ -357,6 +386,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderBottomWidth: 1,
     borderBottomColor: "#f0f0f0",
+    fontFamily: "Poppins_400Regular",
   },
   selectedDropdownItem: {
     backgroundColor: "#f8f9fa",
@@ -365,6 +395,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#333",
     fontWeight: "500",
+    fontFamily: "Poppins_400Regular",
   },
   selectedDropdownItemText: {
     color: "#2F4F2F",
@@ -379,6 +410,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
     color: "#333",
+    fontFamily: "Poppins_400Regular",
   },
   quickAmountContainer: {
     marginBottom: 30,
@@ -388,6 +420,7 @@ const styles = StyleSheet.create({
     color: "#666",
     marginBottom: 12,
     fontWeight: "500",
+    fontFamily: "Poppins_400Regular",
   },
   quickAmountButtons: {
     flexDirection: "row",
@@ -406,6 +439,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
     fontWeight: "500",
+    fontFamily: "Poppins_400Regular",
   },
   payButton: {
     backgroundColor: "#2F4F2F",
@@ -415,11 +449,13 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     flexDirection: "row",
     justifyContent: "center",
+    fontFamily: "Poppins_400Regular",
   },
   payButtonText: {
     color: "white",
     fontSize: 16,
     fontWeight: "600",
+    fontFamily: "Poppins_400Regular",
   },
   testCardInfo: {
     backgroundColor: "#E3F2FD",
@@ -428,12 +464,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderLeftWidth: 4,
     borderLeftColor: "#2196F3",
+    fontFamily: "Poppins_400Regular",
   },
   testCardTitle: {
     fontSize: 16,
     fontWeight: "600",
     color: "#1565C0",
     marginBottom: 12,
+    fontFamily: "Poppins_400Regular",
   },
   testCardItem: {
     flexDirection: "row",
@@ -449,7 +487,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#0D47A1",
     fontWeight: "600",
-    fontFamily: "monospace",
+    fontFamily: "Poppins_400Regular",
   },
   paymentInfoCard: {
     backgroundColor: "white",
@@ -468,12 +506,14 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#333",
     marginLeft: 8,
+    fontFamily: "Poppins_400Regular",
   },
   paymentDescription: {
     fontSize: 14,
     color: "#666",
     lineHeight: 20,
     marginBottom: 16,
+    fontFamily: "Poppins_400Regular",
   },
   paymentMethods: {
     borderTopWidth: 1,
@@ -484,6 +524,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#666",
     lineHeight: 18,
+    fontFamily: "Poppins_400Regular",
   },
   modalOverlay: {
     flex: 1,
@@ -513,12 +554,14 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#333",
     marginBottom: 8,
+    fontFamily: "Poppins_400Regular",
   },
   successMessage: {
     fontSize: 16,
     color: "#666",
     marginBottom: 16,
     textAlign: "center",
+    fontFamily: "Poppins_400Regular",
   },
   testNote: {
     fontSize: 12,
@@ -526,17 +569,20 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     textAlign: "center",
     fontStyle: "italic",
+    fontFamily: "Poppins_400Regular",
   },
   okButton: {
     backgroundColor: "#2F4F2F",
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 40,
+    fontFamily: "Poppins_400Regular",
   },
   okButtonText: {
     color: "white",
     fontSize: 16,
     fontWeight: "600",
+    fontFamily: "Poppins_400Regular",
   },
   loadingOverlay: {
     position: "absolute",

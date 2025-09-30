@@ -18,6 +18,7 @@ export default function LoginScreen() {
   const [serviceNumber, setServiceNumber] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [loading, setLoading] = useState(false);
   const { setUser } = useAuthStore();
 
   const handleSignup = () => {
@@ -34,13 +35,16 @@ export default function LoginScreen() {
   };
 
   const handleSignin = async () => {
+    setLoading(true);
     try {
-      const res = await api.post("/api/auth/login", payload);
+      const res = await api.post("/api/auth/member/login", payload);
       setUser(res.data.user);
       router.push("/(tabs)");
     } catch (e) {
       console.error(e);
       setErrorMessage("Login failed. Please check your credentials.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -133,14 +137,14 @@ export default function LoginScreen() {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={handleSignin}>
+          <TouchableOpacity onPress={handleSignin} disabled={loading}>
             <LinearGradient
               colors={["#82B921", "#4D7300"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.signInBtn}
             >
-              <Text style={styles.signInText}>Sign in</Text>
+              <Text style={styles.signInText}>{loading ? "Signing in" : "Sign in"}</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
@@ -169,11 +173,13 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#fff",
     marginBottom: 5,
+        fontFamily: 'Poppins_400Regular', 
   },
   greenSubtitle: {
     fontSize: 11,
     color: "#fff",
     lineHeight: 16,
+        fontFamily: 'Poppins_400Regular', 
   },
   formCard: {
     backgroundColor: "#fff",
@@ -195,15 +201,18 @@ const styles = StyleSheet.create({
   welcomeText: {
     fontSize: 14,
     color: "#333",
+        fontFamily: 'Poppins_400Regular', 
   },
   signupText: {
     fontSize: 12,
     color: "#555",
+        fontFamily: 'Poppins_400Regular', 
   },
   signInTitle: {
     fontSize: 22,
     fontWeight: "bold",
     marginBottom: 20,
+        fontFamily: 'Poppins_400Regular', 
   },
   socialRow: {
     flexDirection: "row",
@@ -223,6 +232,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginLeft: 8,
     color: "#4285F4",
+        fontFamily: 'Poppins_400Regular', 
   },
   socialIcon: {
     width: 20,
@@ -245,6 +255,7 @@ const styles = StyleSheet.create({
     color: "#555",
     marginBottom: 5,
     marginTop: 10,
+        fontFamily: 'Poppins_400Regular', 
   },
   input: {
     borderWidth: 1,
@@ -264,5 +275,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
+        fontFamily: 'Poppins_400Regular', 
   },
 });

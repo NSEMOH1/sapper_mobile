@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,6 +11,10 @@ import {
 } from "react-native";
 import { X, Check, ArrowLeft, Upload, User } from "lucide-react-native";
 import { LoanEnrollmentFlowProps, UploadedFiles, FormData } from "@/types";
+import { useLoanBalances } from "@/hooks/useLoan";
+import { useSavingsBalance } from "@/hooks/useSavings";
+import { useMemberStore } from "@/store/user";
+import { useAuthStore } from "@/hooks/useAuth";
 
 const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
   visible,
@@ -33,9 +37,18 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
     recommendation: false,
     nonIndebtedness: false,
     application: false,
-    personnelId: true, // Already uploaded during registration
-  });
+    personnelId: true,
+  }); 
   const [otp, setOtp] = useState(["", "", "", ""]);
+  const { summary } = useLoanBalances();
+  const { balance } = useSavingsBalance();
+  const { user } = useAuthStore();
+  const { member, fetchMemberData } = useMemberStore();
+  useEffect(() => {
+    if (user?.id) {
+      fetchMemberData(user?.id);
+    }
+  }, [user?.id, fetchMemberData]);
 
   const getInterestRate = (selectedTenure: string): number => {
     switch (selectedTenure) {
@@ -243,7 +256,7 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
                 <Text style={styles.label}>Total Savings (₦)</Text>
                 <TextInput
                   style={[styles.input, styles.disabledInput]}
-                  value={formData.totalSavings}
+                  value={`#${balance?.totalSavings}`}
                   editable={false}
                 />
               </View>
@@ -252,7 +265,7 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
                 <Text style={styles.label}>Monthly Deduction (₦)</Text>
                 <TextInput
                   style={[styles.input, styles.disabledInput]}
-                  value={formData.monthlyDeduction}
+                  value={`#${balance?.monthlyDeduction}`}
                   editable={false}
                 />
               </View>
@@ -284,7 +297,8 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
                 <TextInput
                   style={styles.input}
                   placeholder="Enter bank name"
-                  value={formData.bankName}
+                  value={member?.bank?.[0]?.name || ""}
+                  editable={false}
                   onChangeText={(value) => handleInputChange("bankName", value)}
                 />
               </View>
@@ -295,7 +309,8 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
                   style={styles.input}
                   keyboardType="numeric"
                   placeholder="Enter account number"
-                  value={formData.accountNumber}
+                  value={member?.bank?.[0]?.account_number || ""}
+                  editable={false}
                   onChangeText={(value) =>
                     handleInputChange("accountNumber", value)
                   }
@@ -307,7 +322,8 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
                 <TextInput
                   style={styles.input}
                   placeholder="Enter account name"
-                  value={formData.accountName}
+                  value={member?.bank?.[0]?.account_name || ""}
+                  editable={false}
                   onChangeText={(value) =>
                     handleInputChange("accountName", value)
                   }
@@ -659,6 +675,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#333",
     marginBottom: 20,
+    fontFamily: "Poppins_400Regular",
   },
   sectionSubTitle: {
     fontSize: 16,
@@ -666,12 +683,14 @@ const styles = StyleSheet.create({
     color: "#333",
     marginTop: 20,
     marginBottom: 15,
+    fontFamily: "Poppins_400Regular",
   },
   subTitle: {
     fontSize: 14,
     color: "#666",
     marginBottom: 30,
     textAlign: "center",
+    fontFamily: "Poppins_400Regular",
   },
   inputGroup: {
     marginBottom: 20,
@@ -680,6 +699,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
     marginBottom: 8,
+    fontFamily: "Poppins_400Regular",
   },
   input: {
     borderWidth: 1,
@@ -710,9 +730,11 @@ const styles = StyleSheet.create({
   radioText: {
     color: "#333",
     fontSize: 14,
+    fontFamily: "Poppins_400Regular",
   },
   selectedRadioText: {
     color: "#fff",
+    fontFamily: "Poppins_400Regular",
   },
   signatureContainer: {
     borderWidth: 1,
@@ -728,6 +750,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#333",
     fontStyle: "italic",
+    fontFamily: "Poppins_400Regular",
   },
   changeSignatureButton: {
     paddingVertical: 5,
@@ -737,6 +760,7 @@ const styles = StyleSheet.create({
     color: "#6A7814",
     fontSize: 14,
     fontWeight: "500",
+    fontFamily: "Poppins_400Regular",
   },
   uploadSection: {
     marginBottom: 30,
@@ -763,11 +787,13 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 10,
     marginBottom: 5,
+    fontFamily: "Poppins_400Regular",
   },
   uploadSubtitle: {
     fontSize: 12,
     color: "#666",
     textAlign: "center",
+    fontFamily: "Poppins_400Regular",
   },
   tenureOptions: {
     flexDirection: "row",
@@ -796,16 +822,19 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#333",
     fontSize: 14,
+    fontFamily: "Poppins_400Regular",
   },
   selectedTenureText: {
     textAlign: "center",
     color: "#fff",
     fontSize: 14,
+    fontFamily: "Poppins_400Regular",
   },
   disabledTenureText: {
     textAlign: "center",
     color: "#999",
     fontSize: 14,
+    fontFamily: "Poppins_400Regular",
   },
   previewBox: {
     borderWidth: 1,
@@ -822,15 +851,18 @@ const styles = StyleSheet.create({
   previewLabel: {
     fontSize: 14,
     color: "#666",
+    fontFamily: "Poppins_400Regular",
   },
   previewValue: {
     fontSize: 14,
     fontWeight: "500",
     color: "#333",
+    fontFamily: "Poppins_400Regular",
   },
   totalValue: {
     fontWeight: "bold",
     color: "#6A7814",
+    fontFamily: "Poppins_400Regular",
   },
   noteText: {
     fontSize: 12,
@@ -838,6 +870,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 30,
     lineHeight: 18,
+    fontFamily: "Poppins_400Regular",
   },
   otpContainer: {
     flexDirection: "row",
@@ -852,6 +885,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     textAlign: "center",
     fontSize: 20,
+    fontFamily: "Poppins_400Regular",
   },
   resendButton: {
     alignSelf: "center",
@@ -860,6 +894,7 @@ const styles = StyleSheet.create({
   resendText: {
     color: "#6A7814",
     fontSize: 14,
+    fontFamily: "Poppins_400Regular",
   },
   primaryButton: {
     backgroundColor: "#6A7814",
@@ -871,6 +906,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+    fontFamily: "Poppins_400Regular",
   },
   successContent: {
     padding: 30,
@@ -890,6 +926,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#333",
     marginBottom: 10,
+    fontFamily: "Poppins_400Regular",
   },
   successMessage: {
     fontSize: 14,
@@ -897,6 +934,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 30,
     lineHeight: 20,
+    fontFamily: "Poppins_400Regular",
   },
 });
 

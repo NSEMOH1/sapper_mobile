@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { 
-  SafeAreaView, 
-  Text, 
-  TextInput, 
-  StyleSheet, 
-  View, 
+import {
+  SafeAreaView,
+  Text,
+  TextInput,
+  StyleSheet,
+  View,
   TouchableOpacity,
   Alert,
-  Modal
+  Modal,
 } from "react-native";
 
 const AccountStatement = () => {
@@ -18,7 +18,7 @@ const AccountStatement = () => {
 
   const statementTypes = [
     { label: "Loans", value: "loans" },
-    { label: "Savings", value: "savings" }
+    { label: "Savings", value: "savings" },
   ];
 
   const handleSubmit = () => {
@@ -26,9 +26,16 @@ const AccountStatement = () => {
       Alert.alert("Error", "Please select both from and to dates");
       return;
     }
-    
-    console.log("Account Statement Request:", { fromDate, toDate, selectedType });
-    Alert.alert("Success", "Account statement will be generated and sent to your email");
+
+    console.log("Account Statement Request:", {
+      fromDate,
+      toDate,
+      selectedType,
+    });
+    Alert.alert(
+      "Success",
+      "Account statement will be generated and sent to your email"
+    );
     // API call here
   };
 
@@ -63,7 +70,7 @@ const AccountStatement = () => {
           onPress={() => setShowDropdown(true)}
         >
           <Text style={styles.dropdownText}>
-            {statementTypes.find(type => type.value === selectedType)?.label}
+            {statementTypes.find((type) => type.value === selectedType)?.label}
           </Text>
           <Text style={styles.dropdownArrow}>▼</Text>
         </TouchableOpacity>
@@ -103,29 +110,31 @@ const AccountStatement = () => {
       </Modal>
     </SafeAreaView>
   );
-}
+};
 
-export default AccountStatement
+export default AccountStatement;
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    padding: 20, 
-    backgroundColor: "#fff" 
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#fff",
   },
-  title: { 
-    fontSize: 20, 
-    fontWeight: "600", 
+  title: {
+    fontSize: 20,
+    fontWeight: "600",
     marginBottom: 20,
-    color: "#333"
+    color: "#333",
+    fontFamily: "Poppins_400Regular",
   },
-  formGroup: { 
-    marginBottom: 15 
+  formGroup: {
+    marginBottom: 15,
   },
-  label: { 
-    fontSize: 14, 
-    marginBottom: 5, 
-    color: "#333" 
+  label: {
+    fontSize: 14,
+    marginBottom: 5,
+    color: "#333",
+    fontFamily: "Poppins_400Regular",
   },
   input: {
     borderWidth: 1,
@@ -134,6 +143,7 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: "#fff",
     fontSize: 16,
+    fontFamily: "Poppins_400Regular",
   },
   dropdown: {
     borderWidth: 1,
@@ -141,13 +151,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     backgroundColor: "#fff",
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   dropdownText: {
     fontSize: 16,
     color: "#333",
+    fontFamily: "Poppins_400Regular",
   },
   dropdownArrow: {
     fontSize: 12,
@@ -155,12 +166,12 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   dropdownModal: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 8,
     padding: 10,
     minWidth: 200,
@@ -169,11 +180,12 @@ const styles = StyleSheet.create({
   dropdownItem: {
     padding: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: "#f0f0f0",
   },
   dropdownItemText: {
     fontSize: 16,
-    color: '#333',
+    color: "#333",
+    fontFamily: "Poppins_400Regular",
   },
   button: {
     marginTop: 20,
@@ -182,9 +194,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
   },
-  buttonText: { 
-    color: "#fff", 
-    fontSize: 16, 
-    fontWeight: "600" 
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+    fontFamily: "Poppins_400Regular",
   },
 });

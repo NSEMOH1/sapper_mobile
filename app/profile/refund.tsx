@@ -1,4 +1,5 @@
 import api from "@/constants/api";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   Text,
@@ -22,16 +23,11 @@ export default function Refund() {
   const handleSubmit = async () => {
     try {
       await api.post("/api/requests", payload);
-      Alert.alert(
-        "Success",
-        "Your request has been submitted"
-      );
+      Alert.alert("Success", "Your request has been submitted");
+      router.push("/(tabs)/profile");
     } catch (e) {
       console.error(e);
-      Alert.alert(
-        "Error",
-        "Your request failed, please try again later"
-      );
+      Alert.alert("Error", "Your request failed, please try again later");
     }
   };
 
@@ -70,9 +66,9 @@ export default function Refund() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: "#fff" },
-  title: { fontSize: 20, fontWeight: "600", marginBottom: 20 },
+  title: { fontSize: 20, fontWeight: "600", marginBottom: 20, fontFamily: 'Poppins_400Regular', },
   formGroup: { marginBottom: 15 },
-  label: { fontSize: 14, marginBottom: 5, color: "#333" },
+  label: { fontSize: 14, marginBottom: 5, color: "#333", fontFamily: 'Poppins_400Regular', },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
@@ -87,5 +83,5 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
   },
-  buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  buttonText: { color: "#fff", fontSize: 16, fontWeight: "600", fontFamily: 'Poppins_400Regular', },
 });

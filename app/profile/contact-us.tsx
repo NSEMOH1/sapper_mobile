@@ -86,12 +86,14 @@ const styles = StyleSheet.create({
     color: "#333",
     marginBottom: 10,
     marginTop: 40,
+    fontFamily: 'Poppins_400Regular', 
   },
   subtitle: {
     fontSize: 16,
     color: "#666",
     lineHeight: 24,
     marginBottom: 40,
+    fontFamily: 'Poppins_400Regular', 
   },
   contactButton: {
     backgroundColor: "#F5F7F0",
@@ -110,11 +112,13 @@ const styles = StyleSheet.create({
   },
   icon: {
     fontSize: 18,
+    fontFamily: 'Poppins_400Regular', 
   },
   contactText: {
     fontSize: 16,
     color: "#4A5D23",
     fontWeight: "500",
+    fontFamily: 'Poppins_400Regular', 
   },
   continueButton: {
     backgroundColor: "#213400",
@@ -127,5 +131,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "600",
+    fontFamily: 'Poppins_400Regular', 
   },
 });

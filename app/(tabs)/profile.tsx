@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  avatarText: { color: "#fff", fontSize: 14, fontWeight: "bold" },
+  avatarText: { color: "#fff", fontSize: 14, fontWeight: "bold", fontFamily: 'Poppins_400Regular',  },
   headerRight: { flexDirection: "row", alignItems: "center" },
   menu: { padding: 20 },
   menuItem: {
@@ -93,5 +93,5 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#ddd",
   },
-  menuText: { fontSize: 18, color: "#333" },
+  menuText: { fontSize: 18, color: "#333", fontFamily: 'Poppins_400Regular',  },
 });

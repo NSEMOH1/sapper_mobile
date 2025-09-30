@@ -1254,16 +1254,19 @@ const styles = StyleSheet.create({
   circleText: {
     color: "#fff",
     fontWeight: "bold",
+    fontFamily: "Poppins_400Regular",
   },
   stepLabel: {
     fontSize: 10,
     marginTop: 4,
     color: "#666",
     textAlign: "center",
+    fontFamily: "Poppins_400Regular",
   },
   activeStepLabel: {
     color: "#82B921",
     fontWeight: "bold",
+    fontFamily: "Poppins_400Regular",
   },
   headerWithBack: {
     flexDirection: "row",
@@ -1282,18 +1285,21 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
     color: "#82B921",
+    fontFamily: "Poppins_400Regular",
   },
   subtitle: {
     fontSize: 12,
     textAlign: "center",
     marginBottom: 20,
     color: "#666",
+    fontFamily: "Poppins_400Regular",
   },
   inputLabel: {
     fontSize: 12,
     color: "#333",
     marginBottom: 5,
     fontWeight: "500",
+    fontFamily: "Poppins_400Regular",
   },
   inputIcon: {
     flexDirection: "row",
@@ -1320,6 +1326,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#666",
     marginBottom: 5,
+    fontFamily: "Poppins_400Regular",
   },
   uploadBox: {
     borderWidth: 2,
@@ -1360,6 +1367,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 12,
     color: "#666",
+    fontFamily: "Poppins_400Regular",
   },
   removeButton: {
     backgroundColor: "#ff4444",
@@ -1404,6 +1412,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
+    fontFamily: "Poppins_400Regular",
   },
   // Success page styles
   successContainer: {
@@ -1428,6 +1437,7 @@ const styles = StyleSheet.create({
     color: "#333",
     marginBottom: 40,
     lineHeight: 24,
+    fontFamily: "Poppins_400Regular",
   },
   successIconContainer: {
     position: "relative",
@@ -1457,6 +1467,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 32,
     fontWeight: "bold",
+    fontFamily: "Poppins_400Regular",
   },
   decorativeCircle: {
     position: "absolute",
@@ -1483,11 +1494,13 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
     marginRight: 10,
+    fontFamily: "Poppins_400Regular",
   },
   loginArrow: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+    fontFamily: "Poppins_400Regular",
   },
 });
 

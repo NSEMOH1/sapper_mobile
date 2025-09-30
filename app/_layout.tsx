@@ -11,11 +11,16 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { setupInterceptors } from "@/constants/api";
 import { useEffect } from "react";
 import { useTokenStorage } from "@/hooks/useTokenStorage";
+import {
+  Poppins_400Regular,
+  Poppins_700Bold,
+} from "@expo-google-fonts/poppins";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
-    OpenSans: require("../assets/fonts/OpenSans-Regular.ttf"),
+    Poppins_400Regular,
+    Poppins_700Bold,
   });
   const { getAccessToken, setAccessToken } = useTokenStorage();
 

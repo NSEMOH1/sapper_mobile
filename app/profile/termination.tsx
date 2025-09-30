@@ -129,6 +129,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginBottom: 20,
     color: "#333",
+    fontFamily: 'Poppins_400Regular',
   },
   formGroup: {
     marginBottom: 15,
@@ -137,6 +138,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 5,
     color: "#333",
+    fontFamily: 'Poppins_400Regular',
   },
   input: {
     borderWidth: 1,
@@ -156,6 +158,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+    fontFamily: 'Poppins_400Regular',
   },
 });
 
@@ -192,6 +195,7 @@ const modalStyles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     color: "#E57373",
+    fontFamily: 'Poppins_400Regular',
   },
   title: {
     fontSize: 18,
@@ -199,6 +203,7 @@ const modalStyles = StyleSheet.create({
     color: "#333",
     marginBottom: 15,
     textAlign: "center",
+    fontFamily: 'Poppins_400Regular',
   },
   description: {
     fontSize: 14,
@@ -210,13 +215,14 @@ const modalStyles = StyleSheet.create({
   amount: {
     fontWeight: "600",
     color: "#333",
+    fontFamily: 'Poppins_400Regular',
   },
   buttonContainer: {
     width: "100%",
     gap: 10,
   },
   proceedButton: {
-    backgroundColor: "#E57373",
+    backgroundColor: "#F20D16",
     borderRadius: 8,
     paddingVertical: 15,
     paddingHorizontal: 20,
@@ -226,6 +232,7 @@ const modalStyles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+    fontFamily: 'Poppins_400Regular',
   },
   cancelButton: {
     backgroundColor: "transparent",
@@ -240,5 +247,6 @@ const modalStyles = StyleSheet.create({
     color: "#666",
     fontSize: 16,
     fontWeight: "600",
+    fontFamily: 'Poppins_400Regular',
   },
 });

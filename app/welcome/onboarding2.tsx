@@ -95,12 +95,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 15,
     lineHeight: 28,
+    fontFamily: "Poppins_400Regular",
   },
   subtitle: {
     fontSize: 16,
     color: "rgba(255, 255, 255, 0.9)",
     textAlign: "center",
     lineHeight: 22,
+    fontFamily: "Poppins_400Regular",
   },
   indicators: {
     flexDirection: "row",
@@ -126,6 +128,7 @@ const styles = StyleSheet.create({
   skipText: {
     color: "white",
     fontSize: 16,
+    fontFamily: "Poppins_400Regular",
   },
   nextButton: {
     width: 60,
@@ -148,6 +151,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     textAlignVertical: "center",
     lineHeight: 24,
+    fontFamily: "Poppins_400Regular",
   },
   // New styles for bottom image
   bottomImageContainer: {

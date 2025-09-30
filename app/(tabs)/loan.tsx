@@ -12,6 +12,8 @@ import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import LoanEnrollmentFlow from "@/features/loan-enrollment";
 import { useLoanBalances } from "@/hooks/useLoan";
 import { CircularProgressProps, LoanRecord } from "@/types";
+import { useAuthStore } from "@/hooks/useAuth";
+import { router } from "expo-router";
 
 interface LoanCategory {
   title: string;
@@ -26,6 +28,10 @@ interface LoanCategory {
 export default function Loan() {
   const [showLoanModal, setShowLoanModal] = useState(false);
   const { summary, getCollectedAmount } = useLoanBalances();
+  const { user } = useAuthStore()
+  const handlePayment = () => {
+    router.push("/payments")
+  }
   const loanRecords: LoanRecord[] = [
     {
       type: "Regular Loan",
@@ -211,7 +217,6 @@ export default function Loan() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#F5F5F5" />
 
-      {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Ionicons name="menu" size={24} color="#333" />
@@ -239,23 +244,21 @@ export default function Loan() {
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
       >
-        {/* Greeting */}
         <View style={styles.greetingContainer}>
           <Text style={styles.greeting}>
-            Good afternoon <Text style={styles.name}>James</Text> 👋
+            Good afternoon <Text style={styles.name}>{user?.first_name}</Text> 👋
           </Text>
         </View>
 
-        {/* Balance Card */}
         <View style={styles.balanceCard}>
           <Text style={styles.balanceLabel}>Loan Balance</Text>
           <Text style={styles.balanceAmount}>₦{summary.totalOutstanding}</Text>
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.payButton}>
+            <TouchableOpacity style={styles.payButton} onPress={handlePayment}>
               <Ionicons name="card" size={16} color="#fff" />
               <Text style={styles.payButtonText}>Pay Now</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.payOffButton}>
+            <TouchableOpacity style={styles.payOffButton} onPress={handlePayment}>
               <Ionicons name="download" size={16} color="#fff" />
               <Text style={styles.payOffButtonText}>Pay Off</Text>
             </TouchableOpacity>
@@ -289,7 +292,7 @@ export default function Loan() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F5",
+    backgroundColor: "#fff",
   },
   header: {
     flexDirection: "row",
@@ -319,6 +322,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 14,
     fontWeight: "bold",
+    fontFamily: "Poppins_400Regular",
   },
   scrollView: {
     flex: 1,
@@ -326,31 +330,46 @@ const styles = StyleSheet.create({
   greetingContainer: {
     paddingHorizontal: 20,
     marginBottom: 20,
+    marginTop: 20
   },
   greeting: {
     fontSize: 18,
     color: "#333",
+    fontFamily: "Poppins_400Regular",
   },
   name: {
     fontWeight: "bold",
+    fontFamily: "Poppins_400Regular",
   },
   balanceCard: {
-    marginHorizontal: 20,
-    backgroundColor: "#6B8E23",
-    borderRadius: 45,
-    padding: 24,
-    marginBottom: 24,
+    marginRight: 10,
+    padding: 25,
+    marginLeft: 10,
+    borderRadius: 40,
+    backgroundColor: "#6A7814",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 4,
+    shadowRadius: 15,
+    elevation: 8,
+    borderWidth: 8,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
   },
   balanceLabel: {
     color: "#fff",
     fontSize: 16,
     marginBottom: 8,
+    fontFamily: "Poppins_400Regular",
   },
   balanceAmount: {
     color: "#fff",
     fontSize: 28,
     fontWeight: "bold",
     marginBottom: 20,
+    fontFamily: "Poppins_400Regular",
   },
   buttonContainer: {
     justifyContent: "flex-end",
@@ -370,6 +389,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 14,
     fontWeight: "500",
+    fontFamily: "Poppins_400Regular",
   },
   payOffButton: {
     backgroundColor: "rgba(255, 255, 255, 0.2)",
@@ -384,16 +404,19 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 14,
     fontWeight: "500",
+    fontFamily: "Poppins_400Regular",
   },
   section: {
     paddingHorizontal: 20,
     marginBottom: 24,
+    marginTop: 20
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
     color: "#333",
     marginBottom: 16,
+    fontFamily: "Poppins_400Regular",
   },
   loanRecordsGrid: {
     flexDirection: "row",
@@ -417,6 +440,7 @@ const styles = StyleSheet.create({
   },
   loanRecordHeader: {
     marginBottom: 16,
+    fontFamily: "Poppins_400Regular",
   },
   loanRecordType: {
     fontSize: 17,
@@ -428,6 +452,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "bold",
     color: "#333",
+    fontFamily: "Poppins_400Regular",
   },
   progressInfoContainer: {
     alignItems: "center",
@@ -459,10 +484,12 @@ const styles = StyleSheet.create({
   progressText: {
     fontSize: 12,
     color: "#666",
+    fontFamily: "Poppins_400Regular",
   },
   progressSubtext: {
     fontSize: 10,
     color: "#999",
+    fontFamily: "Poppins_400Regular",
   },
   progressTotal: {
     fontSize: 10,
@@ -502,16 +529,19 @@ const styles = StyleSheet.create({
     color: "#333",
     textAlign: "center",
     marginBottom: 8,
+    fontFamily: "Poppins_400Regular",
   },
   categoryAmount: {
     fontSize: 20,
     fontWeight: "bold",
     color: "#333",
     marginBottom: 4,
+    fontFamily: "Poppins_400Regular",
   },
   categoryStatus: {
     fontSize: 12,
     textAlign: "center",
+    fontFamily: "Poppins_400Regular",
   },
   bottomNav: {
     flexDirection: "row",
@@ -529,5 +559,6 @@ const styles = StyleSheet.create({
   navText: {
     fontSize: 12,
     color: "#999",
+    fontFamily: "Poppins_400Regular",
   },
 });

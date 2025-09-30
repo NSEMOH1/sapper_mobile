@@ -421,6 +421,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 10,
+    fontFamily: "Poppins_400Regular",
     color: "#1a1a1a",
   },
   subtitle: {
@@ -429,6 +430,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     color: "#666",
     lineHeight: 22,
+    fontFamily: "Poppins_400Regular",
   },
   input: {
     backgroundColor: "#fff",
@@ -438,6 +440,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     borderWidth: 1,
     borderColor: "#E5E5EA",
+    fontFamily: "Poppins_400Regular",
   },
   inputError: {
     borderColor: "#FF3B30",
@@ -447,11 +450,13 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     letterSpacing: 8,
+    fontFamily: "Poppins_400Regular",
   },
   pinInput: {
     fontSize: 24,
     fontWeight: "bold",
     letterSpacing: 4,
+    fontFamily: "Poppins_400Regular",
   },
   questionText: {
     fontSize: 18,
@@ -464,6 +469,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "#E5E5EA",
+    fontFamily: "Poppins_400Regular",
   },
   errorText: {
     color: "#FF3B30",
@@ -471,6 +477,7 @@ const styles = StyleSheet.create({
     marginTop: -10,
     marginBottom: 10,
     textAlign: "center",
+    fontFamily: "Poppins_400Regular",
   },
   linkText: {
     color: "#007AFF",
@@ -478,6 +485,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 10,
     textDecorationLine: "underline",
+    fontFamily: "Poppins_400Regular",
   },
   buttonContainer: {
     marginTop: 30,
@@ -492,6 +500,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+    fontFamily: "Poppins_400Regular",
   },
   buttonDisabled: {
     backgroundColor: "#B0B0B0",
@@ -502,6 +511,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 15,
     color: "#34C759",
+    fontFamily: "Poppins_400Regular",
   },
   successSubtitle: {
     fontSize: 15,
@@ -509,6 +519,7 @@ const styles = StyleSheet.create({
     marginBottom: 40,
     color: "#666",
     lineHeight: 26,
+    fontFamily: "Poppins_400Regular",
   },
   successButton: {
     backgroundColor: "#2F4F2F",
@@ -520,6 +531,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "600",
+    fontFamily: "Poppins_400Regular",
   },
 });
 

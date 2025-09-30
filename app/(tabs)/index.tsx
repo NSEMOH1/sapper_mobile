@@ -14,10 +14,13 @@ import { router } from "expo-router";
 import { TrendingUp } from "lucide-react-native";
 import { useSavingsBalance } from "@/hooks/useSavings";
 import { useLoanBalances } from "@/hooks/useLoan";
+import { useAuthStore } from "@/hooks/useAuth";
+import { getInitials } from "@/constants/data";
 
 export default function HomeScreen() {
   const [showLoanModal, setShowLoanModal] = useState(false);
   const { balance } = useSavingsBalance();
+  const { user } = useAuthStore();
   const { summary, getCollectedAmount } = useLoanBalances();
 
   const handleSavings = () => {
@@ -78,7 +81,7 @@ export default function HomeScreen() {
       id: 2,
       title: "Loan Balance",
       amount: `₦${summary.totalOutstanding.toString()}`,
-      bgColor: "#6A1447",
+      bgColor: "#F20D16",
     },
   ];
 
@@ -97,7 +100,7 @@ export default function HomeScreen() {
           </View>
           <View style={styles.headerRight}>
             <View style={styles.avatarContainer}>
-              <Text style={styles.avatarText}>JA</Text>
+              <Text style={styles.avatarText}>{getInitials(user?.first_name || "")}</Text>
             </View>
             <Ionicons
               name="notifications"
@@ -110,7 +113,8 @@ export default function HomeScreen() {
 
         <View style={styles.greeting}>
           <Text style={styles.greetingText}>
-            Good afternoon <Text style={styles.nameText}>James</Text> 👋
+            Good afternoon{" "}
+            <Text style={styles.nameText}>{user?.first_name}</Text> 👋
           </Text>
         </View>
 
@@ -213,7 +217,7 @@ export default function HomeScreen() {
                   >
                     {record.title}
                   </Text>
-                  <TouchableOpacity>
+                  <TouchableOpacity style={styles.trend}>
                     <TrendingUp size={16} color={record.color} />
                   </TouchableOpacity>
                 </View>
@@ -283,6 +287,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
+  trend: {
+    borderWidth: 1,
+    borderColor: "white",
+    borderRadius: 10,
+    padding: 4,
+  },
   avatarContainer: {
     width: 32,
     height: 32,
@@ -309,39 +319,46 @@ const styles = StyleSheet.create({
   greetingText: {
     fontSize: 18,
     color: "#333",
+    fontFamily: "Poppins_400Regular",
   },
   nameText: {
     fontWeight: "bold",
   },
   carouselContainer: {
     marginHorizontal: 10,
-    marginBottom: 10,
+    marginBottom: 20,
   },
   savingsCard: {
     width: 300,
     marginRight: 10,
     padding: 25,
+    marginLeft: 10,
     borderRadius: 40,
+    backgroundColor: "#5F8B31",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 4,
     },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowOpacity: 4,
+    shadowRadius: 15,
     elevation: 8,
+    borderWidth: 8,
+    borderColor: "rgba(255, 255, 255, 0.5)",
   },
   savingsTitle: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "500",
     marginBottom: 10,
+    fontFamily: "Poppins_400Regular",
   },
   savingsAmount: {
     color: "#fff",
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
+    fontFamily: "Poppins_400Regular",
   },
   viewMoreButton: {
     alignSelf: "flex-end",
@@ -354,6 +371,7 @@ const styles = StyleSheet.create({
   viewMoreText: {
     color: "#fff",
     fontSize: 14,
+    fontFamily: "Poppins_400Regular",
   },
   pageIndicator: {
     flexDirection: "row",
@@ -380,18 +398,21 @@ const styles = StyleSheet.create({
     color: "#333",
     marginBottom: 15,
     justifyContent: "center",
+    fontFamily: "Poppins_400Regular",
   },
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 15,
+    fontFamily: "Poppins_400Regular",
   },
   quickTransactions: {
     flexDirection: "row",
     justifyContent: "space-between",
     gap: 8,
     backgroundColor: "#fff",
+    fontFamily: "Poppins_400Regular",
   },
   transactionItem: {
     alignItems: "center",
@@ -402,6 +423,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(0,0,0,0.1)",
     backgroundColor: "#fff",
     shadowColor: "#000",
+    fontFamily: "Poppins_400Regular",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -419,10 +441,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   transactionText: {
-    fontSize: 14,
+    fontSize: 12,
     textAlign: "center",
     color: "#666",
     lineHeight: 18,
+    fontFamily: "Poppins_400Regular",
   },
   financialGrid: {
     flexDirection: "row",
@@ -454,20 +477,24 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "flex-start",
     marginBottom: 10,
+    fontFamily: "Poppins_400Regular",
   },
   financialTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "500",
     flex: 1,
     marginRight: 5,
+    fontFamily: "Poppins_400Regular",
   },
   financialAmount: {
     fontSize: 20,
     fontWeight: "bold",
+    fontFamily: "Poppins_400Regular",
   },
   financialStatus: {
-    fontSize: 14,
+    fontSize: 10,
     fontWeight: "500",
+    fontFamily: "Poppins_400Regular",
   },
   transactionFilters: {
     flexDirection: "row",
@@ -484,6 +511,7 @@ const styles = StyleSheet.create({
   filterText: {
     fontSize: 14,
     color: "#666",
+    fontFamily: "Poppins_400Regular",
   },
   emptyTransactions: {
     backgroundColor: "#fff",
@@ -494,5 +522,6 @@ const styles = StyleSheet.create({
   emptyText: {
     color: "#999",
     fontSize: 16,
+    fontFamily: "Poppins_400Regular",
   },
 });

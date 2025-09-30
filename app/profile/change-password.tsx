@@ -1,4 +1,5 @@
 import api from "@/constants/api";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   Text,
@@ -39,6 +40,7 @@ const ChangePassword = () => {
     try {
       await api.post("/api/auth/change-password", payload);
       Alert.alert("Success", "Password changed successfully");
+      router.push("/(tabs)/profile")
     } catch (e) {
       console.error(e);
       Alert.alert("Failed", "Please try again later");
@@ -102,6 +104,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginBottom: 20,
     color: "#333",
+    fontFamily: 'Poppins_400Regular', 
   },
   formGroup: {
     marginBottom: 15,
@@ -110,6 +113,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 5,
     color: "#333",
+    fontFamily: 'Poppins_400Regular', 
   },
   input: {
     borderWidth: 1,
@@ -118,6 +122,7 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: "#fff",
     fontSize: 16,
+    fontFamily: 'Poppins_400Regular', 
   },
   button: {
     marginTop: 20,
@@ -130,5 +135,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+    fontFamily: 'Poppins_400Regular', 
   },
 });

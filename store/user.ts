@@ -1,4 +1,4 @@
-import create from "zustand";
+import { create } from "zustand";
 import api from "@/constants/api";
 import { MemberStore } from "@/types";
 

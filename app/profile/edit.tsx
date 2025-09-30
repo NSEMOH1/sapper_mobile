@@ -91,10 +91,10 @@ export default function EditProfile() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: "#fff" },
-  title: { fontSize: 20, fontWeight: "600", marginBottom: 20 },
+  title: { fontSize: 20, fontWeight: "600", marginBottom: 20, fontFamily: 'Poppins_400Regular' },
   error: { color: "red", marginBottom: 10 },
   formGroup: { marginBottom: 15 },
-  label: { fontSize: 14, marginBottom: 5, color: "#333" },
+  label: { fontSize: 14, marginBottom: 5, color: "#333", fontFamily: 'Poppins_400Regular', },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     color: "#555",
   },
   button: {
-    backgroundColor: "#007BFF",
+    backgroundColor: "#213400",
     borderRadius: 8,
     padding: 12,
     alignItems: "center",
@@ -112,5 +112,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontWeight: "600",
+    fontFamily: 'Poppins_400Regular',
   },
 });

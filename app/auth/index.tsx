@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Image
+  Image,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -39,7 +39,9 @@ export default function AuthIndex() {
         </TouchableOpacity>
 
         {/* Divider */}
-        <Text style={styles.dividerText}>--------------------------------- OR ---------------------------------</Text>
+        <Text style={styles.dividerText}>
+          --------------------------------- OR ---------------------------------
+        </Text>
 
         <Text onPress={handleLogin} style={styles.loginText}>
           Already have an account? Sign In
@@ -85,6 +87,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#fff",
     marginBottom: 20,
+    fontFamily: "Poppins_400Regular",
   },
   card: {
     borderWidth: 1,
@@ -93,13 +96,14 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#111",
     marginBottom: 40,
-    height: 450
+    height: 450,
   },
   cardTitle: {
     fontSize: 20,
     fontWeight: "bold",
     color: "#fff",
     marginBottom: 20,
+    fontFamily: "Poppins_400Regular",
   },
   gradientButton: {
     paddingVertical: 15,
@@ -111,18 +115,21 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "400",
+    fontFamily: "Poppins_400Regular",
   },
   dividerText: {
     color: "#fff",
     textAlign: "center",
     marginBottom: 20,
+    fontFamily: "Poppins_400Regular",
   },
   loginText: {
     color: "#fff",
     textAlign: "center",
     fontSize: 14,
     marginBottom: 20,
-    marginTop: 30
+    marginTop: 30,
+    fontFamily: "Poppins_400Regular",
   },
   footer: {
     flexDirection: "row",
@@ -132,6 +139,7 @@ const styles = StyleSheet.create({
   footerLink: {
     color: "#fff",
     fontSize: 11,
+    fontFamily: "Poppins_400Regular",
   },
   bottomSection: {
     alignItems: "center",
@@ -154,11 +162,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: "center",
     marginBottom: 10,
+    fontFamily: "Poppins_400Regular",
   },
   bottomDescription: {
     color: "#fff",
     fontSize: 11,
     textAlign: "center",
     lineHeight: 16,
+    fontFamily: "Poppins_400Regular",
   },
 });

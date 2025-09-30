@@ -102,12 +102,14 @@ const styles = StyleSheet.create({
     color: "white",
     marginBottom: 10,
     textAlign: "center",
+        fontFamily: 'Poppins_400Regular', 
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     color: "white",
     textAlign: "center",
+        fontFamily: 'Poppins_400Regular', 
   },
   indicators: {
     flexDirection: "row",
