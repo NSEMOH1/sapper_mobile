@@ -10,15 +10,10 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import {
-  X,
-  ArrowLeft,
-  Upload,
-  CheckCircle,
-} from "lucide-react-native";
+import { X, ArrowLeft, Upload, CheckCircle } from "lucide-react-native";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
-import { LoanEnrollmentFlowProps, FormData } from "@/types";
+import { LoanEnrollmentFlowProps } from "@/types";
 import { OtpInput } from "react-native-otp-entry";
 import { useSavingsBalance } from "@/hooks/useSavings";
 import { useMemberStore } from "@/store/user";
@@ -252,40 +247,54 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
   };
 
   const createFormData = () => {
-    const formData = new FormData();
+    try {
+      const formData = new FormData();
 
-    const payload = {
-      category: category,
-      amount: parseFloat(amount).toString(),
-      durationMonths: parseInt(tenure).toString(),
-      servicingLoan: servicingLoan,
-    };
+      const loanAmountValue = parseFloat(amount);
+      const tenureValue = parseInt(tenure);
 
-    formData.append("data", JSON.stringify(payload));
+      const payload = {
+        category: category,
+        amount: loanAmountValue,
+        durationMonths: tenureValue,
+        servicingLoan: servicingLoan,
+      };
 
-    if (uploadedFiles.recommendation) {
-      formData.append("recommendation", {
-        uri: uploadedFiles.recommendation.uri,
-        type: uploadedFiles.recommendation.type,
-        name: uploadedFiles.recommendation.name,
-      } as any);
+      console.log("Payload:", payload);
+      formData.append("data", JSON.stringify(payload));
+
+      if (uploadedFiles.recommendation) {
+        console.log("Adding recommendation file");
+        formData.append("recommendation", {
+          uri: uploadedFiles.recommendation.uri,
+          type: uploadedFiles.recommendation.type,
+          name: uploadedFiles.recommendation.name,
+        } as any);
+      }
+
+      if (uploadedFiles.nonIndebtedness) {
+        console.log("Adding nonIndebtedness file");
+        formData.append("nonIndebtedness", {
+          uri: uploadedFiles.nonIndebtedness.uri,
+          type: uploadedFiles.nonIndebtedness.type,
+          name: uploadedFiles.nonIndebtedness.name,
+        } as any);
+      }
+
+      if (uploadedFiles.application) {
+        console.log("Adding application file");
+        formData.append("application", {
+          uri: uploadedFiles.application.uri,
+          type: uploadedFiles.application.type,
+          name: uploadedFiles.application.name,
+        } as any);
+      }
+
+      return formData;
+    } catch (error) {
+      console.error("Error creating FormData:", error);
+      throw new Error("Failed to prepare loan application data");
     }
-    if (uploadedFiles.nonIndebtedness) {
-      formData.append("nonIndebtedness", {
-        uri: uploadedFiles.nonIndebtedness.uri,
-        type: uploadedFiles.nonIndebtedness.type,
-        name: uploadedFiles.nonIndebtedness.name,
-      } as any);
-    }
-    if (uploadedFiles.application) {
-      formData.append("application", {
-        uri: uploadedFiles.application.uri,
-        type: uploadedFiles.application.type,
-        name: uploadedFiles.application.name,
-      } as any);
-    }
-
-    return formData;
   };
 
   const submitLoanApplication = async () => {
@@ -296,6 +305,7 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
         headers: {
           "Content-Type": "multipart/form-data",
         },
+        timeout: 30000,
       });
 
       if (response.data.success) {
@@ -304,12 +314,23 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
         Alert.alert("Success", response.data.message);
         setStep(5);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error submitting loan:", error);
-      Alert.alert(
-        "Error",
-        error.response?.data?.message || "Failed to submit loan application"
-      );
+      let errorMessage = "Failed to submit loan application";
+
+      if (error && typeof error === "object") {
+        if ("response" in error && error.response) {
+          const response = error.response as any;
+          errorMessage =
+            response.data?.message ||
+            response.data?.error ||
+            `Server error: ${response.status}`;
+          console.error("Error details:", response.data);
+        } else if ("message" in error && error.message) {
+          errorMessage = String(error.message);
+        }
+      }
+      Alert.alert("Error", errorMessage);
     } finally {
       setLoading(false);
     }
@@ -711,8 +732,11 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
               <TouchableOpacity
                 style={styles.primaryButton}
                 onPress={handleProceed}
+                disabled={loading}
               >
-                <Text style={styles.primaryButtonText}>Confirm & Proceed</Text>
+                <Text style={styles.primaryButtonText}>
+                  {loading ? "Please wait..." : "Confirm & Proceed"}
+                </Text>
               </TouchableOpacity>
             </ScrollView>
           )}

@@ -74,7 +74,7 @@ export const TransactionsModule = () => {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        const response = await api.get("/api/transactions", {});
+        const response = await api.get("/api/transactions");
         const fetchedTransactions = response.data.data.map(
           (transaction: {
             id: any;
@@ -253,7 +253,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     backgroundColor: "#FFFFFF",
     borderRadius: 16,
-    marginHorizontal: 16,
   },
   emptyText: {
     fontSize: 16,
