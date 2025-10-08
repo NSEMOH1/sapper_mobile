@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Text,
   TextInput,
@@ -6,60 +6,58 @@ import {
   View,
   TouchableOpacity,
   ScrollView,
-  Modal,
   Alert,
   ImageBackground,
   Image,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { Ranks } from "../auth/data";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { WithdrawalFormData } from "@/types";
+import api from "@/constants/api";
+import { useMemberStore } from "@/store/user";
+import { useAuthStore } from "@/hooks/useAuth";
 
 const WithdrawalApplication = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [showRankDropdown, setShowRankDropdown] = useState(false);
-  const [showCorpsDropdown, setShowCorpsDropdown] = useState(false);
-  const [formData, setFormData] = useState<WithdrawalFormData>({
-    serviceNumber: "",
-    rank: "",
-    corpsUnit: "",
-    firstName: "",
-    lastName: "",
-    dateOfBirth: "",
-    phoneNumber: "",
-    salaryAccountName: "",
-    salaryAccountNumber: "",
-    bankName: "",
-    branch: "",
-    amount: 0,
-  });
+  const [amount, setAmount] = useState("");
+  const [pin, setPin] = useState("");
+  const [isLoading, setLoading] = useState(false);
+  const { user } = useAuthStore();
+  const { member, loading, fetchMemberData } = useMemberStore();
+  useEffect(() => {
+    if (user?.id) {
+      fetchMemberData(user.id);
+    }
+  }, [user?.id, fetchMemberData]);
 
-  const corpsUnits = [
-    "Infantry",
-    "Artillery",
-    "Engineers",
-    "Signals",
-    "Intelligence",
-    "Medical",
-  ];
+  if (loading) {
+    return <ActivityIndicator size="large" color="#0000ff" />;
+  }
 
-  const handleInputChange = (
-    field: keyof WithdrawalFormData,
-    value: string
-  ) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const payload = {
+    amount: amount,
+    category_name: "QUICK",
+    pin: pin,
   };
 
-  const handleRankSelect = (rank: string) => {
-    handleInputChange("rank", rank);
-    setShowRankDropdown(false);
-  };
-
-  const handleCorpsSelect = (corps: string) => {
-    handleInputChange("corpsUnit", corps);
-    setShowCorpsDropdown(false);
+  const handleWithdrawal = async () => {
+    setLoading(true);
+    try {
+      await api.post("/api/savings/withdraw", payload);
+      Alert.alert("Success", "Withdrawal application submitted successfully", [
+        {
+          text: "OK",
+          onPress: () => {
+            router.push("/savings");
+          },
+        },
+      ]);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleProceed = () => {
@@ -74,63 +72,8 @@ const WithdrawalApplication = () => {
           },
         },
       ]);
-      console.log("Withdrawal Application Data:", formData);
     }
   };
-
-  const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const renderDropdownModal = (
-    visible: boolean,
-    onClose: () => void,
-    items: string[],
-    onSelect: (item: string) => void,
-    selectedItem: string
-  ) => (
-    <Modal
-      visible={visible}
-      transparent={true}
-      animationType="fade"
-      onRequestClose={onClose}
-    >
-      <TouchableOpacity
-        style={styles.dropdownOverlay}
-        activeOpacity={1}
-        onPress={onClose}
-      >
-        <View style={styles.dropdownModal}>
-          {items.map((item) => (
-            <TouchableOpacity
-              key={item}
-              style={[
-                styles.dropdownItem,
-                selectedItem === item && styles.selectedDropdownItem,
-              ]}
-              onPress={() => onSelect(item)}
-              disabled={true}
-            >
-              <Text
-                style={[
-                  styles.dropdownItemText,
-                  selectedItem === item && styles.selectedDropdownItemText,
-                  styles.disabledText,
-                ]}
-              >
-                {item}
-              </Text>
-              {selectedItem === item && (
-                <Ionicons name="checkmark" size={20} color="#ccc" />
-              )}
-            </TouchableOpacity>
-          ))}
-        </View>
-      </TouchableOpacity>
-    </Modal>
-  );
 
   const renderStep1 = () => (
     <ScrollView style={styles.scrollView}>
@@ -139,9 +82,7 @@ const WithdrawalApplication = () => {
           <Text style={styles.label}>Service Number</Text>
           <TextInput
             style={[styles.input, styles.disabledInput]}
-            placeholder="81NA/45758"
-            value={formData.serviceNumber}
-            onChangeText={(value) => handleInputChange("serviceNumber", value)}
+            value={member?.user?.service_number}
             editable={false}
           />
         </View>
@@ -150,38 +91,28 @@ const WithdrawalApplication = () => {
           <Text style={styles.label}>Rank</Text>
           <TouchableOpacity
             style={[styles.dropdown, styles.disabledInput]}
-            onPress={() => {}} // Disabled
+            onPress={() => {}}
             disabled={true}
           >
-            <Text
-              style={[
-                styles.dropdownText,
-                !formData.rank && styles.placeholderText,
-                styles.disabledText,
-              ]}
-            >
-              {formData.rank || "Select Rank"}
+            <Text style={[styles.dropdownText, styles.disabledText]}>
+              {member?.user.rank}
             </Text>
             <Ionicons name="chevron-down" size={20} color="#ccc" />
           </TouchableOpacity>
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Corps/Unit</Text>
+          <Text style={styles.label}>Unit</Text>
           <TouchableOpacity
             style={[styles.dropdown, styles.disabledInput]}
-            onPress={() => {}} // Disabled
+            onPress={() => {}}
             disabled={true}
           >
-            <Text
-              style={[
-                styles.dropdownText,
-                !formData.corpsUnit && styles.placeholderText,
-                styles.disabledText,
-              ]}
-            >
-              {formData.corpsUnit || "Select Corps/Unit"}
-            </Text>
+            <TextInput
+              style={[styles.input, styles.disabledInput]}
+              value={member?.user.unit}
+              editable={false}
+            />
             <Ionicons name="chevron-down" size={20} color="#ccc" />
           </TouchableOpacity>
         </View>
@@ -190,9 +121,7 @@ const WithdrawalApplication = () => {
           <Text style={styles.label}>First Name</Text>
           <TextInput
             style={[styles.input, styles.disabledInput]}
-            placeholder="Oluyede"
-            value={formData.firstName}
-            onChangeText={(value) => handleInputChange("firstName", value)}
+            value={member?.user.first_name}
             editable={false}
           />
         </View>
@@ -201,9 +130,7 @@ const WithdrawalApplication = () => {
           <Text style={styles.label}>Last Name</Text>
           <TextInput
             style={[styles.input, styles.disabledInput]}
-            placeholder="Olufemi"
-            value={formData.lastName}
-            onChangeText={(value) => handleInputChange("lastName", value)}
+            value={member?.user.last_name}
             editable={false}
           />
         </View>
@@ -213,8 +140,7 @@ const WithdrawalApplication = () => {
           <TextInput
             style={[styles.input, styles.disabledInput]}
             placeholder="10/02/1993"
-            value={formData.dateOfBirth}
-            onChangeText={(value) => handleInputChange("dateOfBirth", value)}
+            value={member?.user.date_of_birth}
             editable={false}
           />
         </View>
@@ -223,10 +149,8 @@ const WithdrawalApplication = () => {
           <Text style={styles.label}>Phone Number</Text>
           <TextInput
             style={[styles.input, styles.disabledInput]}
-            placeholder="07033450714"
             keyboardType="phone-pad"
-            value={formData.phoneNumber}
-            onChangeText={(value) => handleInputChange("phoneNumber", value)}
+            value={member?.user.phone}
             editable={false}
           />
         </View>
@@ -252,11 +176,7 @@ const WithdrawalApplication = () => {
           <Text style={styles.label}>Salary Account Name</Text>
           <TextInput
             style={[styles.input, styles.disabledInput]}
-            placeholder="Oluyede Olufemi"
-            value={formData.salaryAccountName}
-            onChangeText={(value) =>
-              handleInputChange("salaryAccountName", value)
-            }
+            value={member?.user.bank[0].account_name}
             editable={false}
           />
         </View>
@@ -265,12 +185,8 @@ const WithdrawalApplication = () => {
           <Text style={styles.label}>Salary Account Number</Text>
           <TextInput
             style={[styles.input, styles.disabledInput]}
-            placeholder="0051717189"
             keyboardType="numeric"
-            value={formData.salaryAccountNumber}
-            onChangeText={(value) =>
-              handleInputChange("salaryAccountNumber", value)
-            }
+            value={member?.user.bank[0].account_number}
             editable={false}
           />
         </View>
@@ -279,20 +195,7 @@ const WithdrawalApplication = () => {
           <Text style={styles.label}>Bank Name</Text>
           <TextInput
             style={[styles.input, styles.disabledInput]}
-            placeholder="Access Bank"
-            value={formData.bankName}
-            onChangeText={(value) => handleInputChange("bankName", value)}
-            editable={false}
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Branch</Text>
-          <TextInput
-            style={[styles.input, styles.disabledInput]}
-            placeholder="Island"
-            value={formData.branch}
-            onChangeText={(value) => handleInputChange("branch", value)}
+            value={member?.user.bank[0].name}
             editable={false}
           />
         </View>
@@ -301,13 +204,28 @@ const WithdrawalApplication = () => {
           <Text style={styles.label}>Amount</Text>
           <TextInput
             style={[styles.input, styles.disabledInput]}
-            value={formData.branch}
-            onChangeText={(value) => handleInputChange("amount", value)}
+            value={amount}
+            onChangeText={setAmount}
           />
         </View>
 
-        <TouchableOpacity style={styles.proceedButton} onPress={handleProceed}>
-          <Text style={styles.proceedButtonText}>Submit Application</Text>
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Pin</Text>
+          <TextInput
+            style={[styles.input, styles.disabledInput]}
+            value={pin}
+            onChangeText={setPin}
+          />
+        </View>
+
+        <TouchableOpacity
+          style={styles.proceedButton}
+          onPress={handleWithdrawal}
+          disabled={isLoading}
+        >
+          <Text style={styles.proceedButtonText}>
+            {isLoading ? "Submitting" : "Submit Application"}
+          </Text>
           <Ionicons name="arrow-forward" size={20} color="#fff" />
         </TouchableOpacity>
       </View>
@@ -342,22 +260,6 @@ const WithdrawalApplication = () => {
               renderStep2()
             )}
           </View>
-
-          {renderDropdownModal(
-            showRankDropdown,
-            () => setShowRankDropdown(false),
-            Ranks.map((data) => data.label),
-            handleRankSelect,
-            formData.rank
-          )}
-
-          {renderDropdownModal(
-            showCorpsDropdown,
-            () => setShowCorpsDropdown(false),
-            corpsUnits,
-            handleCorpsSelect,
-            formData.corpsUnit
-          )}
         </View>
       </ImageBackground>
     </SafeAreaView>

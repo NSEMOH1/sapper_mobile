@@ -249,9 +249,6 @@ const RegistrationForm = () => {
       }
 
       const formData = createFormData();
-      console.log("data", formData);
-
-      console.log("Submitting registration data...");
       const response = await api.post("/api/auth/member/register", formData, {
         headers: {
           "Content-Type": "multipart/form-data",

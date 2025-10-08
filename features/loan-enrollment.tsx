@@ -8,42 +8,64 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from "react-native";
-import { X, Check, ArrowLeft, Upload, User } from "lucide-react-native";
-import { LoanEnrollmentFlowProps, UploadedFiles, FormData } from "@/types";
-import { useLoanBalances } from "@/hooks/useLoan";
+import {
+  X,
+  ArrowLeft,
+  Upload,
+  CheckCircle,
+} from "lucide-react-native";
+import * as DocumentPicker from "expo-document-picker";
+import * as ImagePicker from "expo-image-picker";
+import { LoanEnrollmentFlowProps, FormData } from "@/types";
+import { OtpInput } from "react-native-otp-entry";
 import { useSavingsBalance } from "@/hooks/useSavings";
 import { useMemberStore } from "@/store/user";
 import { useAuthStore } from "@/hooks/useAuth";
+import SuccessScreen from "@/components/Success";
+import { useBalances } from "@/hooks/useBalances";
+import api from "@/constants/api";
+
+interface UploadedFile {
+  uri: string;
+  name: string;
+  type: string;
+  size?: number;
+}
+
+interface UploadedFiles {
+  recommendation: UploadedFile | null;
+  nonIndebtedness: UploadedFile | null;
+  application: UploadedFile | null;
+  personnelId: UploadedFile | null;
+}
 
 const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
   visible,
   onClose,
 }) => {
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState<FormData>({
-    servicingLoan: "",
-    totalSavings: "150,000",
-    monthlyDeduction: "25,000",
-    authorizedSignature: "John Doe Signature",
-    bankName: "",
-    accountNumber: "",
-    accountName: "",
-    amount: "",
-    rank: "",
-    tenure: "12",
-  });
+  const [loading, setLoading] = useState(false);
+  const [servicingLoan, setServicingLoan] = useState("");
+  const [amount, setAmount] = useState("");
+  const [tenure, setTenure] = useState("");
+  const [category, setCategory] = useState("REGULAR");
+
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFiles>({
-    recommendation: false,
-    nonIndebtedness: false,
-    application: false,
-    personnelId: true,
-  }); 
-  const [otp, setOtp] = useState(["", "", "", ""]);
-  const { summary } = useLoanBalances();
-  const { balance } = useSavingsBalance();
+    recommendation: null,
+    nonIndebtedness: null,
+    application: null,
+    personnelId: null,
+  });
+  const [otp, setOtp] = useState("");
+  const [loanId, setLoanId] = useState<string>("");
+
+  const { balance: savingsBalance } = useSavingsBalance();
+  const balance = useBalances();
   const { user } = useAuthStore();
   const { member, fetchMemberData } = useMemberStore();
+
   useEffect(() => {
     if (user?.id) {
       fetchMemberData(user?.id);
@@ -61,33 +83,133 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
     }
   };
 
-  const interestRate = getInterestRate(formData.tenure);
-  const loanAmount = parseFloat(formData.amount) || 0;
-  const interestAmount =
-    ((loanAmount * interestRate) / 100) * parseInt(formData.tenure);
+  const interestRate = getInterestRate(tenure);
+  const loanAmount = parseFloat(amount) || 0;
+  const interestAmount = ((loanAmount * interestRate) / 100) * parseInt(tenure);
   const totalAmount = loanAmount + interestAmount;
-  const monthlyPayment = totalAmount / parseInt(formData.tenure);
+  const monthlyPayment = totalAmount / parseInt(tenure);
 
-  const handleInputChange = (field: keyof FormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const handleFileUpload = async (fileType: keyof UploadedFiles) => {
+    try {
+      const { status: cameraStatus } =
+        await ImagePicker.requestCameraPermissionsAsync();
+      const { status: mediaStatus } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      Alert.alert(
+        "Choose Upload Method",
+        "How would you like to upload the document?",
+        [
+          {
+            text: "Take Photo",
+            onPress: () => takePhoto(fileType),
+          },
+          {
+            text: "Choose from Gallery",
+            onPress: () => pickImage(fileType),
+          },
+          {
+            text: "Choose Document",
+            onPress: () => pickDocument(fileType),
+          },
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+        ]
+      );
+    } catch (error) {
+      console.error("Error requesting permissions:", error);
+      Alert.alert("Error", "Failed to request permissions");
+    }
   };
 
-  const handleFileUpload = (fileType: keyof UploadedFiles) => {
-    setUploadedFiles((prev) => ({ ...prev, [fileType]: true }));
-    Alert.alert("Success", "File uploaded successfully");
+  const takePhoto = async (fileType: keyof UploadedFiles) => {
+    try {
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.8,
+        allowsEditing: true,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        const asset = result.assets[0];
+        setUploadedFiles((prev) => ({
+          ...prev,
+          [fileType]: {
+            uri: asset.uri,
+            name: `${fileType}_${Date.now()}.jpg`,
+            type: "image/jpeg",
+            size: asset.fileSize,
+          },
+        }));
+        Alert.alert("Success", "Photo captured successfully");
+      }
+    } catch (error) {
+      console.error("Error taking photo:", error);
+      Alert.alert("Error", "Failed to take photo");
+    }
+  };
+
+  const pickImage = async (fileType: keyof UploadedFiles) => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.8,
+        allowsEditing: true,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        const asset = result.assets[0];
+        setUploadedFiles((prev) => ({
+          ...prev,
+          [fileType]: {
+            uri: asset.uri,
+            name: asset.fileName || `${fileType}_${Date.now()}.jpg`,
+            type: "image/jpeg",
+            size: asset.fileSize,
+          },
+        }));
+        Alert.alert("Success", "Image selected successfully");
+      }
+    } catch (error) {
+      console.error("Error picking image:", error);
+      Alert.alert("Error", "Failed to select image");
+    }
+  };
+
+  const pickDocument = async (fileType: keyof UploadedFiles) => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ["application/pdf", "image/*"],
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        const asset = result.assets[0];
+        setUploadedFiles((prev) => ({
+          ...prev,
+          [fileType]: {
+            uri: asset.uri,
+            name: asset.name,
+            type: asset.mimeType || "application/pdf",
+            size: asset.size,
+          },
+        }));
+        Alert.alert("Success", "Document selected successfully");
+      }
+    } catch (error) {
+      console.error("Error picking document:", error);
+      Alert.alert("Error", "Failed to select document");
+    }
   };
 
   const validateStep1 = (): boolean => {
-    return !!(
-      formData.servicingLoan &&
-      formData.bankName &&
-      formData.accountNumber &&
-      formData.accountName
-    );
+    return !!servicingLoan;
   };
 
   const validateStep2 = (): boolean => {
-    return (
+    return !!(
       uploadedFiles.recommendation &&
       uploadedFiles.nonIndebtedness &&
       uploadedFiles.application
@@ -95,12 +217,7 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
   };
 
   const validateStep3 = (): boolean => {
-    return !!(
-      formData.amount &&
-      formData.rank &&
-      !isNaN(loanAmount) &&
-      loanAmount > 0
-    );
+    return !!(amount && !isNaN(loanAmount) && loanAmount > 0);
   };
 
   const handleProceed = () => {
@@ -118,12 +235,11 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
         break;
       case 3:
         canProceed = validateStep3();
-        errorMessage = "Please enter valid loan amount and rank";
+        errorMessage = "Please enter valid loan amount";
         break;
       case 4:
-      case 5:
-        canProceed = true;
-        break;
+        submitLoanApplication();
+        return;
       default:
         canProceed = true;
     }
@@ -135,6 +251,92 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
     setStep(step + 1);
   };
 
+  const createFormData = () => {
+    const formData = new FormData();
+
+    const payload = {
+      category: category,
+      amount: parseFloat(amount).toString(),
+      durationMonths: parseInt(tenure).toString(),
+      servicingLoan: servicingLoan,
+    };
+
+    formData.append("data", JSON.stringify(payload));
+
+    if (uploadedFiles.recommendation) {
+      formData.append("recommendation", {
+        uri: uploadedFiles.recommendation.uri,
+        type: uploadedFiles.recommendation.type,
+        name: uploadedFiles.recommendation.name,
+      } as any);
+    }
+    if (uploadedFiles.nonIndebtedness) {
+      formData.append("nonIndebtedness", {
+        uri: uploadedFiles.nonIndebtedness.uri,
+        type: uploadedFiles.nonIndebtedness.type,
+        name: uploadedFiles.nonIndebtedness.name,
+      } as any);
+    }
+    if (uploadedFiles.application) {
+      formData.append("application", {
+        uri: uploadedFiles.application.uri,
+        type: uploadedFiles.application.type,
+        name: uploadedFiles.application.name,
+      } as any);
+    }
+
+    return formData;
+  };
+
+  const submitLoanApplication = async () => {
+    setLoading(true);
+    try {
+      const formData = createFormData();
+      const response = await api.post("/api/loan/apply", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (response.data.success) {
+        setLoanId(response.data.loan.id);
+        console.log("otp", response.data.otp);
+        Alert.alert("Success", response.data.message);
+        setStep(5);
+      }
+    } catch (error: any) {
+      console.error("Error submitting loan:", error);
+      Alert.alert(
+        "Error",
+        error.response?.data?.message || "Failed to submit loan application"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async () => {
+    if (!otp || otp.length < 6) {
+      Alert.alert("Error", "Please enter complete OTP");
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await api.post(`/api/loan/${loanId}/verify`, {
+        otp,
+      });
+
+      if (response.data.success) {
+        setStep(6);
+      }
+    } catch (error: any) {
+      console.error("Error verifying OTP:", error);
+      Alert.alert("Error", error.response?.data?.message || "Invalid OTP");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleBack = () => {
     if (step > 1) {
       setStep(step - 1);
@@ -143,41 +345,20 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
     }
   };
 
-  const handleOtpChange = (value: string, index: number) => {
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
-  };
-
-  const handleSubmit = () => {
-    if (step === 5 && otp.some((digit) => !digit)) {
-      Alert.alert("Error", "Please enter complete OTP");
-      return;
-    }
-    setStep(step + 1);
-  };
-
   const resetFlow = () => {
     setStep(1);
-    setFormData({
-      servicingLoan: "",
-      totalSavings: "150,000",
-      monthlyDeduction: "25,000",
-      authorizedSignature: "John Doe Signature",
-      bankName: "",
-      accountNumber: "",
-      accountName: "",
-      amount: "",
-      rank: "",
-      tenure: "12",
-    });
+    setAmount("");
+    setServicingLoan("");
+    setTenure("");
+    setCategory("");
     setUploadedFiles({
-      recommendation: false,
-      nonIndebtedness: false,
-      application: false,
-      personnelId: true,
+      recommendation: null,
+      nonIndebtedness: null,
+      application: null,
+      personnelId: null,
     });
-    setOtp(["", "", "", ""]);
+    setOtp("");
+    setLoanId("");
     onClose();
   };
 
@@ -187,6 +368,34 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
     { value: "12", label: "12 months", disabled: false },
     { value: "24", label: "24 months", disabled: false },
   ];
+
+  const renderFileUploadBox = (
+    fileType: keyof UploadedFiles,
+    title: string
+  ) => {
+    const file = uploadedFiles[fileType];
+    const isUploaded = !!file;
+
+    return (
+      <TouchableOpacity
+        style={[styles.uploadBox, isUploaded && styles.uploadedBox]}
+        onPress={() => handleFileUpload(fileType)}
+      >
+        {isUploaded ? (
+          <CheckCircle size={24} color="#4CAF50" />
+        ) : (
+          <Upload size={24} color="#666" />
+        )}
+        <Text style={styles.uploadTitle}>{title}</Text>
+        <Text style={styles.uploadSubtitle}>
+          {isUploaded ? file.name : "Tap to upload"}
+        </Text>
+        {isUploaded && file.size && (
+          <Text>{(file.size / 1024 / 1024).toFixed(2)} MB</Text>
+        )}
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
@@ -212,21 +421,20 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
 
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>
-                  Are you currently servicing a loan?
+                  Are you currently servicing a loan? *
                 </Text>
                 <View style={styles.radioGroup}>
                   <TouchableOpacity
                     style={[
                       styles.radioButton,
-                      formData.servicingLoan === "yes" && styles.selectedRadio,
+                      servicingLoan === "yes" && styles.selectedRadio,
                     ]}
-                    onPress={() => handleInputChange("servicingLoan", "yes")}
+                    onPress={() => setServicingLoan("yes")}
                   >
                     <Text
                       style={[
                         styles.radioText,
-                        formData.servicingLoan === "yes" &&
-                          styles.selectedRadioText,
+                        servicingLoan === "yes" && styles.selectedRadioText,
                       ]}
                     >
                       Yes
@@ -235,15 +443,14 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
                   <TouchableOpacity
                     style={[
                       styles.radioButton,
-                      formData.servicingLoan === "no" && styles.selectedRadio,
+                      servicingLoan === "no" && styles.selectedRadio,
                     ]}
-                    onPress={() => handleInputChange("servicingLoan", "no")}
+                    onPress={() => setServicingLoan("no")}
                   >
                     <Text
                       style={[
                         styles.radioText,
-                        formData.servicingLoan === "no" &&
-                          styles.selectedRadioText,
+                        servicingLoan === "no" && styles.selectedRadioText,
                       ]}
                     >
                       No
@@ -256,7 +463,7 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
                 <Text style={styles.label}>Total Savings (₦)</Text>
                 <TextInput
                   style={[styles.input, styles.disabledInput]}
-                  value={`#${balance?.totalSavings}`}
+                  value={`₦${balance?.savings_balance || 0}`}
                   editable={false}
                 />
               </View>
@@ -265,16 +472,15 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
                 <Text style={styles.label}>Monthly Deduction (₦)</Text>
                 <TextInput
                   style={[styles.input, styles.disabledInput]}
-                  value={`#${balance?.monthlyDeduction}`}
+                  value={`₦${savingsBalance?.monthlyDeduction || 0}`}
                   editable={false}
                 />
               </View>
-
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Authorized Signature</Text>
                 <View style={styles.signatureContainer}>
                   <Text style={styles.signatureText}>
-                    {formData.authorizedSignature}
+                    {member?.user.first_name} {member?.user.last_name}
                   </Text>
                   <TouchableOpacity
                     style={styles.changeSignatureButton}
@@ -293,40 +499,29 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
               <Text style={styles.sectionSubTitle}>Bank Details</Text>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Bank Name</Text>
+                <Text style={styles.label}>Bank Name *</Text>
                 <TextInput
-                  style={styles.input}
-                  placeholder="Enter bank name"
-                  value={member?.bank?.[0]?.name || ""}
+                  style={[styles.input, styles.disabledInput]}
+                  value={member?.user?.bank[0]?.name || ""}
                   editable={false}
-                  onChangeText={(value) => handleInputChange("bankName", value)}
                 />
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Account Number</Text>
+                <Text style={styles.label}>Account Number *</Text>
                 <TextInput
-                  style={styles.input}
-                  keyboardType="numeric"
-                  placeholder="Enter account number"
-                  value={member?.bank?.[0]?.account_number || ""}
+                  style={[styles.input, styles.disabledInput]}
+                  value={member?.user?.bank?.[0]?.account_number || ""}
                   editable={false}
-                  onChangeText={(value) =>
-                    handleInputChange("accountNumber", value)
-                  }
                 />
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Account Name</Text>
+                <Text style={styles.label}>Account Name *</Text>
                 <TextInput
-                  style={styles.input}
-                  placeholder="Enter account name"
-                  value={member?.bank?.[0]?.account_name || ""}
+                  style={[styles.input, styles.disabledInput]}
+                  value={member?.user?.bank?.[0]?.account_name || ""}
                   editable={false}
-                  onChangeText={(value) =>
-                    handleInputChange("accountName", value)
-                  }
                 />
               </View>
 
@@ -343,83 +538,32 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
           {step === 2 && (
             <ScrollView contentContainerStyle={styles.scrollContent}>
               <Text style={styles.sectionTitle}>Upload Documents</Text>
+              <Text style={styles.subTitle}>
+                Upload clear photos or PDFs of the required documents
+              </Text>
 
               <View style={styles.uploadSection}>
-                <TouchableOpacity
-                  style={[
-                    styles.uploadBox,
-                    uploadedFiles.recommendation && styles.uploadedBox,
-                  ]}
-                  onPress={() => handleFileUpload("recommendation")}
-                >
-                  <Upload
-                    size={24}
-                    color={uploadedFiles.recommendation ? "#4CAF50" : "#666"}
-                  />
-                  <Text style={styles.uploadTitle}>
-                    FMN/Unit Commander Recommendation
-                  </Text>
-                  <Text style={styles.uploadSubtitle}>
-                    {uploadedFiles.recommendation
-                      ? "Uploaded"
-                      : "Tap to upload"}
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[
-                    styles.uploadBox,
-                    uploadedFiles.nonIndebtedness && styles.uploadedBox,
-                  ]}
-                  onPress={() => handleFileUpload("nonIndebtedness")}
-                >
-                  <Upload
-                    size={24}
-                    color={uploadedFiles.nonIndebtedness ? "#4CAF50" : "#666"}
-                  />
-                  <Text style={styles.uploadTitle}>
-                    Letter of Non-Indebtedness from Salary Account
-                  </Text>
-                  <Text style={styles.uploadSubtitle}>
-                    {uploadedFiles.nonIndebtedness
-                      ? "Uploaded"
-                      : "Tap to upload"}
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[
-                    styles.uploadBox,
-                    uploadedFiles.application && styles.uploadedBox,
-                  ]}
-                  onPress={() => handleFileUpload("application")}
-                >
-                  <Upload
-                    size={24}
-                    color={uploadedFiles.application ? "#4CAF50" : "#666"}
-                  />
-                  <Text style={styles.uploadTitle}>
-                    Copy of Self Written Application
-                  </Text>
-                  <Text style={styles.uploadSubtitle}>
-                    {uploadedFiles.application ? "Uploaded" : "Tap to upload"}
-                  </Text>
-                </TouchableOpacity>
-
-                <View style={[styles.uploadBox, styles.uploadedBox]}>
-                  <User size={24} color="#4CAF50" />
-                  <Text style={styles.uploadTitle}>Personnel ID Card</Text>
-                  <Text style={styles.uploadSubtitle}>
-                    Already uploaded during registration
-                  </Text>
-                </View>
+                {renderFileUploadBox(
+                  "recommendation",
+                  "FMN/Unit Commander Recommendation"
+                )}
+                {renderFileUploadBox(
+                  "nonIndebtedness",
+                  "Letter of Non-Indebtedness"
+                )}
+                {renderFileUploadBox("application", "Self Written Application")}
               </View>
 
               <TouchableOpacity
                 style={styles.primaryButton}
                 onPress={handleProceed}
+                disabled={loading}
               >
-                <Text style={styles.primaryButtonText}>Continue</Text>
+                {loading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.primaryButtonText}>Continue</Text>
+                )}
               </TouchableOpacity>
             </ScrollView>
           )}
@@ -435,19 +579,14 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
                   style={styles.input}
                   keyboardType="numeric"
                   placeholder="Enter amount"
-                  value={formData.amount}
-                  onChangeText={(value) => handleInputChange("amount", value)}
+                  value={amount}
+                  onChangeText={setAmount}
                 />
               </View>
 
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Rank</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter your rank"
-                  value={formData.rank}
-                  onChangeText={(value) => handleInputChange("rank", value)}
-                />
+                <TextInput style={styles.input} value={member?.user.rank} />
               </View>
 
               <View style={styles.inputGroup}>
@@ -467,19 +606,17 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
                       key={option.value}
                       style={[
                         styles.tenureButton,
-                        formData.tenure === option.value &&
-                          styles.selectedTenure,
+                        tenure === option.value && styles.selectedTenure,
                         option.disabled && styles.disabledTenure,
                       ]}
                       onPress={() =>
-                        !option.disabled &&
-                        handleInputChange("tenure", option.value)
+                        !option.disabled && setTenure(option.value)
                       }
                       disabled={option.disabled}
                     >
                       <Text
                         style={[
-                          formData.tenure === option.value
+                          tenure === option.value
                             ? styles.selectedTenureText
                             : styles.tenureText,
                           option.disabled && styles.disabledTenureText,
@@ -514,7 +651,6 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
             </ScrollView>
           )}
 
-          {/* Step 4: Loan Summary */}
           {step === 4 && (
             <ScrollView contentContainerStyle={styles.scrollContent}>
               <Text style={styles.sectionTitle}>Loan Summary</Text>
@@ -522,7 +658,9 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
               <View style={styles.previewBox}>
                 <View style={styles.previewRow}>
                   <Text style={styles.previewLabel}>Applicant:</Text>
-                  <Text style={styles.previewValue}>{formData.rank}</Text>
+                  <Text style={styles.previewValue}>
+                    {member?.user.first_name} {member?.user.last_name}
+                  </Text>
                 </View>
                 <View style={styles.previewRow}>
                   <Text style={styles.previewLabel}>Loan Amount:</Text>
@@ -532,9 +670,7 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
                 </View>
                 <View style={styles.previewRow}>
                   <Text style={styles.previewLabel}>Tenure:</Text>
-                  <Text style={styles.previewValue}>
-                    {formData.tenure} months
-                  </Text>
+                  <Text style={styles.previewValue}>{tenure} months</Text>
                 </View>
                 <View style={styles.previewRow}>
                   <Text style={styles.previewLabel}>Interest Rate:</Text>
@@ -560,7 +696,10 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
                 </View>
                 <View style={styles.previewRow}>
                   <Text style={styles.previewLabel}>Bank Details:</Text>
-                  <Text style={styles.previewValue}>{formData.bankName}</Text>
+                  <Text style={styles.previewValue}>
+                    {member?.user.bank[0].name} -{" "}
+                    {member?.user.bank[0].account_number}
+                  </Text>
                 </View>
               </View>
 
@@ -583,63 +722,48 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
             <ScrollView contentContainerStyle={styles.scrollContent}>
               <Text style={styles.sectionTitle}>OTP Verification</Text>
               <Text style={styles.subTitle}>
-                Enter the 4-digit OTP sent to your phone number
+                Enter the 6-digit OTP sent to your phone number
               </Text>
 
               <View style={styles.otpContainer}>
-                {[0, 1, 2, 3].map((index) => (
-                  <TextInput
-                    key={index}
-                    style={styles.otpInput}
-                    keyboardType="numeric"
-                    maxLength={1}
-                    value={otp[index]}
-                    onChangeText={(value) => handleOtpChange(value, index)}
-                  />
-                ))}
+                <OtpInput
+                  numberOfDigits={6}
+                  onTextChange={setOtp}
+                  placeholder="******"
+                  blurOnFilled={true}
+                  disabled={loading}
+                  type="numeric"
+                  focusStickBlinkingDuration={500}
+                />
               </View>
-
-              <TouchableOpacity style={styles.resendButton}>
-                <Text style={styles.resendText}>
-                  Didn't receive code? Resend
-                </Text>
-              </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.primaryButton}
-                onPress={handleSubmit}
-                disabled={otp.some((digit) => !digit)}
+                onPress={handleVerifyOTP}
+                disabled={loading}
               >
-                <Text style={styles.primaryButtonText}>Verify OTP</Text>
+                {loading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.primaryButtonText}>Verify OTP</Text>
+                )}
               </TouchableOpacity>
             </ScrollView>
           )}
 
           {/* Step 6: Success */}
           {step === 6 && (
-            <View style={styles.successContent}>
-              <View style={styles.successIcon}>
-                <Check size={48} color="#4CAF50" />
-              </View>
-              <Text style={styles.successTitle}>Success!</Text>
-              <Text style={styles.successMessage}>
-                Dear Customer, Your loan request will be disbursed in 72 hours
-              </Text>
-
-              <TouchableOpacity
-                style={styles.primaryButton}
-                onPress={resetFlow}
-              >
-                <Text style={styles.primaryButtonText}>Done</Text>
-              </TouchableOpacity>
-            </View>
+            <SuccessScreen
+              message="Dear Customer, Your loan request will be disbursed in 72 hours"
+              onLoginPress={resetFlow}
+              backgroundImage={undefined}
+            />
           )}
         </View>
       </View>
     </Modal>
   );
 };
-
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
@@ -697,7 +821,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: "#666",
+    color: "black",
     marginBottom: 8,
     fontFamily: "Poppins_400Regular",
   },

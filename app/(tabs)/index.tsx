@@ -12,16 +12,15 @@ import { Ionicons } from "@expo/vector-icons";
 import LoanEnrollmentFlow from "@/features/loan-enrollment";
 import { router } from "expo-router";
 import { TrendingUp } from "lucide-react-native";
-import { useSavingsBalance } from "@/hooks/useSavings";
-import { useLoanBalances } from "@/hooks/useLoan";
 import { useAuthStore } from "@/hooks/useAuth";
 import { getInitials } from "@/constants/data";
+import { useBalances } from "@/hooks/useBalances";
+import { TransactionsModule } from "@/features/transaction";
 
 export default function HomeScreen() {
   const [showLoanModal, setShowLoanModal] = useState(false);
-  const { balance } = useSavingsBalance();
   const { user } = useAuthStore();
-  const { summary, getCollectedAmount } = useLoanBalances();
+  const balance = useBalances();
 
   const handleSavings = () => {
     router.push("/(tabs)/savings");
@@ -35,7 +34,7 @@ export default function HomeScreen() {
     {
       id: 1,
       title: "Regular Loan",
-      amount: `₦${getCollectedAmount("REGULAR")}`,
+      amount: `₦${balance?.loan_balance || 0}`,
       status: "active",
       color: "white",
       bgColor: "#53B175",
@@ -74,13 +73,13 @@ export default function HomeScreen() {
     {
       id: 1,
       title: "Total Savings",
-      amount: `₦${balance?.totalSavings}`,
+      amount: `₦${balance?.savings_balance || 0}`,
       bgColor: "#6A7814",
     },
     {
       id: 2,
       title: "Loan Balance",
-      amount: `₦${summary.totalOutstanding.toString()}`,
+      amount: `₦${balance?.loan_balance || 0}`,
       bgColor: "#F20D16",
     },
   ];
@@ -100,7 +99,9 @@ export default function HomeScreen() {
           </View>
           <View style={styles.headerRight}>
             <View style={styles.avatarContainer}>
-              <Text style={styles.avatarText}>{getInitials(user?.first_name || "")}</Text>
+              <Text style={styles.avatarText}>
+                {getInitials(user?.first_name || "")}
+              </Text>
             </View>
             <Ionicons
               name="notifications"
@@ -241,21 +242,7 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Transactions</Text>
-            {/* <View style={styles.transactionFilters}>
-              <TouchableOpacity style={styles.filterButton}>
-                <Text style={styles.filterText}>May</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.filterButton}>
-                <Text style={styles.filterText}>3days</Text>
-              </TouchableOpacity>
-            </View> */}
-          </View>
-
-          <View style={styles.emptyTransactions}>
-            <Text style={styles.emptyText}>No recent transactions</Text>
-          </View>
+         <TransactionsModule />
         </View>
       </ScrollView>
       <LoanEnrollmentFlow
@@ -329,7 +316,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   savingsCard: {
-    width: 300,
+    width: 350,
     marginRight: 10,
     padding: 25,
     marginLeft: 10,
@@ -348,8 +335,8 @@ const styles = StyleSheet.create({
   },
   savingsTitle: {
     color: "#fff",
-    fontSize: 16,
-    fontWeight: "500",
+    fontSize: 20,
+    fontWeight: "semibold",
     marginBottom: 10,
     fontFamily: "Poppins_400Regular",
   },

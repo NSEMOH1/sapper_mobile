@@ -30,20 +30,25 @@ export interface AuthStore {
 }
 
 export interface MemberData {
-  id: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  created_at: string;
-  service_number: string;
-  bank: {
+  user: {
     id: string;
-    name: string;
-    account_name: string;
-    account_number: string;
-  }[];
-  address: string;
-  phone: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+    created_at: string;
+    service_number: string;
+    rank: string
+    date_of_birth: string
+    bank: {
+      id: string;
+      name: string;
+      account_name: string;
+      account_number: string;
+    }[];
+    address: string;
+    phone: string;
+    unit: string
+  };
 }
 
 export interface MemberStore {
@@ -148,36 +153,18 @@ export interface LoanEnrollmentFlowProps {
 
 export interface FormData {
   servicingLoan: string;
-  totalSavings: string;
-  monthlyDeduction: string;
-  authorizedSignature: string;
-  bankName: string;
-  accountNumber: string;
-  accountName: string;
   amount: string;
-  rank: string;
   tenure: string;
+  category: string
 }
 
 export interface UploadedFiles {
   recommendation: boolean;
   nonIndebtedness: boolean;
   application: boolean;
-  personnelId: boolean;
 }
 
 export interface WithdrawalFormData {
-  serviceNumber: string;
-  rank: string;
-  corpsUnit: string;
-  firstName: string;
-  lastName: string;
-  dateOfBirth: string;
-  phoneNumber: string;
-  salaryAccountName: string;
-  salaryAccountNumber: string;
-  bankName: string;
-  branch: string;
   amount: number;
 }
 

@@ -10,10 +10,11 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import LoanEnrollmentFlow from "@/features/loan-enrollment";
-import { useLoanBalances } from "@/hooks/useLoan";
+import { PieChart } from "react-native-gifted-charts";
 import { CircularProgressProps, LoanRecord } from "@/types";
 import { useAuthStore } from "@/hooks/useAuth";
 import { router } from "expo-router";
+import { useBalances } from "@/hooks/useBalances";
 
 interface LoanCategory {
   title: string;
@@ -23,19 +24,20 @@ interface LoanCategory {
   icon: keyof typeof MaterialIcons.glyphMap;
   iconColor: string;
   backgroundColor: string;
+  isClickable: boolean;
 }
 
 export default function Loan() {
   const [showLoanModal, setShowLoanModal] = useState(false);
-  const { summary, getCollectedAmount } = useLoanBalances();
-  const { user } = useAuthStore()
+  const balance = useBalances();
+  const { user } = useAuthStore();
   const handlePayment = () => {
-    router.push("/payments")
-  }
+    router.push("/payments");
+  };
   const loanRecords: LoanRecord[] = [
     {
       type: "Regular Loan",
-      amount: `₦${getCollectedAmount("REGULAR")}`,
+      amount: `₦${balance?.loan_balance || 0}`,
       percentage: 75,
       current: "3,000,525.00",
       total: "100%",
@@ -72,6 +74,7 @@ export default function Loan() {
       icon: "account-balance-wallet",
       iconColor: "#4CAF50",
       backgroundColor: "#E8F5E8",
+      isClickable: true,
     },
     {
       title: "Home Appliance Loan",
@@ -81,6 +84,7 @@ export default function Loan() {
       icon: "home",
       iconColor: "#9E9E9E",
       backgroundColor: "#F5F5F5",
+      isClickable: false,
     },
     {
       title: "Commodity Loan",
@@ -90,6 +94,7 @@ export default function Loan() {
       icon: "shopping-cart",
       iconColor: "#FF9800",
       backgroundColor: "#FFF8E1",
+      isClickable: false,
     },
     {
       title: "Housing Loan",
@@ -99,90 +104,44 @@ export default function Loan() {
       icon: "home",
       iconColor: "#4CAF50",
       backgroundColor: "#E8F5E8",
+      isClickable: false,
     },
   ];
 
-  const CircularProgress: React.FC<CircularProgressProps> = ({
-    percentage,
-    size = 80,
-  }) => {
-    const radius = (size - 10) / 2;
-    const strokeWidth = 8;
-    const normalizedRadius = radius - strokeWidth * 2;
-    const circumference = normalizedRadius * 2 * Math.PI;
-    const strokeDashoffset = circumference - (percentage / 100) * circumference;
-
-    const createProgressCircles = () => {
-      const circles = [];
-      const totalDots = 20;
-      const filledDots = Math.round((percentage / 100) * totalDots);
-
-      for (let i = 0; i < totalDots; i++) {
-        const angle = (i / totalDots) * 2 * Math.PI - Math.PI / 2;
-        const x = Math.cos(angle) * normalizedRadius;
-        const y = Math.sin(angle) * normalizedRadius;
-
-        circles.push(
-          <View
-            key={i}
-            style={[
-              styles.progressDot,
-              {
-                left: size / 2 + x - 3,
-                top: size / 2 + y - 3,
-                backgroundColor: i < filledDots ? "#4CAF50" : "#E0E0E0",
-              },
-            ]}
-          />
-        );
-      }
-      return circles;
-    };
+  const renderLoanRecord = (loan: LoanRecord, index: number): JSX.Element => {
+    const pieData = [
+      {
+        value: loan.percentage,
+        color: "#4CAF50",
+      },
+      {
+        value: 100 - loan.percentage,
+        color: "#E0E0E0",
+      },
+    ];
 
     return (
-      <View style={[styles.progressContainer, { width: size, height: size }]}>
-        <View
-          style={[
-            styles.progressBackground,
-            {
-              width: size - strokeWidth,
-              height: size - strokeWidth,
-              borderRadius: (size - strokeWidth) / 2,
-              borderWidth: strokeWidth / 4,
-            },
-          ]}
-        />
-
-        {createProgressCircles()}
-
-        <View
-          style={[
-            StyleSheet.absoluteFill,
-            { justifyContent: "center", alignItems: "center" },
-          ]}
-        >
-          <Text style={styles.progressPercentage}>{percentage}%</Text>
+      <View key={index} style={styles.loanRecordCard}>
+        <View style={styles.loanRecordHeader}>
+          <Text style={styles.loanRecordType}>{loan.type}</Text>
+          <Text style={styles.loanRecordAmount}>{loan.amount}</Text>
+        </View>
+        <View style={styles.progressInfoContainer}>
+          <PieChart
+            data={pieData}
+            donut
+            radius={40}
+            innerRadius={30}
+            innerCircleColor={"#FFFFFF"}
+            centerLabelComponent={() => <Text>{loan.percentage}%</Text>}
+          />
+          <View style={styles.progressInfo}>
+            <Text style={styles.progressText}>{loan.percentage}%</Text>
+          </View>
         </View>
       </View>
     );
   };
-
-  const renderLoanRecord = (loan: LoanRecord, index: number): JSX.Element => (
-    <View key={index} style={styles.loanRecordCard}>
-      <View style={styles.loanRecordHeader}>
-        <Text style={styles.loanRecordType}>{loan.type}</Text>
-        <Text style={styles.loanRecordAmount}>{loan.amount}</Text>
-      </View>
-      <View style={styles.progressInfoContainer}>
-        <CircularProgress percentage={loan.percentage} />
-        <View style={styles.progressInfo}>
-          <Text style={styles.progressText}>0%</Text>
-          <Text style={styles.progressSubtext}>{loan.current}</Text>
-          <Text style={styles.progressTotal}>{loan.total}</Text>
-        </View>
-      </View>
-    </View>
-  );
 
   const renderLoanCategory = (
     category: LoanCategory,
@@ -191,7 +150,9 @@ export default function Loan() {
     <TouchableOpacity
       key={index}
       style={styles.categoryCard}
-      onPress={() => setShowLoanModal(true)}
+      onPress={() =>
+        category.isClickable === true ? setShowLoanModal(true) : null
+      }
     >
       <Text style={styles.categoryTitle}>{category.title}</Text>
       <View
@@ -246,19 +207,25 @@ export default function Loan() {
       >
         <View style={styles.greetingContainer}>
           <Text style={styles.greeting}>
-            Good afternoon <Text style={styles.name}>{user?.first_name}</Text> 👋
+            Good afternoon <Text style={styles.name}>{user?.first_name}</Text>{" "}
+            👋
           </Text>
         </View>
 
         <View style={styles.balanceCard}>
           <Text style={styles.balanceLabel}>Loan Balance</Text>
-          <Text style={styles.balanceAmount}>₦{summary.totalOutstanding}</Text>
+          <Text style={styles.balanceAmount}>
+            ₦{balance?.loan_balance || 0}
+          </Text>
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.payButton} onPress={handlePayment}>
               <Ionicons name="card" size={16} color="#fff" />
               <Text style={styles.payButtonText}>Pay Now</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.payOffButton} onPress={handlePayment}>
+            <TouchableOpacity
+              style={styles.payOffButton}
+              onPress={handlePayment}
+            >
               <Ionicons name="download" size={16} color="#fff" />
               <Text style={styles.payOffButtonText}>Pay Off</Text>
             </TouchableOpacity>
@@ -330,7 +297,7 @@ const styles = StyleSheet.create({
   greetingContainer: {
     paddingHorizontal: 20,
     marginBottom: 20,
-    marginTop: 20
+    marginTop: 20,
   },
   greeting: {
     fontSize: 18,
@@ -356,7 +323,7 @@ const styles = StyleSheet.create({
     shadowRadius: 15,
     elevation: 8,
     borderWidth: 8,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
+    borderColor: "rgba(255, 255, 255, 0.5)",
   },
   balanceLabel: {
     color: "#fff",
@@ -409,7 +376,7 @@ const styles = StyleSheet.create({
   section: {
     paddingHorizontal: 20,
     marginBottom: 24,
-    marginTop: 20
+    marginTop: 20,
   },
   sectionTitle: {
     fontSize: 18,

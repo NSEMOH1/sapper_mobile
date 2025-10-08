@@ -15,9 +15,11 @@ import { router } from "expo-router";
 import { useSavingsBalance } from "@/hooks/useSavings";
 import api from "@/constants/api";
 import { useAuthStore } from "@/hooks/useAuth";
+import { useBalances } from "@/hooks/useBalances";
 
 export default function Savings() {
-  const { balance } = useSavingsBalance();
+  const { balance: savingsBalance } = useSavingsBalance();
+  const balance = useBalances();
   const [newSavings, setNewSavings] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -51,7 +53,7 @@ export default function Savings() {
     {
       id: 1,
       title: "Monthly Deduction",
-      amount: `₦${balance?.monthlyDeduction}`,
+      amount: `₦${savingsBalance?.monthlyDeduction}`,
       status: "active",
       color: "white",
       bgColor: "#ADB7F0",
@@ -258,7 +260,7 @@ export default function Savings() {
 
         <View style={styles.balanceCard}>
           <Text style={styles.balanceLabel}>Savings Balance</Text>
-          <Text style={styles.balanceAmount}>₦{balance?.totalSavings}</Text>
+          <Text style={styles.balanceAmount}>₦{balance?.savings_balance || 0}</Text>
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.payButton} onPress={handleDeposit}>
               <Ionicons name="card" size={16} color="#fff" />
@@ -321,10 +323,10 @@ export default function Savings() {
           <Text style={styles.label}>Current Monthly Savings Deductions</Text>
           <TextInput
             style={styles.input}
-            value={`₦${balance?.monthlyDeduction.toString()}`}
+            value={`₦${savingsBalance?.monthlyDeduction.toString()}`}
             keyboardType="numeric"
             editable={false}
-            placeholder={balance?.monthlyDeduction.toString()}
+            placeholder={savingsBalance?.monthlyDeduction.toString()}
           />
 
           <Text style={styles.label}>New Monthly Savings Deductions</Text>
@@ -526,7 +528,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
     justifyContent: "center",
     fontFamily: "Poppins_400Regular",
-    paddingHorizontal: 15
+    paddingHorizontal: 15,
   },
   sectionHeader: {
     flexDirection: "row",
@@ -751,7 +753,7 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 10,
     marginVertical: 8,
-    fontFamily: "Poppins_400Regular"
+    fontFamily: "Poppins_400Regular",
   },
   row: { flexDirection: "row", justifyContent: "space-between", marginTop: 20 },
   button: {
