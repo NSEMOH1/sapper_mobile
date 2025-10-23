@@ -43,9 +43,16 @@ export default function AuthIndex() {
           --------------------------------- OR ---------------------------------
         </Text>
 
-        <Text onPress={handleLogin} style={styles.loginText}>
-          Already have an account? Sign In
-        </Text>
+        <TouchableOpacity onPress={handleLogin} style={{ borderRadius: 8 }}>
+          <LinearGradient
+            colors={["#814608", "#606E14", "#4F5D02"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.gradientButton}
+          >
+            <Text style={styles.gradientButtonText}>Personnel Sign In</Text>
+          </LinearGradient>
+        </TouchableOpacity>
 
         <View style={styles.footer}>
           <Text style={styles.footerLink}>Terms & Conditions</Text>

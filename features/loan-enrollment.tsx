@@ -80,7 +80,7 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
 
   const interestRate = getInterestRate(tenure);
   const loanAmount = parseFloat(amount) || 0;
-  const interestAmount = ((loanAmount * interestRate) / 100) * parseInt(tenure);
+  const interestAmount = (loanAmount * interestRate) / 100;
   const totalAmount = loanAmount + interestAmount;
   const monthlyPayment = totalAmount / parseInt(tenure);
 

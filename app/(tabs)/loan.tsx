@@ -15,6 +15,7 @@ import { CircularProgressProps, LoanRecord } from "@/types";
 import { useAuthStore } from "@/hooks/useAuth";
 import { router } from "expo-router";
 import { useBalances } from "@/hooks/useBalances";
+import { getInitials } from "@/constants/data";
 
 interface LoanCategory {
   title: string;
@@ -189,9 +190,9 @@ export default function Loan() {
           />
         </View>
         <View style={styles.headerRight}>
-          <View style={styles.avatarContainer}>
-            <Text style={styles.avatarText}>JA</Text>
-          </View>
+          <Text style={styles.avatarText}>
+            {getInitials(user?.first_name || "")}
+          </Text>
           <Ionicons
             name="notifications"
             size={24}

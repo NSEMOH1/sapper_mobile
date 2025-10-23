@@ -1,5 +1,6 @@
 import api from "@/constants/api";
 import { useSavingsBalance } from "@/hooks/useSavings";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   Text,
@@ -37,6 +38,7 @@ export default function Termination() {
         "Success",
         "Your account termination request has been submitted"
       );
+      router.push("/(tabs)/profile")
     } catch (e) {
       console.error(e);
       Alert.alert(

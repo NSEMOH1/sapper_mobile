@@ -3,9 +3,12 @@ import React from "react";
 import { Text, TouchableOpacity, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { getInitials } from "@/constants/data";
+import { useAuthStore } from "@/hooks/useAuth";
 
 export default function Profile() {
   const router = useRouter();
+  const { user } = useAuthStore()
 
   const links = [
     { id: 1, title: "Edit Profile", route: "/profile/edit" },
@@ -39,9 +42,9 @@ export default function Profile() {
           />
         </View>
         <View style={styles.headerRight}>
-          <View style={styles.avatarContainer}>
-            <Text style={styles.avatarText}>JA</Text>
-          </View>
+          <Text style={styles.avatarText}>
+            {getInitials(user?.first_name || "")}
+          </Text>
           <Ionicons
             name="notifications"
             size={24}
@@ -85,7 +88,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  avatarText: { color: "#fff", fontSize: 14, fontWeight: "bold", fontFamily: 'Poppins_400Regular',  },
+  avatarText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "bold",
+    fontFamily: "Poppins_400Regular",
+  },
   headerRight: { flexDirection: "row", alignItems: "center" },
   menu: { padding: 20 },
   menuItem: {
@@ -93,5 +101,5 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#ddd",
   },
-  menuText: { fontSize: 18, color: "#333", fontFamily: 'Poppins_400Regular',  },
+  menuText: { fontSize: 18, color: "#333", fontFamily: "Poppins_400Regular" },
 });

@@ -16,9 +16,10 @@ import { useSavingsBalance } from "@/hooks/useSavings";
 import api from "@/constants/api";
 import { useAuthStore } from "@/hooks/useAuth";
 import { useBalances } from "@/hooks/useBalances";
+import { getInitials } from "@/constants/data";
 
 export default function Savings() {
-  const { balance: savingsBalance } = useSavingsBalance();
+  const { balance: savingsBalance, refetch } = useSavingsBalance();
   const balance = useBalances();
   const [newSavings, setNewSavings] = useState("");
   const [success, setSuccess] = useState(false);
@@ -42,6 +43,7 @@ export default function Savings() {
       await api.put("/api/savings/deduction", payload);
       setSuccess(true);
       setNewSavings("");
+      await refetch();
     } catch (e: any) {
       setErrorMessage(e.message);
     } finally {
@@ -239,9 +241,9 @@ export default function Savings() {
             />
           </View>
           <View style={styles.headerRight}>
-            <View style={styles.avatarContainer}>
-              <Text style={styles.avatarText}>JA</Text>
-            </View>
+            <Text style={styles.avatarText}>
+              {getInitials(user?.first_name || "")}
+            </Text>
             <Ionicons
               name="notifications"
               size={24}
@@ -260,7 +262,9 @@ export default function Savings() {
 
         <View style={styles.balanceCard}>
           <Text style={styles.balanceLabel}>Savings Balance</Text>
-          <Text style={styles.balanceAmount}>₦{balance?.savings_balance || 0}</Text>
+          <Text style={styles.balanceAmount}>
+            ₦{balance?.savings_balance || 0}
+          </Text>
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.payButton} onPress={handleDeposit}>
               <Ionicons name="card" size={16} color="#fff" />
