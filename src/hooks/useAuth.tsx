@@ -1,0 +1,48 @@
+import { create } from "zustand";
+import { useTokenStorage } from "./useTokenStorage";
+import { jwtDecode } from "jwt-decode";
+import { AuthData, AuthStore, JwtPayload } from "@/types";
+
+
+export const useAuthStore = create<AuthStore>((set: any, get: any) => {
+  const { getAccessToken, removeAccessToken } = useTokenStorage();
+
+  return {
+    user: null,
+    token: null,
+    loading: false,
+    setUser: (data: any) => set({ user: data }),
+    logout: () => {
+      removeAccessToken();
+      set({ user: null, token: null, loading: false });
+    },
+    validateSession: async () => {
+      set({ loading: true });
+      try {
+        const currentToken = await getAccessToken();
+        if (!currentToken) {
+          throw new Error("No token found");
+        }
+        const decoded = jwtDecode<JwtPayload>(currentToken);
+
+        if (decoded.exp * 1000 < Date.now()) {
+          throw new Error("Token expired");
+        }
+
+        const userData: AuthData = {
+          id: decoded.id,
+          first_name: decoded.first_name || "",
+          last_name: decoded.last_name || "",
+          email: decoded.email,
+          role: decoded.role,
+        };
+
+        set({ user: userData, token: currentToken });
+      } catch (error) {
+        get().logout();
+      } finally {
+        set({ loading: false });
+      }
+    },
+  };
+});

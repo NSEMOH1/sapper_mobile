@@ -7,13 +7,13 @@
     "icon": "./assets/images/icon.png",
     "scheme": "sappers",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "splash": {
       "image": "./assets/images/logo-sappers.png",
       "resizeMode": "contain",
       "backgroundColor": "#6A7814"
     },
     "ios": {
+      "icon": "./assets/expo.icon",
       "supportsTablet": true,
       "splash": {
         "image": "./assets/images/sappper-logo.png",
@@ -29,6 +29,7 @@
       },
       "versionCode": 1,
       "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
       "splash": {
         "image": "./assets/images/sappper-logo.png",
         "resizeMode": "contain",
@@ -37,8 +38,8 @@
       "package": "com.codieprodigy.sappers"
     },
     "web": {
-      "bundler": "metro",
       "output": "static",
+      "bundler": "metro",
       "favicon": "./assets/images/sappper-logo.png"
     },
     "plugins": [
@@ -58,13 +59,8 @@
       ]
     ],
     "experiments": {
-      "typedRoutes": true
-    },
-    "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "3b11f18d-f392-4716-800b-807f59d0729b"
-      }
+      "typedRoutes": true,
+      "reactCompiler": true
     }
   }
 }
