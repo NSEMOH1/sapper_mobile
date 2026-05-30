@@ -19,8 +19,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Savings() {
-  const { balance: savingsBalance, refetch } = useSavingsBalance();
-  const balance = useBalances();
+  const { data: savingsBalance, refetch } = useSavingsBalance();
+  const { data: balance, isLoading, error, refetch: refetchBalances } = useBalances();
   const [newSavings, setNewSavings] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);

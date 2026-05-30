@@ -20,7 +20,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function HomeScreen() {
   const [showLoanModal, setShowLoanModal] = useState(false);
   const { user } = useAuthStore();
-  const balance = useBalances();
+  const { data, isLoading, error, refetch } = useBalances();
 
   const handleSavings = () => {
     router.push("/(tabs)/savings");
@@ -34,7 +34,7 @@ export default function HomeScreen() {
     {
       id: 1,
       title: "Regular Loan",
-      amount: `₦${balance?.loan_balance || 0}`,
+      amount: `₦${data?.loan_balance || 0}`,
       status: "active",
       color: "white",
       bgColor: "#53B175",
@@ -73,13 +73,13 @@ export default function HomeScreen() {
     {
       id: 1,
       title: "Total Savings",
-      amount: `₦${balance?.savings_balance || 0}`,
+      amount: `₦${data?.savings_balance || 0}`,
       bgColor: "#6A7814",
     },
     {
       id: 2,
       title: "Loan Balance",
-      amount: `₦${balance?.loan_balance || 0}`,
+      amount: `₦${data?.loan_balance || 0}`,
       bgColor: "#F20D16",
     },
   ];

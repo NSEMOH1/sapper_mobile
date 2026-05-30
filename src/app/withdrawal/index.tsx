@@ -1,4 +1,4 @@
-import api from "@/constants/api";
+import { submitWithdrawal } from "@/services/api.service";
 import { useAuthStore } from "@/hooks/useAuth";
 import { useMemberStore } from "@/store/user";
 import { Ionicons } from "@expo/vector-icons";
@@ -18,7 +18,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const WithdrawalApplication = () => {
+export default function WithdrawalApplication() {
   const [currentStep, setCurrentStep] = useState(1);
   const [amount, setAmount] = useState("");
   const [pin, setPin] = useState("");
@@ -44,7 +44,7 @@ const WithdrawalApplication = () => {
   const handleWithdrawal = async () => {
     setLoading(true);
     try {
-      await api.post("/api/savings/withdraw", payload);
+      await submitWithdrawal(payload);
       Alert.alert("Success", "Withdrawal application submitted successfully", [
         {
           text: "OK",
@@ -265,8 +265,6 @@ const WithdrawalApplication = () => {
     </SafeAreaView>
   );
 };
-
-export default WithdrawalApplication;
 
 const styles = StyleSheet.create({
   container: {

@@ -1,51 +1,35 @@
-import api from "@/constants/api";
-import { useAuthStore } from "@/hooks/useAuth";
+// src/app/auth/login.tsx
+import { useLogin } from "@/hooks/useAuth";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function LoginScreen() {
   const [serviceNumber, setServiceNumber] = useState("");
   const [password, setPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { setUser } = useAuthStore();
 
-  const handleSignup = () => {
-    router.push("/auth/signup");
-  };
+  // useLogin() wraps the API call in a React Query mutation.
+  // - isPending: true while the request is in-flight
+  // - error: populated on failure, null otherwise
+  // - mutate: fire the login request
+  const { mutate: login, isPending, error, reset } = useLogin();
 
-  const handleForgotPassword = () => {
-    router.push("/auth/forgot-password");
-  };
+  const errorMessage =
+    error instanceof Error ? error.message : error ? "Login failed. Please check your credentials." : "";
 
-  const payload = {
-    service_number: serviceNumber,
-    password: password,
-  };
-
-  const handleSignin = async () => {
-    setLoading(true);
-    try {
-      const res = await api.post("/api/auth/member/login", payload);
-      setUser(res.data.user);
-      router.push("/(tabs)");
-    } catch (e) {
-      console.error(e);
-      setErrorMessage("Login failed. Please check your credentials.");
-    } finally {
-      setLoading(false);
-    }
+  const handleSignin = () => {
+    reset(); // Clear any previous error
+    login({ service_number: serviceNumber, password });
   };
 
   return (
@@ -61,29 +45,27 @@ export default function LoginScreen() {
               SAPPERS MULTIPURPOSE COOPERATIVE SOCIETY LIMITED (BONNY CAMP)
             </Text>
             <Text style={styles.greenSubtitle}>
-              Fast and Easy Cooperative Sappers Multipurpose Cooperative Society
-              supports over 1000 members in achieving their financial goals —
-              helping them save consistently, access affordable loans, and grow
-              with ease.
+              Fast and Easy Cooperative — supporting over 1000 members in
+              achieving their financial goals.
             </Text>
           </View>
         </View>
 
         <View style={styles.formCard}>
           {errorMessage ? (
-            <Text
-              style={{ color: "red", textAlign: "center", marginBottom: 10 }}
-            >
+            <Text style={{ color: "red", textAlign: "center", marginBottom: 10 }}>
               {errorMessage}
             </Text>
           ) : null}
+
           <View style={styles.headerRow}>
             <Text style={styles.welcomeText}>
               Welcome to <Text style={{ fontWeight: "bold" }}>Sappers</Text>
             </Text>
-            <TouchableOpacity onPress={handleSignup}>
+            <TouchableOpacity onPress={() => router.push("/auth/signup")}>
               <Text style={styles.signupText}>
-                No Account ? <Text style={{ color: "#82B921" }}>Sign up</Text>
+                No Account?{" "}
+                <Text style={{ color: "#82B921" }}>Sign up</Text>
               </Text>
             </TouchableOpacity>
           </View>
@@ -118,6 +100,7 @@ export default function LoginScreen() {
             value={serviceNumber}
             onChangeText={setServiceNumber}
             style={styles.input}
+            autoCapitalize="none"
           />
 
           <Text style={styles.label}>Enter your Password</Text>
@@ -128,23 +111,26 @@ export default function LoginScreen() {
             onChangeText={setPassword}
             style={styles.input}
           />
+
           <TouchableOpacity
             style={{ alignSelf: "flex-end", marginBottom: 20 }}
-            onPress={handleForgotPassword}
+            onPress={() => router.push("/auth/forgot-password")}
           >
             <Text style={{ color: "#007BFF", fontSize: 12 }}>
               Forgot Password
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={handleSignin} disabled={loading}>
+          <TouchableOpacity onPress={handleSignin} disabled={isPending}>
             <LinearGradient
               colors={["#82B921", "#4D7300"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.signInBtn}
             >
-              <Text style={styles.signInText}>{loading ? "Signing in" : "Sign in"}</Text>
+              <Text style={styles.signInText}>
+                {isPending ? "Signing in…" : "Sign in"}
+              </Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
@@ -173,13 +159,13 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#fff",
     marginBottom: 5,
-        fontFamily: 'Poppins_400Regular', 
+    fontFamily: "Poppins_400Regular",
   },
   greenSubtitle: {
     fontSize: 11,
     color: "#fff",
     lineHeight: 16,
-        fontFamily: 'Poppins_400Regular', 
+    fontFamily: "Poppins_400Regular",
   },
   formCard: {
     backgroundColor: "#fff",
@@ -201,18 +187,18 @@ const styles = StyleSheet.create({
   welcomeText: {
     fontSize: 14,
     color: "#333",
-        fontFamily: 'Poppins_400Regular', 
+    fontFamily: "Poppins_400Regular",
   },
   signupText: {
     fontSize: 12,
     color: "#555",
-        fontFamily: 'Poppins_400Regular', 
+    fontFamily: "Poppins_400Regular",
   },
   signInTitle: {
     fontSize: 22,
     fontWeight: "bold",
     marginBottom: 20,
-        fontFamily: 'Poppins_400Regular', 
+    fontFamily: "Poppins_400Regular",
   },
   socialRow: {
     flexDirection: "row",
@@ -232,30 +218,22 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginLeft: 8,
     color: "#4285F4",
-        fontFamily: 'Poppins_400Regular', 
+    fontFamily: "Poppins_400Regular",
   },
-  socialIcon: {
-    width: 20,
-    height: 20,
-    resizeMode: "contain",
-  },
+  socialIcon: { width: 20, height: 20, resizeMode: "contain" },
   iconBtn: {
     backgroundColor: "#f2f2f2",
     borderRadius: 8,
     padding: 8,
     marginLeft: 8,
   },
-  iconSmall: {
-    width: 20,
-    height: 20,
-    resizeMode: "contain",
-  },
+  iconSmall: { width: 20, height: 20, resizeMode: "contain" },
   label: {
     fontSize: 12,
     color: "#555",
     marginBottom: 5,
     marginTop: 10,
-        fontFamily: 'Poppins_400Regular', 
+    fontFamily: "Poppins_400Regular",
   },
   input: {
     borderWidth: 1,
@@ -275,6 +253,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
-        fontFamily: 'Poppins_400Regular', 
+    fontFamily: "Poppins_400Regular",
   },
 });

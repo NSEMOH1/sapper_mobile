@@ -20,174 +20,187 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({
   onLoginPress,
   backgroundImage,
 }) => {
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <ImageBackground
-        source={backgroundImage}
-        resizeMode="cover"
-        style={styles.backgroundImage}
-      >
-        <View style={styles.successOverlay}>
-          <View style={styles.successContainer}>
-            <View style={styles.logo}>
-              <Image
-                source={require("@/assets/images/sappper-logo.png")}
-                style={styles.logoImage}
-              />
-            </View>
-            <View style={styles.successCard}>
-              <Text style={styles.successTitle}>{message}</Text>
+  const content = (
+    <View style={styles.successOverlay}>
+      <View style={styles.successContainer}>
+        <View style={styles.logo}>
+          <Image
+            source={require("@/assets/images/sappper-logo.png")}
+            style={styles.logoImage}
+          />
+        </View>
+        <View style={styles.successCard}>
+          <Text style={styles.successTitle}>{message}</Text>
 
-              <View style={styles.successIconContainer}>
-                <View
-                  style={[
-                    styles.decorativeCircle,
-                    {
-                      backgroundColor: "#82B921",
-                      width: 8,
-                      height: 8,
-                      top: 20,
-                      left: 30,
-                    },
-                  ]}
-                />
-                <View
-                  style={[
-                    styles.decorativeCircle,
-                    {
-                      backgroundColor: "#FF6B35",
-                      width: 6,
-                      height: 6,
-                      top: 40,
-                      right: 40,
-                    },
-                  ]}
-                />
-                <View
-                  style={[
-                    styles.decorativeLine,
-                    {
-                      backgroundColor: "#FF6B35",
-                      top: 60,
-                      right: 20,
-                      transform: [{ rotate: "45deg" }],
-                    },
-                  ]}
-                />
-                <View
-                  style={[
-                    styles.decorativeLine,
-                    {
-                      backgroundColor: "#FFD700",
-                      bottom: 80,
-                      left: 20,
-                      transform: [{ rotate: "-30deg" }],
-                    },
-                  ]}
-                />
-                <View
-                  style={[
-                    styles.decorativeLine,
-                    {
-                      backgroundColor: "#6B73FF",
-                      bottom: 40,
-                      left: 40,
-                      transform: [{ rotate: "60deg" }],
-                    },
-                  ]}
-                />
-                <View
-                  style={[
-                    styles.decorativeCircle,
-                    {
-                      backgroundColor: "#E6E6FA",
-                      width: 12,
-                      height: 12,
-                      bottom: 60,
-                      right: 30,
-                      borderWidth: 1,
-                      borderColor: "#DDD",
-                    },
-                  ]}
-                />
-                <View
-                  style={[
-                    styles.decorativeCircle,
-                    {
-                      backgroundColor: "#98FB98",
-                      width: 6,
-                      height: 6,
-                      bottom: 20,
-                      left: 60,
-                    },
-                  ]}
-                />
-                <View
-                  style={[
-                    styles.decorativeCircle,
-                    {
-                      backgroundColor: "#FF1493",
-                      width: 8,
-                      height: 8,
-                      bottom: 30,
-                      right: 60,
-                    },
-                  ]}
-                />
-                <View
-                  style={[
-                    styles.decorativeCircle,
-                    {
-                      backgroundColor: "transparent",
-                      width: 16,
-                      height: 16,
-                      top: 80,
-                      left: 60,
-                      borderWidth: 2,
-                      borderColor: "#DDD",
-                    },
-                  ]}
-                />
-                <View
-                  style={[
-                    styles.decorativeCircle,
-                    {
-                      backgroundColor: "transparent",
-                      width: 20,
-                      height: 20,
-                      bottom: 100,
-                      right: 50,
-                      borderWidth: 2,
-                      borderColor: "#E6E6FA",
-                    },
-                  ]}
-                />
-                <View style={styles.successIcon}>
-                  <Text style={styles.checkmark}>✓</Text>
-                </View>
-              </View>
-
-              <TouchableOpacity
-                style={styles.loginButton}
-                onPress={onLoginPress}
-              >
-                <Text style={styles.loginButtonText}>Login</Text>
-                <Text style={styles.loginArrow}>→</Text>
-              </TouchableOpacity>
+          <View style={styles.successIconContainer}>
+            <View
+              style={[
+                styles.decorativeCircle,
+                {
+                  backgroundColor: "#82B921",
+                  width: 8,
+                  height: 8,
+                  top: 20,
+                  left: 30,
+                },
+              ]}
+            />
+            <View
+              style={[
+                styles.decorativeCircle,
+                {
+                  backgroundColor: "#FF6B35",
+                  width: 6,
+                  height: 6,
+                  top: 40,
+                  right: 40,
+                },
+              ]}
+            />
+            <View
+              style={[
+                styles.decorativeLine,
+                {
+                  backgroundColor: "#FF6B35",
+                  top: 60,
+                  right: 20,
+                  transform: [{ rotate: "45deg" }],
+                },
+              ]}
+            />
+            <View
+              style={[
+                styles.decorativeLine,
+                {
+                  backgroundColor: "#FFD700",
+                  bottom: 80,
+                  left: 20,
+                  transform: [{ rotate: "-30deg" }],
+                },
+              ]}
+            />
+            <View
+              style={[
+                styles.decorativeLine,
+                {
+                  backgroundColor: "#6B73FF",
+                  bottom: 40,
+                  left: 40,
+                  transform: [{ rotate: "60deg" }],
+                },
+              ]}
+            />
+            <View
+              style={[
+                styles.decorativeCircle,
+                {
+                  backgroundColor: "#E6E6FA",
+                  width: 12,
+                  height: 12,
+                  bottom: 60,
+                  right: 30,
+                  borderWidth: 1,
+                  borderColor: "#DDD",
+                },
+              ]}
+            />
+            <View
+              style={[
+                styles.decorativeCircle,
+                {
+                  backgroundColor: "#98FB98",
+                  width: 6,
+                  height: 6,
+                  bottom: 20,
+                  left: 60,
+                },
+              ]}
+            />
+            <View
+              style={[
+                styles.decorativeCircle,
+                {
+                  backgroundColor: "#FF1493",
+                  width: 8,
+                  height: 8,
+                  bottom: 30,
+                  right: 60,
+                },
+              ]}
+            />
+            <View
+              style={[
+                styles.decorativeCircle,
+                {
+                  backgroundColor: "transparent",
+                  width: 16,
+                  height: 16,
+                  top: 80,
+                  left: 60,
+                  borderWidth: 2,
+                  borderColor: "#DDD",
+                },
+              ]}
+            />
+            <View
+              style={[
+                styles.decorativeCircle,
+                {
+                  backgroundColor: "transparent",
+                  width: 20,
+                  height: 20,
+                  bottom: 100,
+                  right: 50,
+                  borderWidth: 2,
+                  borderColor: "#E6E6FA",
+                },
+              ]}
+            />
+            <View style={styles.successIcon}>
+              <Text style={styles.checkmark}>✓</Text>
             </View>
           </View>
+
+          <TouchableOpacity
+            style={styles.loginButton}
+            onPress={onLoginPress}
+          >
+            <Text style={styles.loginButtonText}>Done</Text>
+            <Text style={styles.loginArrow}>→</Text>
+          </TouchableOpacity>
         </View>
-      </ImageBackground>
-    </SafeAreaView>
+      </View>
+    </View>
   );
+
+  if (backgroundImage) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <ImageBackground
+          source={backgroundImage}
+          resizeMode="cover"
+          style={styles.backgroundImage}
+        >
+          {content}
+        </ImageBackground>
+      </SafeAreaView>
+    );
+  }
+
+  return <View style={[styles.safeArea, styles.plainBackground]}>{content}</View>;
 };
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
+  plainBackground: { backgroundColor: "#fff" },
   backgroundImage: { flex: 1 },
-  successOverlay: { flex: 1, justifyContent: "center", alignItems: "center" },
+  successOverlay: {
+    height: 90,
+    flex: 2, 
+    justifyContent: "center", 
+    alignItems: "center" 
+  },
   successContainer: {
-    flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,

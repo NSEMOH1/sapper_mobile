@@ -20,7 +20,7 @@ import { useMemberStore } from "@/store/user";
 import { useAuthStore } from "@/hooks/useAuth";
 import SuccessScreen from "@/components/Success";
 import { useBalances } from "@/hooks/useBalances";
-import api from "@/constants/api";
+import { applyForLoan, verifyLoanOTP } from "@/services/api.service";
 
 interface UploadedFile {
   uri: string;
@@ -56,7 +56,7 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
   const [otp, setOtp] = useState("");
   const [loanId, setLoanId] = useState<string>("");
 
-  const { balance: savingsBalance } = useSavingsBalance();
+  const { data: savingsBalance } = useSavingsBalance();
   const balance = useBalances();
   const { user } = useAuthStore();
   const { member, fetchMemberData } = useMemberStore();
@@ -301,17 +301,12 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
     setLoading(true);
     try {
       const formData = createFormData();
-      const response = await api.post("/api/loan/apply", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        timeout: 30000,
-      });
+      const response = await applyForLoan(formData);
 
-      if (response.data.success) {
-        setLoanId(response.data.loan.id);
-        console.log("otp", response.data.otp);
-        Alert.alert("Success", response.data.message);
+      if (response.success) {
+        setLoanId(response.loan.id);
+        console.log("otp", response.otp);
+        Alert.alert("Success", response.message);
         setStep(5);
       }
     } catch (error) {
@@ -343,11 +338,9 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
     }
     setLoading(true);
     try {
-      const response = await api.post(`/api/loan/${loanId}/verify`, {
-        otp,
-      });
+      const response = await verifyLoanOTP(loanId, otp);
 
-      if (response.data.success) {
+      if (response.success) {
         setStep(6);
       }
     } catch (error: any) {
@@ -423,16 +416,16 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           <View style={styles.header}>
-            {step !== 6 && (
+            {step !== 6 ? (
               <TouchableOpacity onPress={handleBack} style={styles.backButton}>
                 <ArrowLeft size={24} color="#333" />
               </TouchableOpacity>
+            ) : (
+              <View style={styles.backButton} />
             )}
-            {step !== 6 && (
-              <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                <X size={24} color="#333" />
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+              <X size={24} color="#333" />
+            </TouchableOpacity>
           </View>
 
           {/* Step 1: Form Questions */}
@@ -484,7 +477,7 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
                 <Text style={styles.label}>Total Savings (₦)</Text>
                 <TextInput
                   style={[styles.input, styles.disabledInput]}
-                  value={`₦${balance?.savings_balance || 0}`}
+                  value={`₦${balance.data?.savings_balance || 0}`}
                   editable={false}
                 />
               </View>

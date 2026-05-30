@@ -1,24 +1,34 @@
-import { useEffect } from "react";
-import { useSavingsBalanceStore } from "@/store/savings";
+import { useQuery } from "@tanstack/react-query";
+import Decimal from "decimal.js";
+import { queryKeys } from "@/lib/queryKeys";
+import { fetchSavingsBalance } from "@/services/api.service";
 
-export const useSavingsBalance = (autoFetch = true) => {
-  const { balance, loading, error, fetchSavingsBalance } =
-    useSavingsBalanceStore();
+/**
+ * Returns the member's savings balance with category helpers.
+ *
+ * Usage:
+ *   const { data, isLoading, error, refetch } = useSavingsBalance();
+ *   const total = data?.totalSavings;
+ */
+export function useSavingsBalance() {
+  const query = useQuery({
+    queryKey: queryKeys.savings.balances(),
+    queryFn: fetchSavingsBalance,
+  });
 
-  useEffect(() => {
-    if (autoFetch && !balance && !loading) {
-      const timer = setTimeout(() => {
-        fetchSavingsBalance();
-      }, 100);
+  const getCategoryTotal = (categoryName: string): Decimal => {
+    const balance = query.data;
+    if (!balance) return new Decimal(0);
 
-      return () => clearTimeout(timer);
-    }
-  }, [autoFetch, balance, loading, fetchSavingsBalance]);
+    if (categoryName === "QUICK") return balance.normalSavings;
+    if (categoryName === "COOPERATIVE") return balance.cooperativeSavings;
+
+    const category = balance.details.find((d) => d.categoryName === categoryName);
+    return category ? category.amount : new Decimal(0);
+  };
 
   return {
-    balance,
-    loading,
-    error,
-    refetch: fetchSavingsBalance,
+    ...query,
+    getCategoryTotal,
   };
-};
+}

@@ -30,7 +30,7 @@ interface LoanCategory {
 
 export default function Loan() {
   const [showLoanModal, setShowLoanModal] = useState(false);
-  const balance = useBalances();
+  const { data: balance, isLoading, error, refetch } = useBalances();
   const { user } = useAuthStore();
   const handlePayment = () => {
     router.push("/payments");

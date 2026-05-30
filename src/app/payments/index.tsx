@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   Modal,
   Alert,
@@ -14,8 +13,10 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { usePaystack } from "react-native-paystack-webview";
+import { submitDeposit } from "@/services/api.service";
 import { useAuthStore } from "@/hooks/useAuth";
-import api from "@/constants/api";
+
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const PaymentFlow = () => {
   const [selectedType, setSelectedType] = useState<string>("Loan Payment");
@@ -52,7 +53,7 @@ const PaymentFlow = () => {
 
   const handleDeposit = async () => {
     try {
-      await api.post("/api/savings/deposit", payload);
+      await submitDeposit(payload);
     } catch (e) {
       console.error(e);
     }

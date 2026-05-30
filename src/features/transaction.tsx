@@ -7,7 +7,8 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import api from "@/constants/api";
+import { fetchTransactions } from "@/services/api.service";
+import type { TransactionResponseItem } from "@/services/api.service";
 
 interface Transaction {
   id: string;
@@ -72,21 +73,13 @@ export const TransactionsModule = () => {
   const [error, setError] = useState<any>(null);
 
   useEffect(() => {
-    const fetchTransactions = async () => {
+    const load = async () => {
       try {
-        const response = await api.get("/api/transactions");
-        const fetchedTransactions = response.data.data.map(
-          (transaction: {
-            id: any;
-            type: any;
-            description: any;
-            reference: any;
-            amount: { toString: () => any };
-            createdAt: string | number | Date;
-            status: any;
-          }) => ({
+        const data = await fetchTransactions();
+        const mapped = data.map(
+          (transaction: TransactionResponseItem) => ({
             id: transaction.id,
-            type: transaction.type,
+            type: transaction.type as "credit" | "debit",
             title: transaction.description,
             category: transaction.reference || "General",
             amount: transaction.amount.toString(),
@@ -95,10 +88,10 @@ export const TransactionsModule = () => {
               hour: "2-digit",
               minute: "2-digit",
             }),
-            status: transaction.status,
+            status: transaction.status as "completed" | "pending" | "failed",
           })
         );
-        setTransactions(fetchedTransactions);
+        setTransactions(mapped);
       } catch (err: any) {
         setError("Failed to fetch transactions");
       } finally {
@@ -106,7 +99,7 @@ export const TransactionsModule = () => {
       }
     };
 
-    fetchTransactions();
+    load();
   }, []);
 
   if (loading) {

@@ -11,24 +11,33 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { queryClient } from "@/lib/queryClient";
+import { useTokenStorage } from "@/hooks/useTokenStorage";
+import { setupInterceptors } from "@/constants/api";
 
 // import { useColorScheme } from "@/hooks/useColorScheme";
 // import { setupInterceptors } from "@/constants/api";
 // import { useEffect } from "react";
 // import { useTokenStorage } from "@/hooks/useTokenStorage";
 
+function InterceptorSetup() {
+  const { getAccessToken, setAccessToken } = useTokenStorage();
+
+  useEffect(() => {
+    setupInterceptors({ getAccessToken, setAccessToken });
+  }, []);
+
+  return null;
+}
 
 export default function RootLayout() {
-  // const colorScheme = useColorScheme();
-  const [ fontLoaded ] = useFonts({
+  const [fontLoaded] = useFonts({
     Poppins_400Regular,
     Poppins_700Bold,
   });
-  // const { getAccessToken, setAccessToken } = useTokenStorage();
 
-  // useEffect(() => {
-  //   setupInterceptors({ getAccessToken, setAccessToken });
-  // }, [getAccessToken, setAccessToken]);
 
   if (!fontLoaded) {
     // Async font loading only occurs in development.
@@ -36,27 +45,38 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={DefaultTheme as any}>
-      <Stack>
-        <Stack.Screen
-          name="index"
-          options={{ headerShown: false, gestureEnabled: false }}
-        />
-        <Stack.Screen
-          name="welcome"
-          options={{ headerShown: false, gestureEnabled: false }}
-        />
-        <Stack.Screen
-          name="auth"
-          options={{ headerShown: false, gestureEnabled: false }}
-        />
-        <Stack.Screen
-          name="(tabs)"
-          options={{ headerShown: false, gestureEnabled: false }}
-        />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <InterceptorSetup />
+      <ThemeProvider value={DefaultTheme as any}>
+        <Stack>
+          <Stack.Screen
+            name="index"
+            options={{ headerShown: false, gestureEnabled: false }}
+          />
+          <Stack.Screen
+            name="welcome"
+            options={{ headerShown: false, gestureEnabled: false }}
+          />
+          <Stack.Screen
+            name="auth"
+            options={{ headerShown: false, gestureEnabled: false }}
+          />
+          <Stack.Screen
+            name="(tabs)"
+            options={{ headerShown: false, gestureEnabled: false }}
+          />
+          <Stack.Screen
+            name="withdrawal"
+            options={{ headerShown: false, gestureEnabled: false }}
+          />
+          <Stack.Screen
+            name="payments"
+            options={{ headerShown: false, gestureEnabled: false }}
+          />
+          <Stack.Screen name="+not-found" />
+        </Stack>
+        <StatusBar style="auto" />
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
