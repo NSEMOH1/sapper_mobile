@@ -4,11 +4,10 @@ import { TransactionsModule } from "@/features/transaction";
 import { useAuthStore } from "@/hooks/useAuth";
 import { useBalances } from "@/hooks/useBalances";
 import { Ionicons } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { TrendingUp } from "lucide-react-native";
-import React, { useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
-  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -17,226 +16,191 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+const ACCENT = "#213400";
+const BG = "#F5F7FA";
+
+const getGreeting = () => {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
+};
+
+const quickActions = [
+  { icon: "card-outline" as const, label: "Pay", route: "/payments" },
+  { icon: "piggy-bank-outline" as const, label: "Savings", route: "/(tabs)/savings" },
+  { icon: "add-circle-outline" as const, label: "Loan", modal: true as const },
+];
+
+const loanProducts = [
+  { id: 1, title: "Regular Loan", icon: "briefcase-outline" as const, bg: "#53B175" },
+  { id: 2, title: "Housing Loan", icon: "home-outline" as const, bg: "#444012" },
+  { id: 3, title: "Commodity Loan", icon: "cart-outline" as const, bg: "#057392" },
+  { id: 4, title: "Emergency Loan", icon: "flash-outline" as const, bg: "#E07B3C" },
+  { id: 5, title: "Home Appliance", icon: "tv-outline" as const, bg: "#060402" },
+];
+
 export default function HomeScreen() {
   const [showLoanModal, setShowLoanModal] = useState(false);
+  const [hideBalance, setHideBalance] = useState(false);
   const { user } = useAuthStore();
-  const { data, isLoading, error, refetch } = useBalances();
+  const { data, refetch } = useBalances();
 
-  const handleSavings = () => {
-    router.push("/(tabs)/savings");
-  };
+  const savingsBalance = useMemo(() => Number(data?.savings_balance || 0), [data]);
+  const loanBalance = useMemo(() => Number(data?.loan_balance || 0), [data]);
+  const totalBalance = savingsBalance + loanBalance;
 
-  const handleMakePayment = () => {
-    router.push("/payments");
-  };
+  const obscured = (n: number) => (hideBalance ? `₦${"•".repeat(Math.max(4, n.toString().length))}` : `₦${n.toLocaleString()}`);
 
-  const financialRecords = [
-    {
-      id: 1,
-      title: "Regular Loan",
-      amount: `₦${data?.loan_balance || 0}`,
-      status: "active",
-      color: "white",
-      bgColor: "#53B175",
+  const handleQuickAction = useCallback(
+    (action: (typeof quickActions)[number]) => {
+      if ("modal" in action) {
+        setShowLoanModal(true);
+      } else {
+        router.push(action.route as any);
+      }
     },
-    {
-      id: 2,
-      title: "Housing Loan",
-      status: "Coming Soon",
-      color: "white",
-      bgColor: "#444012",
-    },
-    {
-      id: 3,
-      title: "Commodity Loan",
-      status: "Coming Soon",
-      color: "white",
-      bgColor: "#057392",
-    },
-    {
-      id: 4,
-      title: "Emergency Loan",
-      status: "Coming Soon",
-      color: "white",
-      bgColor: "#EBB9A1",
-    },
-    {
-      id: 5,
-      title: "Home Appliance Loan",
-      status: "Coming Soon",
-      color: "white",
-      bgColor: "#060402",
-    },
-  ];
-
-  const savingsCards = [
-    {
-      id: 1,
-      title: "Total Savings",
-      amount: `₦${data?.savings_balance || 0}`,
-      bgColor: "#6A7814",
-    },
-    {
-      id: 2,
-      title: "Loan Balance",
-      amount: `₦${data?.loan_balance || 0}`,
-      bgColor: "#F20D16",
-    },
-  ];
+    [],
+  );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false} horizontal={false}>
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <View style={styles.greeting}>
-              <Text style={styles.greetingText}>
-                Good afternoon{" "}
-                <Text style={styles.nameText}>{user?.first_name}</Text> 👋
-              </Text>
-            </View>
+    <SafeAreaView style={s.container}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
+        {/* ── Header ─────────────────────────────────────── */}
+        <View style={s.header}>
+          <View>
+            <Text style={s.greeting}>
+              {getGreeting()},
+            </Text>
+            <Text style={s.userName}>{user?.first_name || "User"}</Text>
           </View>
-          <View style={styles.headerRight}>
-            <View style={styles.avatarContainer}>
-              <Text style={styles.avatarText}>
+          <View style={s.headerRight}>
+            <View style={s.avatar}>
+              <Text style={s.avatarText}>
                 {getInitials(user?.first_name || "")}
               </Text>
             </View>
-            <Ionicons
-              name="notifications"
-              size={24}
-              color="#333"
-              style={{ marginLeft: 10 }}
-            />
+            <TouchableOpacity style={s.notifBtn}>
+              <Ionicons name="notifications-outline" size={22} color="#1A1A2E" />
+              <View style={s.notifDot} />
+            </TouchableOpacity>
           </View>
         </View>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.carouselContainer}
-          pagingEnabled
-        >
-          {savingsCards.map((card) => (
-            <View
-              key={card.id}
-              style={[styles.savingsCard, { backgroundColor: card.bgColor }]}
-            >
-              <Text style={styles.savingsTitle}>{card.title}</Text>
-              <Text style={styles.savingsAmount}>{card.amount}</Text>
-              <View style={styles.btnContainer}>
-                <TouchableOpacity
-                  style={styles.viewMoreButton}
-                  onPress={handleMakePayment}
-                >
-                  <Text style={styles.viewMoreText}>Pay Now</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.viewMoreButton}
-                  onPress={handleMakePayment}
-                >
-                  <Text style={styles.viewMoreText}>Pay Off</Text>
-                </TouchableOpacity>
+        {/* ── Balance Card ────────────────────────────────── */}
+        <View style={s.balanceCard}>
+          <TouchableOpacity style={s.balanceRefresh} onPress={() => refetch()}>
+            <Ionicons name="refresh-outline" size={16} color="rgba(255,255,255,0.7)" />
+          </TouchableOpacity>
+          <View style={s.balanceTitleRow}>
+            <Text style={s.balanceTitle}>Balance Overview</Text>
+          </View>
+
+          <View style={s.balanceTitleRow}>
+            
+          <Text style={s.balanceTotal}>
+            {obscured(totalBalance)}
+          </Text>
+
+            <TouchableOpacity onPress={() => setHideBalance((v) => !v)} style={s.eyeBtn}>
+              <Ionicons
+                name={hideBalance ? "eye-off-outline" : "eye-outline"}
+                size={18}
+                color="rgba(255,255,255,0.7)"
+              />
+            </TouchableOpacity>
+          </View>
+          <Text style={s.balanceSub}>Combined balance</Text>
+
+          <View style={s.balanceRow}>
+            <View style={s.balanceItem}>
+              <View style={[s.balanceDot, { backgroundColor: "#4CAF50" }]} />
+              <View>
+                <Text style={s.balanceLabel}>Savings</Text>
+                <Text style={s.balanceValue}>{obscured(savingsBalance)}</Text>
               </View>
             </View>
+            <View style={s.balanceDivider} />
+            <View style={s.balanceItem}>
+              <View style={[s.balanceDot, { backgroundColor: "#EF4444" }]} />
+              <View>
+                <Text style={s.balanceLabel}>Loan</Text>
+                <Text style={s.balanceValue}>{obscured(loanBalance)}</Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={s.balanceActions}>
+            <TouchableOpacity
+              style={s.balanceActionBtn}
+              onPress={() => router.push("/payments" as any)}
+            >
+              <Ionicons name="card-outline" size={16} color="#fff" />
+              <Text style={s.balanceActionText}>Pay Now</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[s.balanceActionBtn, s.balanceActionOutline]}
+              onPress={() => router.push("/payments" as any)}
+            >
+              <Ionicons name="checkmark-circle-outline" size={16} color={ACCENT} />
+              <Text style={[s.balanceActionText, { color: ACCENT }]}>Pay Off</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* ── Quick Actions ──────────────────────────────── */}
+        <Text style={s.sectionTitle}>Quick Actions</Text>
+        <View style={s.quickGrid}>
+          {quickActions.map((action) => (
+            <TouchableOpacity
+              key={action.label}
+              style={s.quickCard}
+              onPress={() => handleQuickAction(action)}
+              activeOpacity={0.7}
+            >
+              <View style={s.quickIcon}>
+                <Ionicons name={action.icon as any} size={24} color={ACCENT} />
+              </View>
+              <Text style={s.quickLabel}>{action.label}</Text>
+            </TouchableOpacity>
           ))}
-        </ScrollView>
+        </View>
 
-        {/* Page Indicator */}
-        {/* <View style={styles.pageIndicator}>
-          <View style={[styles.dot, styles.activeDot]} />
-          <View style={styles.dot} />
-        </View> */}
-
-        {/* Quick Transactions */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quick Transactions</Text>
-          <View style={styles.quickTransactions}>
+        {/* ── Loan Products ──────────────────────────────── */}
+        <View style={s.sectionHead}>
+          <Text style={s.sectionTitle}>Loan Products</Text>
+          <TouchableOpacity onPress={() => router.push("/(tabs)/loan" as any)}>
+            <Text style={s.seeAll}>See All</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={s.loanGrid}>
+          {loanProducts.slice(0, 4).map((product) => (
             <TouchableOpacity
-              style={styles.transactionItem}
-              onPress={handleMakePayment}
-            >
-              <View
-                style={[styles.transactionIcon, { backgroundColor: "white" }]}
-              >
-                <Image source={require("@/assets/images/payment.png")} />
-              </View>
-              <Text style={styles.transactionText}>Make{"\n"}Payment</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.transactionItem}
-              onPress={handleSavings}
-            >
-              <View
-                style={[styles.transactionIcon, { backgroundColor: "white" }]}
-              >
-                <Image source={require("@/assets/images/file.png")} />
-              </View>
-              <Text style={styles.transactionText}>
-                Savings{"\n"}Adjustment
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.transactionItem}
+              key={product.id}
+              style={[s.loanCard, { backgroundColor: product.bg }]}
+              activeOpacity={0.85}
               onPress={() => setShowLoanModal(true)}
             >
-              <View
-                style={[styles.transactionIcon, { backgroundColor: "white" }]}
-              >
-                <Image source={require("@/assets/images/pig.png")} />
+              <View style={s.loanIconWrap}>
+                <Ionicons name={product.icon} size={20} color="#fff" />
               </View>
-              <Text style={styles.transactionText}>Take a{"\n"}Loan</Text>
+              <Text style={s.loanName} numberOfLines={2}>
+                {product.title}
+              </Text>
+              <Text style={s.loanStatus}>
+                {product.id === 1 ? "Active" : "Soon"}
+              </Text>
             </TouchableOpacity>
-          </View>
+          ))}
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Financial Record</Text>
-          <View style={styles.financialGrid}>
-            {financialRecords.map((record, index) => (
-              <TouchableOpacity
-                key={record.id}
-                style={[
-                  styles.financialCard,
-                  { backgroundColor: record.bgColor },
-                  index === 0 ? styles.largeCard : styles.smallCard,
-                ]}
-              >
-                <View style={styles.financialHeader}>
-                  <Text
-                    style={[styles.financialTitle, { color: record.color }]}
-                  >
-                    {record.title}
-                  </Text>
-                  <TouchableOpacity style={styles.trend}>
-                    <TrendingUp size={16} color={record.color} />
-                  </TouchableOpacity>
-                </View>
-
-                {record.amount ? (
-                  <Text
-                    style={[styles.financialAmount, { color: record.color }]}
-                  >
-                    {record.amount}
-                  </Text>
-                ) : (
-                  <Text
-                    style={[styles.financialStatus, { color: record.color }]}
-                  >
-                    {record.status}
-                  </Text>
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <TransactionsModule />
-        </View>
+        {/* ── Transactions ────────────────────────────────── */}
+        <TransactionsModule
+          limit={5}
+          onViewAll={() => router.push("/transactions" as any)}
+        />
       </ScrollView>
+
       <LoanEnrollmentFlow
         visible={showLoanModal}
         onClose={() => setShowLoanModal(false)}
@@ -245,262 +209,218 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f8f9fa",
-  },
+const s = StyleSheet.create({
+  container: { flex: 1, backgroundColor: BG },
+  scroll: { paddingBottom: 32 },
+
+  // ── Header ─────────────────────────────────────────────
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: "#fff",
-  },
-  headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  headerRight: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  trend: {
-    borderWidth: 1,
-    borderColor: "white",
-    borderRadius: 10,
-    padding: 4,
-  },
-  avatarContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "#333",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  avatarText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "bold",
+    paddingTop: 8,
+    paddingBottom: 16,
   },
   greeting: {
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: "#fff",
-  },
-  btnContainer: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    gap: 4,
-  },
-  greetingText: {
-    fontSize: 18,
-    color: "#333",
-    fontFamily: "Poppins_400Regular",
-  },
-  nameText: {
-    fontWeight: "bold",
-  },
-  carouselContainer: {
-    marginHorizontal: 10,
-    marginBottom: 20,
-  },
-  savingsCard: {
-    width: 350,
-    marginRight: 10,
-    padding: 25,
-    marginLeft: 10,
-    borderRadius: 40,
-    backgroundColor: "#5F8B31",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 4,
-    shadowRadius: 15,
-    elevation: 8,
-    borderWidth: 8,
-    borderColor: "rgba(255, 255, 255, 0.5)",
-  },
-  savingsTitle: {
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "semibold",
-    marginBottom: 10,
-    fontFamily: "Poppins_400Regular",
-  },
-  savingsAmount: {
-    color: "#fff",
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-    fontFamily: "Poppins_400Regular",
-  },
-  viewMoreButton: {
-    alignSelf: "flex-end",
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderColor: "#fff",
-    borderWidth: 1,
-    borderRadius: 10,
-  },
-  viewMoreText: {
-    color: "#fff",
     fontSize: 14,
     fontFamily: "Poppins_400Regular",
+    color: "#6B7280",
   },
-  pageIndicator: {
-    flexDirection: "row",
+  userName: {
+    fontSize: 20,
+    fontFamily: "Poppins_700Bold",
+    color: "#1A1A2E",
+    marginTop: 2,
+  },
+  headerRight: { flexDirection: "row", alignItems: "center", gap: 12 },
+  avatar: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: ACCENT,
     justifyContent: "center",
-    gap: 8,
-    marginBottom: 20,
+    alignItems: "center",
   },
-  dot: {
+  avatarText: { color: "#fff", fontSize: 14, fontFamily: "Poppins_700Bold" },
+  notifBtn: { position: "relative", padding: 4 },
+  notifDot: {
+    position: "absolute",
+    top: 4,
+    right: 4,
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#ddd",
+    backgroundColor: "#EF4444",
+    borderWidth: 1.5,
+    borderColor: BG,
   },
-  activeDot: {
-    backgroundColor: "#8BC34A",
-  },
-  section: {
-    paddingHorizontal: 20,
-    marginBottom: 25,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 15,
-    justifyContent: "center",
-    fontFamily: "Poppins_400Regular",
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 15,
-    fontFamily: "Poppins_400Regular",
-  },
-  quickTransactions: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 8,
-    backgroundColor: "#fff",
-    fontFamily: "Poppins_400Regular",
-  },
-  transactionItem: {
-    alignItems: "center",
-    flex: 1,
-    borderRadius: 15,
+
+  // ── Balance Card ──────────────────────────────────────
+  balanceCard: {
+    marginHorizontal: 20,
+    backgroundColor: ACCENT,
+    borderRadius: 20,
     padding: 20,
-    borderWidth: 0.5,
-    borderColor: "rgba(0,0,0,0.1)",
-    backgroundColor: "#fff",
+    marginBottom: 24,
     shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  balanceRefresh: {
+    position: "absolute",
+    top: 14,
+    right: 14,
+    zIndex: 1,
+    padding: 4,
+  },
+  balanceTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 4,
+  },
+  balanceTitle: {
+    fontSize: 13,
+    fontFamily: "Poppins_500Medium",
+    color: "#ffffff",
+  },
+  eyeBtn: { padding: 4 },
+  balanceTotal: {
+    fontSize: 32,
+    fontFamily: "Poppins_700Bold",
+    color: "#f2f2f4",
+  },
+  balanceSub: {
+    fontSize: 12,
     fontFamily: "Poppins_400Regular",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    color: "#ffffff",
+    marginBottom: 16,
+  },
+  balanceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F9FAFB",
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+  },
+  balanceItem: { flex: 1, flexDirection: "row", alignItems: "center", gap: 8 },
+  balanceDot: { width: 10, height: 10, borderRadius: 5 },
+  balanceDivider: { width: 1, height: 32, backgroundColor: "#E5E7EB", marginHorizontal: 8 },
+  balanceLabel: { fontSize: 11, fontFamily: "Poppins_400Regular", color: "#6B7280" },
+  balanceValue: { fontSize: 15, fontFamily: "Poppins_700Bold", color: "#1A1A2E" },
+  balanceActions: { flexDirection: "row", gap: 10 },
+  balanceActionBtn: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    backgroundColor: "#EF4444",
+    borderRadius: 12,
+    paddingVertical: 12,
+  },
+  balanceActionOutline: {
+    backgroundColor: "#F3FCF1",
+    borderWidth: 1,
+    borderColor: "#D1FAD1",
+  },
+  balanceActionText: {
+    fontSize: 13,
+    fontFamily: "Poppins_600SemiBold",
+    color: "#fff",
+  },
+
+  // ── Quick Actions ─────────────────────────────────────
+  sectionTitle: {
+    fontSize: 17,
+    fontFamily: "Poppins_700Bold",
+    color: "#1A1A2E",
+    paddingHorizontal: 20,
+    marginBottom: 12,
+  },
+  quickGrid: {
+    flexDirection: "row",
+    paddingHorizontal: 20,
+    gap: 12,
+    marginBottom: 24,
+  },
+  quickCard: {
+    flex: 1,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    paddingVertical: 16,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
     elevation: 2,
   },
-  transactionIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+  quickIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: "#F3FCF1",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 8,
   },
-  transactionText: {
+  quickLabel: {
     fontSize: 12,
-    textAlign: "center",
-    color: "#666",
-    lineHeight: 18,
-    fontFamily: "Poppins_400Regular",
+    fontFamily: "Poppins_500Medium",
+    color: "#1A1A2E",
   },
-  financialGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-  },
-  financialCard: {
-    padding: 15,
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  largeCard: {
-    width: "48%",
-    height: 100,
-  },
-  smallCard: {
-    width: "48%",
-    height: 100,
-  },
-  financialHeader: {
+
+  // ── Loan Products ─────────────────────────────────────
+  sectionHead: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 10,
-    fontFamily: "Poppins_400Regular",
-  },
-  financialTitle: {
-    fontSize: 13,
-    fontWeight: "500",
-    flex: 1,
-    marginRight: 5,
-    fontFamily: "Poppins_400Regular",
-  },
-  financialAmount: {
-    fontSize: 20,
-    fontWeight: "bold",
-    fontFamily: "Poppins_400Regular",
-  },
-  financialStatus: {
-    fontSize: 10,
-    fontWeight: "500",
-    fontFamily: "Poppins_400Regular",
-  },
-  transactionFilters: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  filterButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: "#fff",
-    borderRadius: 15,
-    borderWidth: 1,
-    borderColor: "#ddd",
-  },
-  filterText: {
-    fontSize: 14,
-    color: "#666",
-    fontFamily: "Poppins_400Regular",
-  },
-  emptyTransactions: {
-    backgroundColor: "#fff",
-    padding: 40,
-    borderRadius: 12,
     alignItems: "center",
+    paddingRight: 20,
   },
-  emptyText: {
-    color: "#999",
-    fontSize: 16,
-    fontFamily: "Poppins_400Regular",
+  seeAll: {
+    fontSize: 13,
+    fontFamily: "Poppins_600SemiBold",
+    color: ACCENT,
+  },
+  loanGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    paddingHorizontal: 20,
+    gap: 12,
+    marginBottom: 24,
+  },
+  loanCard: {
+    width: "47%",
+    borderRadius: 16,
+    padding: 16,
+    minHeight: 100,
+    justifyContent: "space-between",
+  },
+  loanIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  loanName: {
+    fontSize: 14,
+    fontFamily: "Poppins_600SemiBold",
+    color: "#fff",
+    marginBottom: 4,
+  },
+  loanStatus: {
+    fontSize: 10,
+    fontFamily: "Poppins_500Medium",
+    color: "rgba(255,255,255,0.7)",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
 });

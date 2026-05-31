@@ -16,11 +16,11 @@ import * as ImagePicker from "expo-image-picker";
 import { LoanEnrollmentFlowProps } from "@/types";
 import { OtpInput } from "react-native-otp-entry";
 import { useSavingsBalance } from "@/hooks/useSavings";
-import { useMemberStore } from "@/store/user";
 import { useAuthStore } from "@/hooks/useAuth";
 import SuccessScreen from "@/components/Success";
 import { useBalances } from "@/hooks/useBalances";
 import { applyForLoan, verifyLoanOTP } from "@/services/api.service";
+import { useMember } from "@/hooks/useMember";
 
 interface UploadedFile {
   uri: string;
@@ -55,17 +55,13 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
   });
   const [otp, setOtp] = useState("");
   const [loanId, setLoanId] = useState<string>("");
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const { data: savingsBalance } = useSavingsBalance();
   const balance = useBalances();
   const { user } = useAuthStore();
-  const { member, fetchMemberData } = useMemberStore();
 
-  useEffect(() => {
-    if (user?.id) {
-      fetchMemberData(user?.id);
-    }
-  }, [user?.id, fetchMemberData]);
+  const { data: member, isLoading } = useMember(user?.id);
 
   const getInterestRate = (selectedTenure: string): number => {
     switch (selectedTenure) {
@@ -309,23 +305,38 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
         Alert.alert("Success", response.message);
         setStep(5);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting loan:", error);
-      let errorMessage = "Failed to submit loan application";
 
-      if (error && typeof error === "object") {
-        if ("response" in error && error.response) {
-          const response = error.response as any;
-          errorMessage =
-            response.data?.message ||
-            response.data?.error ||
-            `Server error: ${response.status}`;
-          console.error("Error details:", response.data);
-        } else if ("message" in error && error.message) {
-          errorMessage = String(error.message);
-        }
+      const statusCode = error?.response?.status;
+      const serverData = error?.response?.data;
+
+      // Log everything so you can see exactly what the backend sends
+      console.log("Status:", statusCode);
+      console.log("Response data:", JSON.stringify(serverData, null, 2));
+
+      let errorMessage = "Failed to submit loan application. Please try again.";
+
+      if (!error?.response) {
+        // No response at all — network/timeout issue
+        errorMessage = "Network error. Please check your connection and try again.";
+      } else if (statusCode === 500) {
+        // Backend is swallowing the real error — map known cases client-side
+        errorMessage =
+          "Something went wrong on our end. This may be because:\n\n" +
+          "• You already have an active or pending loan\n" +
+          "• The loan category is inactive\n" +
+          "• Your session has expired — try logging out and back in";
+      } else if (statusCode === 401) {
+        errorMessage = "Your session has expired. Please log in again.";
+      } else if (statusCode === 400) {
+        errorMessage =
+          serverData?.message ||
+          serverData?.error ||
+          "Invalid loan application. Please check your details.";
       }
-      Alert.alert("Error", errorMessage);
+
+      Alert.alert("Application Failed", errorMessage);
     } finally {
       setLoading(false);
     }
@@ -341,7 +352,8 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
       const response = await verifyLoanOTP(loanId, otp);
 
       if (response.success) {
-        setStep(6);
+        onClose();
+        setShowSuccess(true);
       }
     } catch (error: any) {
       console.error("Error verifying OTP:", error);
@@ -373,6 +385,7 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
     });
     setOtp("");
     setLoanId("");
+    setShowSuccess(false);
     onClose();
   };
 
@@ -411,374 +424,374 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
     );
   };
 
+  if (isLoading) {
+    return <ActivityIndicator size="large" color="#0000ff" />;
+  }
+
   return (
-    <Modal visible={visible} animationType="slide" transparent>
-      <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
-          <View style={styles.header}>
-            {step !== 6 ? (
+    <>
+      <Modal visible={visible} animationType="slide" transparent statusBarTranslucent={true}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <View style={styles.header}>
               <TouchableOpacity onPress={handleBack} style={styles.backButton}>
                 <ArrowLeft size={24} color="#333" />
               </TouchableOpacity>
-            ) : (
-              <View style={styles.backButton} />
-            )}
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <X size={24} color="#333" />
-            </TouchableOpacity>
-          </View>
+              <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                <X size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
 
-          {/* Step 1: Form Questions */}
-          {step === 1 && (
-            <ScrollView contentContainerStyle={styles.scrollContent}>
-              <Text style={styles.sectionTitle}>Loan Application Form</Text>
+            {/* Step 1: Form Questions */}
+            {step === 1 && (
+              <ScrollView contentContainerStyle={styles.scrollContent}>
+                <Text style={styles.sectionTitle}>Loan Application Form</Text>
 
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>
-                  Are you currently servicing a loan? *
-                </Text>
-                <View style={styles.radioGroup}>
-                  <TouchableOpacity
-                    style={[
-                      styles.radioButton,
-                      servicingLoan === "yes" && styles.selectedRadio,
-                    ]}
-                    onPress={() => setServicingLoan("yes")}
-                  >
-                    <Text
-                      style={[
-                        styles.radioText,
-                        servicingLoan === "yes" && styles.selectedRadioText,
-                      ]}
-                    >
-                      Yes
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[
-                      styles.radioButton,
-                      servicingLoan === "no" && styles.selectedRadio,
-                    ]}
-                    onPress={() => setServicingLoan("no")}
-                  >
-                    <Text
-                      style={[
-                        styles.radioText,
-                        servicingLoan === "no" && styles.selectedRadioText,
-                      ]}
-                    >
-                      No
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Total Savings (₦)</Text>
-                <TextInput
-                  style={[styles.input, styles.disabledInput]}
-                  value={`₦${balance.data?.savings_balance || 0}`}
-                  editable={false}
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Monthly Deduction (₦)</Text>
-                <TextInput
-                  style={[styles.input, styles.disabledInput]}
-                  value={`₦${savingsBalance?.monthlyDeduction || 0}`}
-                  editable={false}
-                />
-              </View>
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Authorized Signature</Text>
-                <View style={styles.signatureContainer}>
-                  <Text style={styles.signatureText}>
-                    {member?.user.first_name} {member?.user.last_name}
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>
+                    Are you currently servicing a loan? *
                   </Text>
-                  <TouchableOpacity
-                    style={styles.changeSignatureButton}
-                    onPress={() =>
-                      Alert.alert(
-                        "Info",
-                        "Signature change functionality to be implemented"
-                      )
-                    }
-                  >
-                    <Text style={styles.changeSignatureText}>Change</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              <Text style={styles.sectionSubTitle}>Bank Details</Text>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Bank Name *</Text>
-                <TextInput
-                  style={[styles.input, styles.disabledInput]}
-                  value={member?.user?.bank[0]?.name || ""}
-                  editable={false}
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Account Number *</Text>
-                <TextInput
-                  style={[styles.input, styles.disabledInput]}
-                  value={member?.user?.bank?.[0]?.account_number || ""}
-                  editable={false}
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Account Name *</Text>
-                <TextInput
-                  style={[styles.input, styles.disabledInput]}
-                  value={member?.user?.bank?.[0]?.account_name || ""}
-                  editable={false}
-                />
-              </View>
-
-              <TouchableOpacity
-                style={styles.primaryButton}
-                onPress={handleProceed}
-              >
-                <Text style={styles.primaryButtonText}>Proceed</Text>
-              </TouchableOpacity>
-            </ScrollView>
-          )}
-
-          {/* Step 2: Document Upload */}
-          {step === 2 && (
-            <ScrollView contentContainerStyle={styles.scrollContent}>
-              <Text style={styles.sectionTitle}>Upload Documents</Text>
-              <Text style={styles.subTitle}>
-                Upload clear photos or PDFs of the required documents
-              </Text>
-
-              <View style={styles.uploadSection}>
-                {renderFileUploadBox(
-                  "recommendation",
-                  "FMN/Unit Commander Recommendation"
-                )}
-                {renderFileUploadBox(
-                  "nonIndebtedness",
-                  "Letter of Non-Indebtedness"
-                )}
-                {renderFileUploadBox("application", "Self Written Application")}
-              </View>
-
-              <TouchableOpacity
-                style={styles.primaryButton}
-                onPress={handleProceed}
-                disabled={loading}
-              >
-                {loading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.primaryButtonText}>Continue</Text>
-                )}
-              </TouchableOpacity>
-            </ScrollView>
-          )}
-
-          {/* Step 3: Loan Details */}
-          {step === 3 && (
-            <ScrollView contentContainerStyle={styles.scrollContent}>
-              <Text style={styles.sectionTitle}>Loan Details</Text>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Loan Amount (₦)</Text>
-                <TextInput
-                  style={styles.input}
-                  keyboardType="numeric"
-                  placeholder="Enter amount"
-                  value={amount}
-                  onChangeText={setAmount}
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Rank</Text>
-                <TextInput style={styles.input} value={member?.user.rank} />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Interest Rate</Text>
-                <TextInput
-                  style={[styles.input, styles.disabledInput]}
-                  value={`${interestRate}%`}
-                  editable={false}
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Tenure (months)</Text>
-                <View style={styles.tenureOptions}>
-                  {tenureOptions.map((option) => (
+                  <View style={styles.radioGroup}>
                     <TouchableOpacity
-                      key={option.value}
                       style={[
-                        styles.tenureButton,
-                        tenure === option.value && styles.selectedTenure,
-                        option.disabled && styles.disabledTenure,
+                        styles.radioButton,
+                        servicingLoan === "yes" && styles.selectedRadio,
                       ]}
-                      onPress={() =>
-                        !option.disabled && setTenure(option.value)
-                      }
-                      disabled={option.disabled}
+                      onPress={() => setServicingLoan("yes")}
                     >
                       <Text
                         style={[
-                          tenure === option.value
-                            ? styles.selectedTenureText
-                            : styles.tenureText,
-                          option.disabled && styles.disabledTenureText,
+                          styles.radioText,
+                          servicingLoan === "yes" && styles.selectedRadioText,
                         ]}
                       >
-                        {option.label}
+                        Yes
                       </Text>
                     </TouchableOpacity>
-                  ))}
+                    <TouchableOpacity
+                      style={[
+                        styles.radioButton,
+                        servicingLoan === "no" && styles.selectedRadio,
+                      ]}
+                      onPress={() => setServicingLoan("no")}
+                    >
+                      <Text
+                        style={[
+                          styles.radioText,
+                          servicingLoan === "no" && styles.selectedRadioText,
+                        ]}
+                      >
+                        No
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
 
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Monthly Repayment (₦)</Text>
-                <TextInput
-                  style={[styles.input, styles.disabledInput]}
-                  value={
-                    isNaN(monthlyPayment)
-                      ? "0"
-                      : monthlyPayment.toLocaleString()
-                  }
-                  editable={false}
-                />
-              </View>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Total Savings (₦)</Text>
+                  <TextInput
+                    style={[styles.input, styles.disabledInput]}
+                    value={`₦${balance.data?.savings_balance || 0}`}
+                    editable={false}
+                  />
+                </View>
 
-              <TouchableOpacity
-                style={styles.primaryButton}
-                onPress={handleProceed}
-              >
-                <Text style={styles.primaryButtonText}>Proceed</Text>
-              </TouchableOpacity>
-            </ScrollView>
-          )}
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Monthly Deduction (₦)</Text>
+                  <TextInput
+                    style={[styles.input, styles.disabledInput]}
+                    value={`₦${savingsBalance?.monthlyDeduction || 0}`}
+                    editable={false}
+                  />
+                </View>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Authorized Signature</Text>
+                  <View style={styles.signatureContainer}>
+                    <Text style={styles.signatureText}>
+                      {member?.user.first_name} {member?.user?.last_name}
+                    </Text>
+                    <TouchableOpacity
+                      style={styles.changeSignatureButton}
+                      onPress={() =>
+                        Alert.alert(
+                          "Info",
+                          "Signature change functionality to be implemented"
+                        )
+                      }
+                    >
+                      <Text style={styles.changeSignatureText}>Change</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
 
-          {step === 4 && (
-            <ScrollView contentContainerStyle={styles.scrollContent}>
-              <Text style={styles.sectionTitle}>Loan Summary</Text>
+                <Text style={styles.sectionSubTitle}>Bank Details</Text>
 
-              <View style={styles.previewBox}>
-                <View style={styles.previewRow}>
-                  <Text style={styles.previewLabel}>Applicant:</Text>
-                  <Text style={styles.previewValue}>
-                    {member?.user.first_name} {member?.user.last_name}
-                  </Text>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Bank Name *</Text>
+                  <TextInput
+                    style={[styles.input, styles.disabledInput]}
+                    value={member?.user?.bank[0]?.name || ""}
+                    editable={false}
+                  />
                 </View>
-                <View style={styles.previewRow}>
-                  <Text style={styles.previewLabel}>Loan Amount:</Text>
-                  <Text style={styles.previewValue}>
-                    ₦{loanAmount.toLocaleString()}
-                  </Text>
-                </View>
-                <View style={styles.previewRow}>
-                  <Text style={styles.previewLabel}>Tenure:</Text>
-                  <Text style={styles.previewValue}>{tenure} months</Text>
-                </View>
-                <View style={styles.previewRow}>
-                  <Text style={styles.previewLabel}>Interest Rate:</Text>
-                  <Text style={styles.previewValue}>{interestRate}%</Text>
-                </View>
-                <View style={styles.previewRow}>
-                  <Text style={styles.previewLabel}>Total Interest:</Text>
-                  <Text style={styles.previewValue}>
-                    ₦{interestAmount.toLocaleString()}
-                  </Text>
-                </View>
-                <View style={styles.previewRow}>
-                  <Text style={styles.previewLabel}>Total Payable:</Text>
-                  <Text style={[styles.previewValue, styles.totalValue]}>
-                    ₦{totalAmount.toLocaleString()}
-                  </Text>
-                </View>
-                <View style={styles.previewRow}>
-                  <Text style={styles.previewLabel}>Monthly Payment:</Text>
-                  <Text style={styles.previewValue}>
-                    ₦{monthlyPayment.toLocaleString()}
-                  </Text>
-                </View>
-                <View style={styles.previewRow}>
-                  <Text style={styles.previewLabel}>Bank Details:</Text>
-                  <Text style={styles.previewValue}>
-                    {member?.user.bank[0].name} -{" "}
-                    {member?.user.bank[0].account_number}
-                  </Text>
-                </View>
-              </View>
 
-              <Text style={styles.noteText}>
-                By proceeding, you agree to our terms and conditions. The loan
-                will be disbursed to your registered account.
-              </Text>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Account Number *</Text>
+                  <TextInput
+                    style={[styles.input, styles.disabledInput]}
+                    value={member?.user?.bank?.[0]?.account_number || ""}
+                    editable={false}
+                  />
+                </View>
 
-              <TouchableOpacity
-                style={styles.primaryButton}
-                onPress={handleProceed}
-                disabled={loading}
-              >
-                <Text style={styles.primaryButtonText}>
-                  {loading ? "Please wait..." : "Confirm & Proceed"}
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Account Name *</Text>
+                  <TextInput
+                    style={[styles.input, styles.disabledInput]}
+                    value={member?.user?.bank?.[0]?.account_name || ""}
+                    editable={false}
+                  />
+                </View>
+
+                <TouchableOpacity
+                  style={styles.primaryButton}
+                  onPress={handleProceed}
+                >
+                  <Text style={styles.primaryButtonText}>Proceed</Text>
+                </TouchableOpacity>
+              </ScrollView>
+            )}
+
+            {/* Step 2: Document Upload */}
+            {step === 2 && (
+              <ScrollView contentContainerStyle={styles.scrollContent}>
+                <Text style={styles.sectionTitle}>Upload Documents</Text>
+                <Text style={styles.subTitle}>
+                  Upload clear photos or PDFs of the required documents
                 </Text>
-              </TouchableOpacity>
-            </ScrollView>
-          )}
 
-          {/* Step 5: OTP Verification */}
-          {step === 5 && (
-            <ScrollView contentContainerStyle={styles.scrollContent}>
-              <Text style={styles.sectionTitle}>OTP Verification</Text>
-              <Text style={styles.subTitle}>
-                Enter the 6-digit OTP sent to your phone number
-              </Text>
+                <View style={styles.uploadSection}>
+                  {renderFileUploadBox(
+                    "recommendation",
+                    "FMN/Unit Commander Recommendation"
+                  )}
+                  {renderFileUploadBox(
+                    "nonIndebtedness",
+                    "Letter of Non-Indebtedness"
+                  )}
+                  {renderFileUploadBox("application", "Self Written Application")}
+                </View>
 
-              <View style={styles.otpContainer}>
-                <OtpInput
-                  numberOfDigits={6}
-                  onTextChange={setOtp}
-                  placeholder="******"
-                  blurOnFilled={true}
+                <TouchableOpacity
+                  style={styles.primaryButton}
+                  onPress={handleProceed}
                   disabled={loading}
-                  type="numeric"
-                  focusStickBlinkingDuration={500}
-                />
-              </View>
+                >
+                  {loading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.primaryButtonText}>Continue</Text>
+                  )}
+                </TouchableOpacity>
+              </ScrollView>
+            )}
 
-              <TouchableOpacity
-                style={styles.primaryButton}
-                onPress={handleVerifyOTP}
-                disabled={loading}
-              >
-                {loading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.primaryButtonText}>Verify OTP</Text>
-                )}
-              </TouchableOpacity>
-            </ScrollView>
-          )}
+            {/* Step 3: Loan Details */}
+            {step === 3 && (
+              <ScrollView contentContainerStyle={styles.scrollContent}>
+                <Text style={styles.sectionTitle}>Loan Details</Text>
 
-          {/* Step 6: Success */}
-          {step === 6 && (
-            <SuccessScreen
-              message="Dear Customer, Your loan request will be disbursed in 72 hours"
-              onLoginPress={resetFlow}
-              backgroundImage={undefined}
-            />
-          )}
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Loan Amount (₦)</Text>
+                  <TextInput
+                    style={styles.input}
+                    keyboardType="numeric"
+                    placeholder="Enter amount"
+                    value={amount}
+                    onChangeText={setAmount}
+                  />
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Rank</Text>
+                  <TextInput style={styles.input} value={member?.user.rank} />
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Interest Rate</Text>
+                  <TextInput
+                    style={[styles.input, styles.disabledInput]}
+                    value={`${interestRate}%`}
+                    editable={false}
+                  />
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Tenure (months)</Text>
+                  <View style={styles.tenureOptions}>
+                    {tenureOptions.map((option) => (
+                      <TouchableOpacity
+                        key={option.value}
+                        style={[
+                          styles.tenureButton,
+                          tenure === option.value && styles.selectedTenure,
+                          option.disabled && styles.disabledTenure,
+                        ]}
+                        onPress={() =>
+                          !option.disabled && setTenure(option.value)
+                        }
+                        disabled={option.disabled}
+                      >
+                        <Text
+                          style={[
+                            tenure === option.value
+                              ? styles.selectedTenureText
+                              : styles.tenureText,
+                            option.disabled && styles.disabledTenureText,
+                          ]}
+                        >
+                          {option.label}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Monthly Repayment (₦)</Text>
+                  <TextInput
+                    style={[styles.input, styles.disabledInput]}
+                    value={
+                      isNaN(monthlyPayment)
+                        ? "0"
+                        : monthlyPayment.toLocaleString()
+                    }
+                    editable={false}
+                  />
+                </View>
+
+                <TouchableOpacity
+                  style={styles.primaryButton}
+                  onPress={handleProceed}
+                >
+                  <Text style={styles.primaryButtonText}>Proceed</Text>
+                </TouchableOpacity>
+              </ScrollView>
+            )}
+
+            {step === 4 && (
+              <ScrollView contentContainerStyle={styles.scrollContent}>
+                <Text style={styles.sectionTitle}>Loan Summary</Text>
+
+                <View style={styles.previewBox}>
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Applicant:</Text>
+                    <Text style={styles.previewValue}>
+                      {member?.user.first_name} {member?.user.last_name}
+                    </Text>
+                  </View>
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Loan Amount:</Text>
+                    <Text style={styles.previewValue}>
+                      ₦{loanAmount.toLocaleString()}
+                    </Text>
+                  </View>
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Tenure:</Text>
+                    <Text style={styles.previewValue}>{tenure} months</Text>
+                  </View>
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Interest Rate:</Text>
+                    <Text style={styles.previewValue}>{interestRate}%</Text>
+                  </View>
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Total Interest:</Text>
+                    <Text style={styles.previewValue}>
+                      ₦{interestAmount.toLocaleString()}
+                    </Text>
+                  </View>
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Total Payable:</Text>
+                    <Text style={[styles.previewValue, styles.totalValue]}>
+                      ₦{totalAmount.toLocaleString()}
+                    </Text>
+                  </View>
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Monthly Payment:</Text>
+                    <Text style={styles.previewValue}>
+                      ₦{monthlyPayment.toLocaleString()}
+                    </Text>
+                  </View>
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Bank Details:</Text>
+                    <Text style={styles.previewValue}>
+                      {member?.user.bank[0].name} -{" "}
+                      {member?.user.bank[0].account_number}
+                    </Text>
+                  </View>
+                </View>
+
+                <Text style={styles.noteText}>
+                  By proceeding, you agree to our terms and conditions. The loan
+                  will be disbursed to your registered account.
+                </Text>
+
+                <TouchableOpacity
+                  style={styles.primaryButton}
+                  onPress={handleProceed}
+                  disabled={loading}
+                >
+                  <Text style={styles.primaryButtonText}>
+                    {loading ? "Please wait..." : "Confirm & Proceed"}
+                  </Text>
+                </TouchableOpacity>
+              </ScrollView>
+            )}
+
+            {/* Step 5: OTP Verification */}
+            {step === 5 && (
+              <ScrollView contentContainerStyle={styles.scrollContent}>
+                <Text style={styles.sectionTitle}>OTP Verification</Text>
+                <Text style={styles.subTitle}>
+                  Enter the 6-digit OTP sent to your phone number
+                </Text>
+
+                <View style={styles.otpContainer}>
+                  <OtpInput
+                    numberOfDigits={6}
+                    onTextChange={setOtp}
+                    placeholder="******"
+                    blurOnFilled={true}
+                    disabled={loading}
+                    type="numeric"
+                    focusStickBlinkingDuration={500}
+                  />
+                </View>
+
+                <TouchableOpacity
+                  style={styles.primaryButton}
+                  onPress={handleVerifyOTP}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.primaryButtonText}>Verify OTP</Text>
+                  )}
+                </TouchableOpacity>
+              </ScrollView>
+            )}
+
+          </View>
         </View>
-      </View>
-    </Modal>
+      </Modal>
+
+      <SuccessScreen
+        visible={showSuccess}
+        message="Dear Customer, Your loan request will be disbursed in 72 hours"
+        onClose={resetFlow}
+      />
+    </>
   );
 };
 const styles = StyleSheet.create({
@@ -795,7 +808,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 50,
   },
   header: {
     flexDirection: "row",

@@ -10,7 +10,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { fetchTransactions } from "@/services/api.service";
 import type { TransactionResponseItem } from "@/services/api.service";
 
-interface Transaction {
+export interface Transaction {
   id: string;
   type: "credit" | "debit";
   title: string;
@@ -21,7 +21,7 @@ interface Transaction {
   status: "completed" | "pending" | "failed";
 }
 
-const TransactionIcon = ({ type }: { type: "credit" | "debit" }) => {
+export const TransactionIcon = ({ type }: { type: "credit" | "debit" }) => {
   return (
     <View
       style={[
@@ -38,7 +38,7 @@ const TransactionIcon = ({ type }: { type: "credit" | "debit" }) => {
   );
 };
 
-const TransactionItem = ({ transaction }: { transaction: Transaction }) => (
+export const TransactionItem = ({ transaction }: { transaction: Transaction }) => (
   <TouchableOpacity style={styles.transactionItem}>
     <TransactionIcon type={transaction.type} />
 
@@ -67,64 +67,84 @@ const TransactionItem = ({ transaction }: { transaction: Transaction }) => (
   </TouchableOpacity>
 );
 
-export const TransactionsModule = () => {
+export function useTransactionsData() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<any>(null);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await fetchTransactions();
-        const mapped = data.map(
-          (transaction: TransactionResponseItem) => ({
-            id: transaction.id,
-            type: transaction.type as "credit" | "debit",
-            title: transaction.description,
-            category: transaction.reference || "General",
-            amount: transaction.amount.toString(),
-            date: new Date(transaction.createdAt).toLocaleDateString(),
-            time: new Date(transaction.createdAt).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-            status: transaction.status as "completed" | "pending" | "failed",
-          })
-        );
-        setTransactions(mapped);
-      } catch (err: any) {
-        setError("Failed to fetch transactions");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const load = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchTransactions();
+      const mapped = data.map(
+        (transaction: TransactionResponseItem) => ({
+          id: transaction.id,
+          type: transaction.type as "credit" | "debit",
+          title: transaction.description,
+          category: transaction.reference || "General",
+          amount: transaction.amount.toString(),
+          date: new Date(transaction.createdAt).toLocaleDateString(),
+          time: new Date(transaction.createdAt).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          status: transaction.status as "completed" | "pending" | "failed",
+        })
+      );
+      setTransactions(mapped);
+      setError(null);
+    } catch (err: any) {
+      setError("Failed to fetch transactions");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    load();
-  }, []);
+  useEffect(() => { load(); }, []);
+
+  return { transactions, loading, error, refetch: load };
+}
+
+interface TransactionsModuleProps {
+  onViewAll?: () => void;
+  limit?: number;
+}
+
+export const TransactionsModule = ({ onViewAll, limit }: TransactionsModuleProps) => {
+  const { transactions, loading, error } = useTransactionsData();
+  const displayed = limit ? transactions.slice(0, limit) : transactions;
 
   if (loading) {
     return (
-      <View>
-        <ActivityIndicator />
+      <View style={styles.section}>
+        <ActivityIndicator size="small" color="#213400" />
       </View>
     );
   }
 
   if (error) {
-    return <Text>{error}</Text>;
+    return (
+      <View style={styles.section}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
   }
 
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Recent Transactions</Text>
-        <TouchableOpacity style={styles.viewAllButton}>
-          <Text style={styles.viewAllText}>View All</Text>
-          <Ionicons name="chevron-forward" size={16} color="#6366F1" />
-        </TouchableOpacity>
+        <Text style={styles.sectionTitle}>
+          {limit ? "Recent Transactions" : "Transactions"}
+        </Text>
+        {onViewAll && (
+          <TouchableOpacity style={styles.viewAllButton} onPress={onViewAll}>
+            <Text style={styles.viewAllText}>View All</Text>
+            <Ionicons name="chevron-forward" size={16} color="#213400" />
+          </TouchableOpacity>
+        )}
       </View>
 
-      {transactions.length === 0 ? (
+      {displayed.length === 0 ? (
         <View style={styles.emptyTransactions}>
           <Ionicons name="receipt-outline" size={48} color="#9CA3AF" />
           <Text style={styles.emptyText}>No recent transactions</Text>
@@ -134,7 +154,7 @@ export const TransactionsModule = () => {
         </View>
       ) : (
         <View style={styles.transactionsList}>
-          {transactions.map((transaction) => (
+          {displayed.map((transaction) => (
             <TransactionItem key={transaction.id} transaction={transaction} />
           ))}
         </View>
@@ -146,6 +166,7 @@ export const TransactionsModule = () => {
 const styles = StyleSheet.create({
   section: {
     marginBottom: 24,
+    paddingHorizontal: 16,
   },
   sectionHeader: {
     flexDirection: "row",
@@ -154,9 +175,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#111827",
+    fontSize: 17,
+    fontFamily: "Poppins_700Bold",
+    color: "#1A1A2E",
   },
   viewAllButton: {
     flexDirection: "row",
@@ -164,9 +185,9 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   viewAllText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#6366F1",
+    fontSize: 13,
+    fontFamily: "Poppins_600SemiBold",
+    color: "#213400",
   },
   transactionsList: {
     backgroundColor: "#FFFFFF",
@@ -204,13 +225,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   transactionTitle: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#111827",
-    marginBottom: 4,
+    fontSize: 14,
+    fontFamily: "Poppins_500Medium",
+    color: "#1A1A2E",
+    marginBottom: 2,
   },
   transactionCategory: {
-    fontSize: 13,
+    fontSize: 12,
+    fontFamily: "Poppins_400Regular",
     color: "#6B7280",
   },
   transactionRight: {
@@ -218,7 +240,7 @@ const styles = StyleSheet.create({
   },
   transactionAmount: {
     fontSize: 15,
-    fontWeight: "700",
+    fontFamily: "Poppins_700Bold",
     marginBottom: 4,
   },
   creditAmount: {
@@ -232,11 +254,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   transactionDate: {
-    fontSize: 12,
+    fontSize: 11,
+    fontFamily: "Poppins_400Regular",
     color: "#9CA3AF",
   },
   transactionTime: {
-    fontSize: 12,
+    fontSize: 11,
+    fontFamily: "Poppins_400Regular",
     color: "#9CA3AF",
   },
   emptyTransactions: {
@@ -249,15 +273,23 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Poppins_600SemiBold",
     color: "#6B7280",
     marginTop: 16,
   },
   emptySubtext: {
-    fontSize: 14,
+    fontSize: 13,
+    fontFamily: "Poppins_400Regular",
     color: "#9CA3AF",
-    marginTop: 8,
+    marginTop: 6,
     textAlign: "center",
+  },
+  errorText: {
+    fontSize: 14,
+    fontFamily: "Poppins_400Regular",
+    color: "#EF4444",
+    textAlign: "center",
+    padding: 24,
   },
 });
 

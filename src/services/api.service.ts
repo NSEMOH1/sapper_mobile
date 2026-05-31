@@ -147,3 +147,103 @@ export async function fetchTransactions(): Promise<TransactionResponseItem[]> {
   const res = await api.get<{ data: TransactionResponseItem[] }>("/api/transactions");
   return res.data.data;
 }
+
+// ── Payments ──────────────────────────────────────────────────────────────────
+
+export interface ActiveLoan {
+  id: string;
+  reference: string;
+  approvedAmount: number;
+}
+
+export interface InitializePaymentPayload {
+  paymentType: string;
+  amount: number;
+  loanId?: string;
+}
+
+export interface InitializePaymentResponse {
+  authorizationUrl: string;
+  reference: string;
+}
+
+export interface PaymentResult {
+  message: string;
+  transaction?: {
+    type: string;
+    amount: number;
+    reference: string;
+  };
+  loanCompleted?: boolean;
+  remainingBalance?: number;
+  alreadyProcessed?: boolean;
+}
+
+export async function fetchActiveLoans(): Promise<ActiveLoan[]> {
+  const res = await api.get<{ data: ActiveLoan[] }>("/api/loan/active");
+  return res.data.data || [];
+}
+
+export async function fetchMemberLoanBalance(): Promise<number> {
+  const res = await api.get<{ data: { loan_balance: number } }>("/api/member/balance");
+  return Number(res.data.data?.loan_balance || 0);
+}
+
+export async function initializePayment(
+  payload: InitializePaymentPayload
+): Promise<InitializePaymentResponse> {
+  const res = await api.post<{ success: boolean; data: InitializePaymentResponse }>(
+    "/api/payments/initialize",
+    payload
+  );
+  return res.data.data;
+}
+
+export async function verifyPayment(reference: string): Promise<PaymentResult> {
+  const res = await api.get<{ success: boolean; data: PaymentResult }>(
+    `/api/payments/verify/${reference}`
+  );
+  return res.data.data;
+}
+
+// ── Mono Payment ─────────────────────────────────────────────────────────────
+
+export interface MonoInitializeResponse {
+  monoUrl: string;
+}
+
+export interface MonoVerificationResult {
+  paymentType?: string;
+  message?: string;
+  transaction?: {
+    type: string;
+    amount: number;
+    reference: string;
+  };
+  alreadyProcessed?: boolean;
+  loanCompleted?: boolean;
+  remainingBalance?: number;
+}
+
+export async function initializeMonoPayment(
+  payload: InitializePaymentPayload
+): Promise<MonoInitializeResponse> {
+  const res = await api.post<{ success: boolean; data: MonoInitializeResponse }>(
+    "/api/payments/initialize-mono",
+    payload
+  );
+  return res.data.data;
+}
+
+export async function verifyMonoPayment(
+  reference: string
+): Promise<MonoVerificationResult> {
+  const res = await api.get<{ success: boolean; data: MonoVerificationResult }>(
+    `/api/payments/mono-verify-callback/${reference}`
+  );
+  console.log("Mono verification response:", res.data);
+  if (!res.data.success) {
+    throw new Error(res.data.data?.message || "Verification request failed");
+  }
+  return res.data.data;
+}

@@ -1,9 +1,9 @@
 import { submitWithdrawal } from "@/services/api.service";
 import { useAuthStore } from "@/hooks/useAuth";
-import { useMemberStore } from "@/store/user";
+import { useMember } from "@/hooks/useMember";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
     ActivityIndicator,
     Alert,
@@ -24,14 +24,11 @@ export default function WithdrawalApplication() {
   const [pin, setPin] = useState("");
   const [isLoading, setLoading] = useState(false);
   const { user } = useAuthStore();
-  const { member, loading, fetchMemberData } = useMemberStore();
-  useEffect(() => {
-    if (user?.id) {
-      fetchMemberData(user.id);
-    }
-  }, [user?.id, fetchMemberData]);
+  
+  const { data: member, isLoading: isMemberLoading } = useMember(user?.id);
+ 
 
-  if (loading) {
+  if (isMemberLoading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
 

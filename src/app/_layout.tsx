@@ -23,10 +23,10 @@ import { setupInterceptors } from "@/constants/api";
 // import { useTokenStorage } from "@/hooks/useTokenStorage";
 
 function InterceptorSetup() {
-  const { getAccessToken, setAccessToken } = useTokenStorage();
+  const { getAccessToken, setAccessToken, removeAccessToken } = useTokenStorage();
 
   useEffect(() => {
-    setupInterceptors({ getAccessToken, setAccessToken });
+    setupInterceptors({ getAccessToken, setAccessToken, removeAccessToken });
   }, []);
 
   return null;
@@ -71,6 +71,10 @@ export default function RootLayout() {
           />
           <Stack.Screen
             name="payments"
+            options={{ headerShown: false, gestureEnabled: false }}
+          />
+          <Stack.Screen
+            name="transactions"
             options={{ headerShown: false, gestureEnabled: false }}
           />
           <Stack.Screen name="+not-found" />

@@ -1,7 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import Decimal from "decimal.js";
 import { queryKeys } from "@/lib/queryKeys";
-import { fetchSavingsBalance } from "@/services/api.service";
+import {
+  fetchSavingsBalance,
+  submitDeposit,
+} from "@/services/api.service";
+import type { DepositPayload } from "@/services/api.service";
 
 /**
  * Returns the member's savings balance with category helpers.
@@ -31,4 +35,10 @@ export function useSavingsBalance() {
     ...query,
     getCategoryTotal,
   };
+}
+
+export function useDeposit() {
+  return useMutation({
+    mutationFn: (payload: DepositPayload) => submitDeposit(payload),
+  });
 }

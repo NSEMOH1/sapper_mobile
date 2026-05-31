@@ -17,3 +17,16 @@ export function useMember(userId: string | undefined | null) {
     enabled: Boolean(userId),
   });
 }
+
+export function useUpdateMemberMutation(userId: string | undefined | null, options?: Parameters<typeof useQuery>[0]) {
+  const query = useQuery({
+    queryKey: queryKeys.member.detail(userId ?? ""),
+    queryFn: () => fetchMember(userId!),
+    enabled: Boolean(userId),
+  });
+
+  return {
+    ...query,
+    update: query.refetch,
+  };
+}

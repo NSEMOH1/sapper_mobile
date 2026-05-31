@@ -35,4 +35,10 @@ export const queryKeys = {
     all: ["savings"] as const,
     balances: () => ["savings", "balances"] as const,
   },
+
+  // ── Payments ────────────────────────────────────────────────────────────────
+  payments: {
+    activeLoans: ["payments", "activeLoans"] as const,
+    memberBalance: ["payments", "memberBalance"] as const,
+  },
 } as const;
