@@ -1,6 +1,5 @@
 import { router } from "expo-router";
 import { ArrowRight } from "lucide-react-native";
-import React from "react";
 import {
     Dimensions,
     Image,
@@ -11,11 +10,15 @@ import {
     View,
 } from "react-native";
 
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ONBOARDING_COMPLETED_KEY } from "../index";
+
 const { width, height } = Dimensions.get("window");
 
 export default function Onboarding3() {
-  const handleNext = () => {
-    router.push("/auth");
+  const handleNext = async () => {
+    await AsyncStorage.setItem(ONBOARDING_COMPLETED_KEY, "true");
+    router.replace("/auth");
   };
 
   return (
