@@ -206,6 +206,28 @@ export async function verifyPayment(reference: string): Promise<PaymentResult> {
   return res.data.data;
 }
 
+// ── Notifications ────────────────────────────────────────────────────────────
+
+import type { AppNotification } from "@/types";
+
+export async function fetchNotifications(memberId: string): Promise<AppNotification[]> {
+  const res = await api.get<AppNotification[]>(`/api/notifications/member/${memberId}`);
+  return res.data;
+}
+
+export async function fetchUnreadCount(memberId: string): Promise<{ count: number }> {
+  const res = await api.get<{ count: number }>(`/api/notifications/member/${memberId}/unread-count`);
+  return res.data;
+}
+
+export async function markNotificationRead(id: string): Promise<void> {
+  await api.put(`/api/notifications/${id}/read`);
+}
+
+export async function markNotificationUnread(id: string): Promise<void> {
+  await api.put(`/api/notifications/${id}/unread`);
+}
+
 // ── Mono Payment ─────────────────────────────────────────────────────────────
 
 export interface MonoInitializeResponse {

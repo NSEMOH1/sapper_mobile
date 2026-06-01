@@ -36,6 +36,13 @@ export const queryKeys = {
     balances: () => ["savings", "balances"] as const,
   },
 
+  // ── Notifications ───────────────────────────────────────────────────────────
+  notifications: {
+    all: ["notifications"] as const,
+    list: (memberId: string) => ["notifications", memberId] as const,
+    unreadCount: (memberId: string) => ["notifications", memberId, "unread"] as const,
+  },
+
   // ── Payments ────────────────────────────────────────────────────────────────
   payments: {
     activeLoans: ["payments", "activeLoans"] as const,

@@ -1,12 +1,14 @@
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
+import { useState } from "react";
 import {
-  Building, Calendar, ChevronLeft, CreditCard, Home, Key, Mail,
-  MapPinCheckInside, MapPinHouse, MessageCircleQuestion, MessageSquare,
+  Building, Calendar, CreditCard, Home, Key, Mail,
+  MapPin, MapPinHouse, MessageCircleQuestion, MessageSquare,
   Phone, ShieldUser, Smile, User, UsersRound, VenusAndMars,
 } from "lucide-react-native";
-import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Alert, Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,6 +19,8 @@ import { DatePickerField } from "@/components/DatePickerField";
 import { DocumentUpload, type Document } from "@/components/DocumentUpload";
 import { FormInput } from "@/components/FormInput";
 import { FormPicker } from "@/components/FormPicker";
+
+const ACCENT = "#213400";
 
 const basicInfoSchema = z.object({
   serviceNumber: z.string().min(1, "Service number is required"),
@@ -89,17 +93,6 @@ const stepFields: Record<string, (keyof RegistrationFormValues)[]> = {
   "2-2": ["kinPhone", "kinEmail", "kinAddress"],
   "4-1": ["securityQuestion", "securityAnswer"],
 };
-
-function StepHeader({ title, subtitle, onBack, backColor }: { title: string; subtitle: string; onBack: () => void; backColor?: string }) {
-  return (
-    <View style={s.headerWithBack}>
-      <TouchableOpacity onPress={onBack} style={s.backButton}>
-        <ChevronLeft size={24} color={backColor ?? "black"} />
-      </TouchableOpacity>
-      <Text style={s.title}>{title}</Text>
-    </View>
-  );
-}
 
 export default function RegistrationForm() {
   const [step, setStep] = useState(1);
@@ -226,60 +219,93 @@ export default function RegistrationForm() {
     setPersonnelId(null);
   };
 
+  // ── Progress ──────────────────────────────────────────
+  const totalSubSteps = steps.reduce((acc, s) => acc + s.substeps, 0);
+  const completedSubSteps = (() => {
+    let count = 0;
+    for (let i = 0; i < step - 1; i++) count += steps[i].substeps;
+    count += subStep - 1;
+    return count;
+  })();
+  const progressPct = totalSubSteps > 0 ? (completedSubSteps / totalSubSteps) * 100 : 0;
+
+  // ── Success Screen ──────────────────────────────────────
   if (showSuccess) {
     return (
       <SafeAreaView style={s.safeArea}>
-        <ImageBackground source={require("@/assets/images/chief.jpg")} resizeMode="cover" style={s.backgroundImage}>
-          <View style={s.successOverlay}>
-            <View style={s.successContainer}>
-              <View style={s.logo}>
-                <Image source={require("@/assets/images/sappper-logo.png")} style={s.logoImage} />
-              </View>
-              <View style={s.successCard}>
-                <Text style={s.successTitle}>Your Account Has been{"\n"}Created Successfully</Text>
-                <View style={s.successIconContainer}>
-                  {[{ bg: "#82B921", w: 8, h: 8, t: 20, l: 30 }, { bg: "#FF6B35", w: 6, h: 6, t: 40, r: 40 }, { bg: "transparent", w: 16, h: 16, t: 80, l: 60, bw: 2, bc: "#DDD" }].map((c, i) => (
-                    <View key={i} style={[s.decorativeCircle, c.bw ? { borderWidth: c.bw, borderColor: c.bc } : {}, { backgroundColor: c.bg, width: c.w, height: c.h, top: c.t, left: c.l, right: (c as any).r }]} />
-                  ))}
-                  <View style={s.successIcon}>
-                    <Text style={s.checkmark}>✓</Text>
-                  </View>
-                </View>
-                <TouchableOpacity style={s.loginButton} onPress={handleLogin}>
-                  <Text style={s.loginButtonText}>Login</Text>
-                  <Text style={s.loginArrow}>→</Text>
-                </TouchableOpacity>
-              </View>
+        <View style={s.successOverlay}>
+          <View style={s.successContainer}>
+            <View style={s.successIconLarge}>
+              <Ionicons name="checkmark-circle" size={80} color="#4CAF50" />
             </View>
+            <Text style={s.successTitle}>Account Created{'\n'}Successfully</Text>
+            <Text style={s.successSub}>
+              Your registration has been submitted for approval. You'll be notified once your account is activated.
+            </Text>
+            <TouchableOpacity style={s.successBtn} onPress={handleLogin}>
+              <LinearGradient
+                colors={[ACCENT, "#2E4A0B"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={s.successBtnGrad}
+              >
+                <Text style={s.successBtnText}>Proceed to Login</Text>
+                <Ionicons name="arrow-forward" size={20} color="#fff" />
+              </LinearGradient>
+            </TouchableOpacity>
           </View>
-        </ImageBackground>
+        </View>
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={s.safeArea}>
-      <ScrollView contentContainerStyle={s.container}>
-        <View style={s.logo}>
-          <Image source={require("@/assets/images/sappper-logo.png")} style={s.logoImage} />
+      <ScrollView
+        contentContainerStyle={s.container}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* ── Progress Bar ──────────────────────────── */}
+        <View style={s.progressHeader}>
+          <TouchableOpacity onPress={prevStep} style={s.backCircle}>
+            <Ionicons name="arrow-back" size={22} color="#1A1A2E" />
+          </TouchableOpacity>
+          <View style={s.progressBar}>
+            <View style={[s.progressFill, { width: `${progressPct}%` }]} />
+          </View>
+          <Text style={s.progressLabel}>{Math.round(progressPct)}%</Text>
         </View>
 
-        <View style={s.form}>
-          <View style={s.stepper}>
-            {steps.map(({ label }, i) => (
+        {/* ── Stepper ───────────────────────────────── */}
+        <View style={s.stepper}>
+          {steps.map(({ label }, i) => {
+            const idx = i + 1;
+            const isActive = step === idx;
+            const isDone = step > idx;
+            return (
               <View key={i} style={s.stepItem}>
-                <View style={[s.circle, step === i + 1 && s.activeCircle]}>
-                  <Text style={s.circleText}>{i + 1}</Text>
+                <View style={[s.stepCircle, isActive && s.stepCircleActive, isDone && s.stepCircleDone]}>
+                  {isDone ? (
+                    <Ionicons name="checkmark" size={14} color="#fff" />
+                  ) : (
+                    <Text style={[s.stepNum, isActive && s.stepNumActive]}>{idx}</Text>
+                  )}
                 </View>
-                <Text style={[s.stepLabel, step === i + 1 && s.activeStepLabel]}>{label}</Text>
+                <Text style={[s.stepLabel, isActive && s.stepLabelActive, isDone && s.stepLabelDone]}>
+                  {label}
+                </Text>
               </View>
-            ))}
-          </View>
+            );
+          })}
+        </View>
 
+        {/* ── Form Card ─────────────────────────────── */}
+        <View style={s.formCard}>
           {step === 1 && subStep === 1 && (
             <View>
-              <Text style={s.title}>Create Profile</Text>
-              <Text style={s.subtitle}>Enter Your Basic Information</Text>
+              <Text style={s.formTitle}>Personal Information</Text>
+              <Text style={s.formSub}>Basic details about you</Text>
               <Controller control={control} name="serviceNumber" render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
                 <FormInput label="Service Number *" icon={ShieldUser} placeholder="Enter service number" value={value} onChangeText={onChange} onBlur={onBlur} error={error?.message} />
               )} />
@@ -306,7 +332,8 @@ export default function RegistrationForm() {
 
           {step === 1 && subStep === 2 && (
             <View>
-              <StepHeader title="Create Profile" subtitle="Enter Your Contact Information" onBack={prevStep} />
+              <Text style={s.formTitle}>Contact Information</Text>
+              <Text style={s.formSub}>How to reach you</Text>
               <Controller control={control} name="dob" render={({ field: { onChange, value }, fieldState: { error } }) => (
                 <DatePickerField label="Date of Birth *" icon={Calendar} value={value} onChange={onChange} error={error?.message} />
               )} />
@@ -320,14 +347,15 @@ export default function RegistrationForm() {
                 <FormInput label="Home Address *" icon={Home} placeholder="Enter home address" multiline numberOfLines={2} value={value} onChangeText={onChange} onBlur={onBlur} error={error?.message} />
               )} />
               <Controller control={control} name="transactionPin" render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
-                <FormInput label="Transaction Pin *" icon={Key} placeholder="Enter 4-digit transaction pin" secureTextEntry keyboardType="numeric" maxLength={4} value={value} onChangeText={onChange} onBlur={onBlur} error={error?.message} />
+                <FormInput label="Transaction Pin *" icon={Key} placeholder="Enter 4-digit pin" secureTextEntry keyboardType="numeric" maxLength={4} value={value} onChangeText={onChange} onBlur={onBlur} error={error?.message} />
               )} />
             </View>
           )}
 
           {step === 1 && subStep === 3 && (
             <View>
-              <StepHeader title="Create Profile" subtitle="Enter Your Financial Information" onBack={prevStep} backColor="#82B921" />
+              <Text style={s.formTitle}>Financial Information</Text>
+              <Text style={s.formSub}>Your banking details</Text>
               <Controller control={control} name="stateOrigin" render={({ field: { onChange, value }, fieldState: { error } }) => (
                 <FormPicker label="State of Origin *" icon={MapPinHouse}
                   items={Object.keys(states).map((s) => ({ label: s, value: s }))}
@@ -339,7 +367,7 @@ export default function RegistrationForm() {
                 const origin = watch("stateOrigin");
                 const lgas: string[] = origin ? (states as Record<string, string[]>)[origin] ?? [] : [];
                 return (
-                  <FormPicker label="LGA *" icon={MapPinCheckInside}
+                  <FormPicker label="LGA *" icon={MapPin}
                     items={lgas.map((l) => ({ label: l, value: l }))}
                     value={value}
                     onValueChange={onChange}
@@ -356,14 +384,15 @@ export default function RegistrationForm() {
                 <FormInput label="Account Name *" icon={CreditCard} placeholder="Enter account name" value={value} onChangeText={onChange} onBlur={onBlur} error={error?.message} />
               )} />
               <Controller control={control} name="monthlyDeduction" render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
-                <FormInput label="Monthly Deduction Amount *" icon={CreditCard} placeholder="Enter amount" keyboardType="numeric" value={value} onChangeText={onChange} onBlur={onBlur} error={error?.message} />
+                <FormInput label="Monthly Deduction *" icon={CreditCard} placeholder="Enter amount" keyboardType="numeric" value={value} onChangeText={onChange} onBlur={onBlur} error={error?.message} />
               )} />
             </View>
           )}
 
           {step === 2 && subStep === 1 && (
             <View>
-              <StepHeader title="Next Of Kin" subtitle="Enter Basic Information" onBack={prevStep} />
+              <Text style={s.formTitle}>Next of Kin</Text>
+              <Text style={s.formSub}>Basic information</Text>
               <Controller control={control} name="kinFirstName" render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
                 <FormInput label="First Name *" icon={User} placeholder="Enter first name" value={value} onChangeText={onChange} onBlur={onBlur} error={error?.message} />
               )} />
@@ -381,7 +410,8 @@ export default function RegistrationForm() {
 
           {step === 2 && subStep === 2 && (
             <View>
-              <StepHeader title="Next of Kin" subtitle="Enter Contact Information" onBack={prevStep} />
+              <Text style={s.formTitle}>Next of Kin</Text>
+              <Text style={s.formSub}>Contact information</Text>
               <Controller control={control} name="kinPhone" render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
                 <FormInput label="Phone Number *" icon={Phone} placeholder="Enter phone number" keyboardType="phone-pad" value={value} onChangeText={onChange} onBlur={onBlur} error={error?.message} />
               )} />
@@ -396,17 +426,19 @@ export default function RegistrationForm() {
 
           {step === 3 && (
             <View>
-              <StepHeader title="Upload Document" subtitle="Please provide your credentials to signup to the platform." onBack={prevStep} />
+              <Text style={s.formTitle}>Upload Documents</Text>
+              <Text style={s.formSub}>Provide your credentials to complete registration</Text>
               <DocumentUpload label="Upload your picture *" value={profilePicture} onChange={setProfilePicture} isImage />
-              <DocumentUpload label="NIN of Next of kin *" value={ninDocument} onChange={setNinDocument} />
-              <DocumentUpload label="Valid means of ID (NIN, Drivers License, International Passport) *" value={idDocument} onChange={setIdDocument} />
+              <DocumentUpload label="NIN of Next of Kin *" value={ninDocument} onChange={setNinDocument} />
+              <DocumentUpload label="Valid means of ID *" value={idDocument} onChange={setIdDocument} />
               <DocumentUpload label="Personnel ID Card *" value={personnelId} onChange={setPersonnelId} />
             </View>
           )}
 
           {step === 4 && (
             <View>
-              <StepHeader title="Security Question" subtitle="Setup your security question for account recovery" onBack={prevStep} />
+              <Text style={s.formTitle}>Security Question</Text>
+              <Text style={s.formSub}>Setup account recovery</Text>
               <Controller control={control} name="securityQuestion" render={({ field: { onChange, value }, fieldState: { error } }) => (
                 <FormPicker label="Security Question *" icon={MessageCircleQuestion} items={securityQuestions} placeholder="Select Security Question" value={value} onValueChange={onChange} error={error?.message} />
               )} />
@@ -415,49 +447,228 @@ export default function RegistrationForm() {
               )} />
             </View>
           )}
-        </View>
 
-        <TouchableOpacity style={[s.buttonPrimary, isPending && s.buttonDisabled]} onPress={nextStep} disabled={isPending}>
-          <Text style={s.buttonText}>
-            {isPending ? "Submitting..." : step === 4 ? "Submit" : "Proceed"}
-            {!isPending && " →"}
-          </Text>
-        </TouchableOpacity>
+          {/* ── Navigation ──────────────────────────── */}
+          <TouchableOpacity
+            style={[s.proceedBtn, isPending && s.proceedBtnDisabled]}
+            onPress={nextStep}
+            disabled={isPending}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={isPending ? ["#9CA3AF", "#9CA3AF"] : [ACCENT, "#2E4A0B"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={s.proceedGrad}
+            >
+              <Text style={s.proceedText}>
+                {isPending ? "Submitting..." : step === 4 ? "Submit" : "Continue"}
+              </Text>
+              {!isPending && <Ionicons name="arrow-forward" size={20} color="#fff" />}
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const s = StyleSheet.create({
-  safeArea: { flex: 1 },
-  backgroundImage: { flex: 1 },
-  container: { padding: 20, paddingTop: 30 },
-  logo: { justifyContent: "center", alignItems: "center", marginBottom: 15, marginTop: 10 },
-  logoImage: { width: 60, height: 80, resizeMode: "contain" },
-  form: { backgroundColor: "rgba(255,255,255,0.9)", borderRadius: 12, padding: 15, borderWidth: 1, borderColor: "#ddd", marginBottom: 20 },
-  stepper: { flexDirection: "row", justifyContent: "space-between", marginBottom: 20, paddingBottom: 10, borderBottomWidth: 1, borderColor: "#eee" },
+  safeArea: { flex: 1, backgroundColor: "#F5F7FA" },
+  container: { padding: 20, paddingTop: 12, paddingBottom: 40 },
+
+  // ── Progress Header ──────────────────────────────────
+  progressHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 20,
+  },
+  backCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  progressBar: {
+    flex: 1,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#E5E7EB",
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: "100%",
+    borderRadius: 3,
+    backgroundColor: ACCENT,
+  },
+  progressLabel: {
+    fontSize: 13,
+    fontFamily: "Poppins_600SemiBold",
+    color: ACCENT,
+    minWidth: 36,
+    textAlign: "right",
+  },
+
+  // ── Stepper ──────────────────────────────────────────
+  stepper: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 24,
+    paddingHorizontal: 4,
+  },
   stepItem: { alignItems: "center", flex: 1 },
-  circle: { width: 28, height: 28, borderRadius: 14, backgroundColor: "#ccc", justifyContent: "center", alignItems: "center" },
-  activeCircle: { backgroundColor: "#82B921" },
-  circleText: { color: "#fff", fontWeight: "bold", fontFamily: "Poppins_400Regular" },
-  stepLabel: { fontSize: 10, marginTop: 4, color: "#666", textAlign: "center", fontFamily: "Poppins_400Regular" },
-  activeStepLabel: { color: "#82B921", fontWeight: "bold" },
-  headerWithBack: { flexDirection: "row", alignItems: "center", justifyContent: "center", marginBottom: 10, position: "relative" },
-  backButton: { position: "absolute", left: 0, padding: 5 },
-  title: { fontSize: 20, fontWeight: "bold", textAlign: "center", color: "#82B921", fontFamily: "Poppins_400Regular" },
-  subtitle: { fontSize: 12, textAlign: "center", marginBottom: 20, color: "#666", fontFamily: "Poppins_400Regular" },
-  buttonPrimary: { backgroundColor: "#213400", padding: 14, borderRadius: 8, alignItems: "center", width: "100%", marginBottom: 20 },
-  buttonDisabled: { backgroundColor: "#ccc", opacity: 0.7 },
-  buttonText: { color: "#fff", fontWeight: "bold", fontFamily: "Poppins_400Regular" },
-  successOverlay: { flex: 1, backgroundColor: "rgba(2, 21, 2, 0.9)" },
-  successContainer: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20 },
-  successCard: { backgroundColor: "rgba(255,255,255,0.95)", borderRadius: 12, padding: 40, alignItems: "center", width: "100%", maxWidth: 350, position: "relative" },
-  successTitle: { fontSize: 18, fontWeight: "bold", textAlign: "center", color: "#333", marginBottom: 40, lineHeight: 24, fontFamily: "Poppins_400Regular" },
-  successIconContainer: { position: "relative", width: 200, height: 200, justifyContent: "center", alignItems: "center", marginBottom: 40 },
-  successIcon: { width: 80, height: 80, borderRadius: 40, backgroundColor: "#82B921", justifyContent: "center", alignItems: "center", elevation: 3, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84 },
-  checkmark: { color: "#fff", fontSize: 32, fontWeight: "bold" },
-  decorativeCircle: { position: "absolute", borderRadius: 50 },
-  loginButton: { backgroundColor: "#213400", paddingVertical: 14, paddingHorizontal: 30, borderRadius: 8, flexDirection: "row", alignItems: "center", justifyContent: "center", width: "100%" },
-  loginButtonText: { color: "#fff", fontWeight: "bold", fontSize: 16, marginRight: 10, fontFamily: "Poppins_400Regular" },
-  loginArrow: { color: "#fff", fontSize: 16, fontWeight: "bold" },
+  stepCircle: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: "#E5E7EB",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  stepCircleActive: {
+    backgroundColor: ACCENT,
+    shadowColor: ACCENT,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  stepCircleDone: {
+    backgroundColor: "#4CAF50",
+  },
+  stepNum: {
+    fontSize: 13,
+    fontFamily: "Poppins_600SemiBold",
+    color: "#9CA3AF",
+  },
+  stepNumActive: { color: "#fff" },
+  stepLabel: {
+    fontSize: 9,
+    fontFamily: "Poppins_500Medium",
+    color: "#9CA3AF",
+    textAlign: "center",
+  },
+  stepLabelActive: { color: ACCENT, fontFamily: "Poppins_600SemiBold" },
+  stepLabelDone: { color: "#4CAF50" },
+
+  // ── Form Card ────────────────────────────────────────
+  formCard: {
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  formTitle: {
+    fontSize: 20,
+    fontFamily: "Poppins_700Bold",
+    color: "#1A1A2E",
+    textAlign: "center",
+    marginBottom: 4,
+  },
+  formSub: {
+    fontSize: 13,
+    fontFamily: "Poppins_400Regular",
+    color: "#6B7280",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+
+  // ── Proceed Button ───────────────────────────────────
+  proceedBtn: {
+    borderRadius: 14,
+    overflow: "hidden",
+    marginTop: 8,
+    shadowColor: ACCENT,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  proceedBtnDisabled: { opacity: 0.6 },
+  proceedGrad: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    gap: 8,
+  },
+  proceedText: {
+    fontSize: 16,
+    fontFamily: "Poppins_600SemiBold",
+    color: "#fff",
+  },
+
+  // ── Success ─────────────────────────────────────────
+  successOverlay: {
+    flex: 1,
+    backgroundColor: "#F5F7FA",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+  successContainer: {
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 24,
+    padding: 36,
+    width: "100%",
+    maxWidth: 360,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 6,
+  },
+  successIconLarge: { marginBottom: 20 },
+  successTitle: {
+    fontSize: 22,
+    fontFamily: "Poppins_700Bold",
+    color: "#1A1A2E",
+    textAlign: "center",
+    marginBottom: 12,
+    lineHeight: 30,
+  },
+  successSub: {
+    fontSize: 14,
+    fontFamily: "Poppins_400Regular",
+    color: "#6B7280",
+    textAlign: "center",
+    lineHeight: 20,
+    marginBottom: 28,
+  },
+  successBtn: {
+    borderRadius: 14,
+    overflow: "hidden",
+    width: "100%",
+    shadowColor: ACCENT,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  successBtnGrad: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    gap: 8,
+  },
+  successBtnText: {
+    fontSize: 16,
+    fontFamily: "Poppins_600SemiBold",
+    color: "#fff",
+  },
 });

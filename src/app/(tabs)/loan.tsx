@@ -42,7 +42,9 @@ export default function Loan() {
           <View style={s.avatar}>
             <Text style={s.avatarText}>{getInitials(user?.first_name || "")}</Text>
           </View>
-          <Ionicons name="notifications-outline" size={22} color="#1A1A2E" />
+          <TouchableOpacity onPress={() => router.push("/notifications" as any)}>
+            <Ionicons name="notifications-outline" size={22} color="#1A1A2E" />
+          </TouchableOpacity>
         </View>
       </View>
 

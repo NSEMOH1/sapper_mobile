@@ -952,7 +952,7 @@ const s = StyleSheet.create({
   referenceValue: { fontSize: 12, color: "#333", fontFamily: "Poppins_500Medium" },
   buttonRow: { flexDirection: "row", width: "100%" },
   primaryBtn: {
-    backgroundColor: PRIMARY, borderRadius: 12, paddingVertical: 14,
+    backgroundColor: PRIMARY, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 20,
     alignItems: "center", justifyContent: "center", minHeight: 50,
   },
   primaryBtnText: { color: "white", fontSize: 15, fontFamily: "Poppins_600SemiBold" },

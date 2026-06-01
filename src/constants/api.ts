@@ -1,50 +1,65 @@
+/**
+ * api.ts — Axios instance + interceptor setup
+ *
+ * ✅ No imports from @/hooks or @/services — this file sits at the bottom
+ *    of the dependency graph and must stay cycle-free.
+ *
+ * The logout side-effect (clear Zustand + navigate) is injected via
+ * setupInterceptors() so api.ts never needs to import useAuthStore.
+ */
 import axios from "axios";
 import { router } from "expo-router";
-import { useAuthStore } from "@/hooks/useAuth";
 
 export const config = {
   apiUrl: process.env.EXPO_PUBLIC_API_URL || "",
 };
 
 const api = axios.create({
-  baseURL: config.apiUrl, 
+  baseURL: config.apiUrl,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-interface API {
+interface InterceptorAPI {
   getAccessToken: () => Promise<string | null>;
   setAccessToken: (token: string) => Promise<void>;
   removeAccessToken: () => Promise<void>;
+  /** Called after token removal on 401 — inject store logout here */
+  onUnauthenticated?: () => void;
 }
 
-export const setupInterceptors = ({ getAccessToken, setAccessToken, removeAccessToken }: API) => {
+export const setupInterceptors = ({
+  getAccessToken,
+  setAccessToken,
+  removeAccessToken,
+  onUnauthenticated,
+}: InterceptorAPI) => {
+  // ── Request: attach Bearer token ────────────────────────────────────────
   api.interceptors.request.use(
     async (config) => {
-      const accessToken = await getAccessToken();
-      if (accessToken) {
-        config.headers.Authorization = `Bearer ${accessToken}`;
+      const token = await getAccessToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
       }
       return config;
     },
-    (error) => {
-      return Promise.reject(error);
-    }
+    (error) => Promise.reject(error)
   );
 
+  // ── Response: persist new token / handle 401 ────────────────────────────
   api.interceptors.response.use(
     async (response) => {
-      const accessToken = response.data?.token;
-      if (accessToken) {
-        await setAccessToken(accessToken);
+      const newToken = response.data?.token;
+      if (newToken) {
+        await setAccessToken(newToken);
       }
       return response;
     },
     async (error) => {
       if (error.response?.status === 401) {
         await removeAccessToken();
-        useAuthStore.getState().logout();
+        onUnauthenticated?.();          // ← Zustand logout lives here
         router.replace("/auth/login");
       }
       return Promise.reject(error);
@@ -53,4 +68,3 @@ export const setupInterceptors = ({ getAccessToken, setAccessToken, removeAccess
 };
 
 export default api;
-

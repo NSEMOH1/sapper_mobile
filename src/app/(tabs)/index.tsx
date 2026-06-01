@@ -3,8 +3,8 @@ import LoanEnrollmentFlow from "@/features/loan-enrollment";
 import { TransactionsModule } from "@/features/transaction";
 import { useAuthStore } from "@/hooks/useAuth";
 import { useBalances } from "@/hooks/useBalances";
+import { useUnreadCount } from "@/hooks/useNotifications";
 import { Ionicons } from "@expo/vector-icons";
-import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
 import {
@@ -15,6 +15,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AppIcon from '@/lib/useIcon';
 
 const ACCENT = "#213400";
 const BG = "#F5F7FA";
@@ -45,6 +46,8 @@ export default function HomeScreen() {
   const [hideBalance, setHideBalance] = useState(false);
   const { user } = useAuthStore();
   const { data, refetch } = useBalances();
+  const { data: unreadData } = useUnreadCount(user?.id);
+  const unreadCount = unreadData?.count ?? 0;
 
   const savingsBalance = useMemo(() => Number(data?.savings_balance || 0), [data]);
   const loanBalance = useMemo(() => Number(data?.loan_balance || 0), [data]);
@@ -80,9 +83,13 @@ export default function HomeScreen() {
                 {getInitials(user?.first_name || "")}
               </Text>
             </View>
-            <TouchableOpacity style={s.notifBtn}>
-              <Ionicons name="notifications-outline" size={22} color="#1A1A2E" />
-              <View style={s.notifDot} />
+            <TouchableOpacity style={s.notifBtn} onPress={() => router.push("/notifications" as any)}>
+              <AppIcon name="notifications-outline" size={22} color="#1A1A2E" />
+              {unreadCount > 0 && (
+                <View style={s.notifBadge}>
+                  <Text style={s.notifBadgeText}>{unreadCount > 9 ? "9+" : unreadCount}</Text>
+                </View>
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -90,7 +97,7 @@ export default function HomeScreen() {
         {/* ── Balance Card ────────────────────────────────── */}
         <View style={s.balanceCard}>
           <TouchableOpacity style={s.balanceRefresh} onPress={() => refetch()}>
-            <Ionicons name="refresh-outline" size={16} color="rgba(255,255,255,0.7)" />
+            <AppIcon name="refresh-outline" size={16} color="rgba(255,255,255,0.7)" />
           </TouchableOpacity>
           <View style={s.balanceTitleRow}>
             <Text style={s.balanceTitle}>Balance Overview</Text>
@@ -103,7 +110,7 @@ export default function HomeScreen() {
           </Text>
 
             <TouchableOpacity onPress={() => setHideBalance((v) => !v)} style={s.eyeBtn}>
-              <Ionicons
+              <AppIcon
                 name={hideBalance ? "eye-off-outline" : "eye-outline"}
                 size={18}
                 color="rgba(255,255,255,0.7)"
@@ -135,14 +142,14 @@ export default function HomeScreen() {
               style={s.balanceActionBtn}
               onPress={() => router.push("/payments" as any)}
             >
-              <Ionicons name="card-outline" size={16} color="#fff" />
+              <AppIcon name="card-outline" size={16} color="#fff" />
               <Text style={s.balanceActionText}>Pay Now</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[s.balanceActionBtn, s.balanceActionOutline]}
               onPress={() => router.push("/payments" as any)}
             >
-              <Ionicons name="checkmark-circle-outline" size={16} color={ACCENT} />
+              <AppIcon name="checkmark-circle-outline" size={16} color={ACCENT} />
               <Text style={[s.balanceActionText, { color: ACCENT }]}>Pay Off</Text>
             </TouchableOpacity>
           </View>
@@ -159,7 +166,7 @@ export default function HomeScreen() {
               activeOpacity={0.7}
             >
               <View style={s.quickIcon}>
-                <Ionicons name={action.icon as any} size={24} color={ACCENT} />
+                <AppIcon name={action.icon as any} size={24} color={ACCENT} />
               </View>
               <Text style={s.quickLabel}>{action.label}</Text>
             </TouchableOpacity>
@@ -182,7 +189,7 @@ export default function HomeScreen() {
               onPress={() => setShowLoanModal(true)}
             >
               <View style={s.loanIconWrap}>
-                <Ionicons name={product.icon} size={20} color="#fff" />
+                <AppIcon name={product.icon} size={20} color="#fff" />
               </View>
               <Text style={s.loanName} numberOfLines={2}>
                 {product.title}
@@ -244,16 +251,25 @@ const s = StyleSheet.create({
   },
   avatarText: { color: "#fff", fontSize: 14, fontFamily: "Poppins_700Bold" },
   notifBtn: { position: "relative", padding: 4 },
-  notifDot: {
+  notifBadge: {
     position: "absolute",
-    top: 4,
-    right: 4,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    top: 0,
+    right: 0,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
     backgroundColor: "#EF4444",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 4,
     borderWidth: 1.5,
     borderColor: BG,
+  },
+  notifBadgeText: {
+    color: "#fff",
+    fontSize: 10,
+    fontFamily: "Poppins_700Bold",
+    lineHeight: 14,
   },
 
   // ── Balance Card ──────────────────────────────────────

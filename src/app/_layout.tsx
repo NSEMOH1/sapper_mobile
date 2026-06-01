@@ -15,22 +15,26 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { queryClient } from "@/lib/queryClient";
 import { useTokenStorage } from "@/hooks/useTokenStorage";
+import { useAuthStore } from "@/hooks/useAuth"; 
 import { setupInterceptors } from "@/constants/api";
-
-// import { useColorScheme } from "@/hooks/useColorScheme";
-// import { setupInterceptors } from "@/constants/api";
-// import { useEffect } from "react";
-// import { useTokenStorage } from "@/hooks/useTokenStorage";
 
 function InterceptorSetup() {
   const { getAccessToken, setAccessToken, removeAccessToken } = useTokenStorage();
-
+ 
   useEffect(() => {
-    setupInterceptors({ getAccessToken, setAccessToken, removeAccessToken });
+    setupInterceptors({
+      getAccessToken,
+      setAccessToken,
+      removeAccessToken,
+      // Inject logout without api.ts ever importing useAuthStore
+      onUnauthenticated: () => useAuthStore.getState().logout(),
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
+ 
   return null;
 }
+ 
 
 export default function RootLayout() {
   const [fontLoaded] = useFonts({
@@ -75,6 +79,10 @@ export default function RootLayout() {
           />
           <Stack.Screen
             name="transactions"
+            options={{ headerShown: false, gestureEnabled: false }}
+          />
+          <Stack.Screen
+            name="notifications"
             options={{ headerShown: false, gestureEnabled: false }}
           />
           <Stack.Screen name="+not-found" />

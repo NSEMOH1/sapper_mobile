@@ -14,6 +14,7 @@ import { router } from "expo-router";
 import { getInitials } from "@/constants/data";
 import { useAuthStore, useLogout } from "@/hooks/useAuth";
 import { useMemberStore } from "@/store/user";
+import AppIcon from "@/lib/useIcon";
 
 type MenuItem = {
   id: number;
@@ -117,7 +118,7 @@ export default function Profile() {
             {infoRows.map((row, i) => (
               <View key={row.label} style={[s.infoRow, i < infoRows.length - 1 && s.infoBorder]}>
                 <View style={s.infoLeft}>
-                  <Ionicons name={row.icon} size={15} color="#6B7280" />
+                  <AppIcon name={row.icon} size={15} color="#6B7280" />
                   <Text style={s.infoLabel}>{row.label}</Text>
                 </View>
                 <Text style={s.infoValue}>{row.value}</Text>
@@ -140,11 +141,11 @@ export default function Profile() {
                 >
                   <View style={s.menuLeft}>
                     <View style={s.menuIcon}>
-                      <Ionicons name={item.icon} size={18} color="#213400" />
+                      <AppIcon name={item.icon} size={18} color="#213400" />
                     </View>
                     <Text style={s.menuLabel}>{item.label}</Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
+                  <AppIcon name="chevron-forward" size={16} color="#9CA3AF" />
                 </TouchableOpacity>
               ))}
             </View>
@@ -153,7 +154,7 @@ export default function Profile() {
 
         {/* ── Logout ──────────────────────────────────────────── */}
         <TouchableOpacity style={s.logoutBtn} onPress={handleLogout} activeOpacity={0.7}>
-          <Ionicons name="log-out-outline" size={20} color="#EF4444" />
+          <AppIcon name="log-out-outline" size={20} color="#EF4444" />
           <Text style={s.logoutText}>Logout</Text>
         </TouchableOpacity>
 

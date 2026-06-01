@@ -1,26 +1,16 @@
 {
   "expo": {
-    "name": "sappers",
+    "name": "Sappers",
     "slug": "sappers",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "sappers",
     "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/images/logo-sappers.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#6A7814"
-    },
     "ios": {
       "icon": "./assets/expo.icon",
       "supportsTablet": true,
-      "splash": {
-        "image": "./assets/images/sappper-logo.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#6A7814"
-      },
-      "bundleIdentifier": "com.codieprodigy.sappers"
+      "bundleIdentifier": "com.sappers.app"
     },
     "android": {
       "adaptiveIcon": {
@@ -28,14 +18,8 @@
         "backgroundColor": "#ffffff"
       },
       "versionCode": 1,
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "splash": {
-        "image": "./assets/images/sappper-logo.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#6A7814"
-      },
-      "package": "com.codieprodigy.sappers"
+      "package": "com.sappers.app"
     },
     "web": {
       "output": "static",
@@ -56,11 +40,19 @@
           },
           "imageWidth": 200
         }
-      ]
+      ],
+      "expo-image",
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "ec2f1e26-0110-42e9-b64b-f417c2b16909"
+      }
     }
   }
 }

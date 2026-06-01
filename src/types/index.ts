@@ -214,3 +214,17 @@ export interface CircularProgressProps {
   percentage: number;
   size?: number;
 }
+
+export interface AppNotification {
+  id: string;
+  memberId: string;
+  status: "UNREAD" | "READ";
+  type: string;
+  title: string;
+  message: string;
+  createdAt: string;
+  member?: {
+    first_name: string;
+    profile_picture: string | null;
+  };
+}
