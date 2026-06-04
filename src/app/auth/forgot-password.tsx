@@ -18,6 +18,7 @@ import {
     View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme } from "@/hooks/use-theme";
 
 const ForgotPasswordFlow: React.FC<ForgotPasswordFlowProps> = ({
   navigation,
@@ -33,6 +34,7 @@ const ForgotPasswordFlow: React.FC<ForgotPasswordFlowProps> = ({
   });
   const [errors, setErrors] = useState<ForgotPasswordFormErrors>({});
   const [loading, setLoading] = useState<boolean>(false);
+  const { colors } = useTheme();
 
   const securityQuestion: string = "What is your mother's maiden name?";
 
@@ -41,7 +43,6 @@ const ForgotPasswordFlow: React.FC<ForgotPasswordFlowProps> = ({
     value: string
   ): void => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
@@ -106,34 +107,28 @@ const ForgotPasswordFlow: React.FC<ForgotPasswordFlowProps> = ({
     setLoading(true);
 
     try {
-      // Simulate API calls
       switch (currentStep) {
         case 1:
-          // Send OTP to email
           console.log("Sending OTP to:", formData.email);
           await new Promise((resolve) => setTimeout(resolve, 1000));
           break;
 
         case 2:
-          // Verify OTP
           console.log("Verifying OTP:", formData.otp);
           await new Promise((resolve) => setTimeout(resolve, 1000));
           break;
 
         case 3:
-          // Verify security answer
           console.log("Verifying security answer:", formData.securityAnswer);
           await new Promise((resolve) => setTimeout(resolve, 1000));
           break;
 
         case 4:
-          // Verify transaction PIN
           console.log("Verifying transaction PIN:", formData.transactionPin);
           await new Promise((resolve) => setTimeout(resolve, 1000));
           break;
 
         case 5:
-          // Reset password
           console.log("Resetting password");
           await new Promise((resolve) => setTimeout(resolve, 1000));
           break;
@@ -183,14 +178,15 @@ const ForgotPasswordFlow: React.FC<ForgotPasswordFlowProps> = ({
         return (
           <View style={styles.stepContainer}>
             {renderLogo()}
-            <Text style={styles.title}>Enter Your Email</Text>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.title, { color: colors.text }]}>Enter Your Email</Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
               We'll send an OTP to verify your identity
             </Text>
 
             <TextInput
-              style={[styles.input, errors.email && styles.inputError]}
+              style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }, errors.email && styles.inputError]}
               placeholder="Enter your email address"
+              placeholderTextColor={colors.textSecondary}
               value={formData.email}
               onChangeText={(text: string) => updateFormData("email", text)}
               keyboardType="email-address"
@@ -198,7 +194,7 @@ const ForgotPasswordFlow: React.FC<ForgotPasswordFlowProps> = ({
               autoComplete="email"
             />
             {errors.email && (
-              <Text style={styles.errorText}>{errors.email}</Text>
+              <Text style={[styles.errorText, { color: colors.error }]}>{errors.email}</Text>
             )}
           </View>
         );
@@ -207,8 +203,8 @@ const ForgotPasswordFlow: React.FC<ForgotPasswordFlowProps> = ({
         return (
           <View style={styles.stepContainer}>
             {renderLogo()}
-            <Text style={styles.title}>Enter OTP</Text>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.title, { color: colors.text }]}>Enter OTP</Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
               Enter the 6-digit code sent to {formData.email}
             </Text>
 
@@ -216,9 +212,11 @@ const ForgotPasswordFlow: React.FC<ForgotPasswordFlowProps> = ({
               style={[
                 styles.input,
                 styles.otpInput,
+                { backgroundColor: colors.card, borderColor: colors.border, color: colors.text },
                 errors.otp && styles.inputError,
               ]}
               placeholder="000000"
+              placeholderTextColor={colors.textSecondary}
               value={formData.otp}
               onChangeText={(text: string) =>
                 updateFormData("otp", text.replace(/\D/g, ""))
@@ -227,10 +225,10 @@ const ForgotPasswordFlow: React.FC<ForgotPasswordFlowProps> = ({
               maxLength={6}
               textAlign="center"
             />
-            {errors.otp && <Text style={styles.errorText}>{errors.otp}</Text>}
+            {errors.otp && <Text style={[styles.errorText, { color: colors.error }]}>{errors.otp}</Text>}
 
             <TouchableOpacity onPress={handleResendOTP} disabled={loading}>
-              <Text style={styles.linkText}>Didn't receive OTP? Resend</Text>
+              <Text style={[styles.linkText, { color: colors.primary }]}>Didn't receive OTP? Resend</Text>
             </TouchableOpacity>
           </View>
         );
@@ -239,16 +237,21 @@ const ForgotPasswordFlow: React.FC<ForgotPasswordFlowProps> = ({
         return (
           <View style={styles.stepContainer}>
             {renderLogo()}
-            <Text style={styles.title}>Security Question</Text>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.title, { color: colors.text }]}>Security Question</Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
               Please answer your security question
             </Text>
 
-            <Text style={styles.questionText}>{securityQuestion}</Text>
+            <Text style={[styles.questionText, {
+              color: colors.text,
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+            }]}>{securityQuestion}</Text>
 
             <TextInput
-              style={[styles.input, errors.securityAnswer && styles.inputError]}
+              style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }, errors.securityAnswer && styles.inputError]}
               placeholder="Enter your answer"
+              placeholderTextColor={colors.textSecondary}
               value={formData.securityAnswer}
               onChangeText={(text: string) =>
                 updateFormData("securityAnswer", text)
@@ -256,7 +259,7 @@ const ForgotPasswordFlow: React.FC<ForgotPasswordFlowProps> = ({
               autoCapitalize="words"
             />
             {errors.securityAnswer && (
-              <Text style={styles.errorText}>{errors.securityAnswer}</Text>
+              <Text style={[styles.errorText, { color: colors.error }]}>{errors.securityAnswer}</Text>
             )}
           </View>
         );
@@ -265,8 +268,8 @@ const ForgotPasswordFlow: React.FC<ForgotPasswordFlowProps> = ({
         return (
           <View style={styles.stepContainer}>
             {renderLogo()}
-            <Text style={styles.title}>Transaction PIN</Text>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.title, { color: colors.text }]}>Transaction PIN</Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
               Enter your 4-digit transaction PIN
             </Text>
 
@@ -274,9 +277,11 @@ const ForgotPasswordFlow: React.FC<ForgotPasswordFlowProps> = ({
               style={[
                 styles.input,
                 styles.pinInput,
+                { backgroundColor: colors.card, borderColor: colors.border, color: colors.text },
                 errors.transactionPin && styles.inputError,
               ]}
               placeholder="0000"
+              placeholderTextColor={colors.textSecondary}
               value={formData.transactionPin}
               onChangeText={(text: string) =>
                 updateFormData("transactionPin", text.replace(/\D/g, ""))
@@ -287,7 +292,7 @@ const ForgotPasswordFlow: React.FC<ForgotPasswordFlowProps> = ({
               textAlign="center"
             />
             {errors.transactionPin && (
-              <Text style={styles.errorText}>{errors.transactionPin}</Text>
+              <Text style={[styles.errorText, { color: colors.error }]}>{errors.transactionPin}</Text>
             )}
           </View>
         );
@@ -296,12 +301,13 @@ const ForgotPasswordFlow: React.FC<ForgotPasswordFlowProps> = ({
         return (
           <View style={styles.stepContainer}>
             {renderLogo()}
-            <Text style={styles.title}>Create New Password</Text>
-            <Text style={styles.subtitle}>Enter your new password</Text>
+            <Text style={[styles.title, { color: colors.text }]}>Create New Password</Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Enter your new password</Text>
 
             <TextInput
-              style={[styles.input, errors.newPassword && styles.inputError]}
+              style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }, errors.newPassword && styles.inputError]}
               placeholder="New password"
+              placeholderTextColor={colors.textSecondary}
               value={formData.newPassword}
               onChangeText={(text: string) =>
                 updateFormData("newPassword", text)
@@ -310,15 +316,17 @@ const ForgotPasswordFlow: React.FC<ForgotPasswordFlowProps> = ({
               autoCapitalize="none"
             />
             {errors.newPassword && (
-              <Text style={styles.errorText}>{errors.newPassword}</Text>
+              <Text style={[styles.errorText, { color: colors.error }]}>{errors.newPassword}</Text>
             )}
 
             <TextInput
               style={[
                 styles.input,
+                { backgroundColor: colors.card, borderColor: colors.border, color: colors.text },
                 errors.confirmPassword && styles.inputError,
               ]}
               placeholder="Confirm new password"
+              placeholderTextColor={colors.textSecondary}
               value={formData.confirmPassword}
               onChangeText={(text: string) =>
                 updateFormData("confirmPassword", text)
@@ -327,7 +335,7 @@ const ForgotPasswordFlow: React.FC<ForgotPasswordFlowProps> = ({
               autoCapitalize="none"
             />
             {errors.confirmPassword && (
-              <Text style={styles.errorText}>{errors.confirmPassword}</Text>
+              <Text style={[styles.errorText, { color: colors.error }]}>{errors.confirmPassword}</Text>
             )}
           </View>
         );
@@ -336,19 +344,19 @@ const ForgotPasswordFlow: React.FC<ForgotPasswordFlowProps> = ({
         return (
           <View style={styles.stepContainer}>
             {renderLogo()}
-            <Text style={styles.successTitle}>
-              Password Changed Successfully! 🎉
+            <Text style={[styles.successTitle, { color: colors.success }]}>
+              Password Changed Successfully!
             </Text>
-            <Text style={styles.successSubtitle}>
+            <Text style={[styles.successSubtitle, { color: colors.textSecondary }]}>
               Your password has been successfully reset. You can now login with
               your new password.
             </Text>
 
             <TouchableOpacity
-              style={styles.successButton}
+              style={[styles.successButton, { backgroundColor: colors.primary }]}
               onPress={() => router.push("/auth/login")}
             >
-              <Text style={styles.successButtonText}>Login </Text>
+              <Text style={styles.successButtonText}>Login</Text>
             </TouchableOpacity>
           </View>
         );
@@ -359,7 +367,7 @@ const ForgotPasswordFlow: React.FC<ForgotPasswordFlowProps> = ({
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardAvoid}
@@ -370,7 +378,7 @@ const ForgotPasswordFlow: React.FC<ForgotPasswordFlowProps> = ({
           {currentStep < 6 && (
             <View style={styles.buttonContainer}>
               <TouchableOpacity
-                style={[styles.nextButton, loading && styles.buttonDisabled]}
+                style={[styles.nextButton, { backgroundColor: colors.primary }, loading && { backgroundColor: colors.textSecondary }]}
                 onPress={handleNext}
                 disabled={loading}
               >
@@ -393,7 +401,6 @@ const ForgotPasswordFlow: React.FC<ForgotPasswordFlowProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f9fa",
   },
   keyboardAvoid: {
     flex: 1,
@@ -422,24 +429,20 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 10,
     fontFamily: "Poppins_400Regular",
-    color: "#1a1a1a",
   },
   subtitle: {
     fontSize: 16,
     textAlign: "center",
     marginBottom: 30,
-    color: "#666",
     lineHeight: 22,
     fontFamily: "Poppins_400Regular",
   },
   input: {
-    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
     marginBottom: 15,
     borderWidth: 1,
-    borderColor: "#E5E5EA",
     fontFamily: "Poppins_400Regular",
   },
   inputError: {
@@ -463,16 +466,12 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     textAlign: "center",
     marginBottom: 20,
-    color: "#333",
-    backgroundColor: "#fff",
     padding: 15,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#E5E5EA",
     fontFamily: "Poppins_400Regular",
   },
   errorText: {
-    color: "#FF3B30",
     fontSize: 14,
     marginTop: -10,
     marginBottom: 10,
@@ -480,7 +479,6 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins_400Regular",
   },
   linkText: {
-    color: "#007AFF",
     fontSize: 16,
     textAlign: "center",
     marginTop: 10,
@@ -491,7 +489,6 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   nextButton: {
-    backgroundColor: "#2F4F2F",
     borderRadius: 12,
     padding: 16,
     alignItems: "center",
@@ -502,27 +499,21 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontFamily: "Poppins_400Regular",
   },
-  buttonDisabled: {
-    backgroundColor: "#B0B0B0",
-  },
   successTitle: {
     fontSize: 15,
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 15,
-    color: "#34C759",
     fontFamily: "Poppins_400Regular",
   },
   successSubtitle: {
     fontSize: 15,
     textAlign: "center",
     marginBottom: 40,
-    color: "#666",
     lineHeight: 26,
     fontFamily: "Poppins_400Regular",
   },
   successButton: {
-    backgroundColor: "#2F4F2F",
     borderRadius: 12,
     padding: 18,
     alignItems: "center",

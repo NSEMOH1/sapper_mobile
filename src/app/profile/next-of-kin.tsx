@@ -13,8 +13,10 @@ import RNPickerSelect from "react-native-picker-select";
 import { router } from "expo-router";
 import api from "@/constants/api";
 import { useAuthStore } from "@/hooks/useAuth";
+import { useTheme } from "@/hooks/use-theme";
 
 export default function NextOfKin() {
+  const { colors } = useTheme();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
@@ -40,13 +42,13 @@ export default function NextOfKin() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Edit Next of Kin</Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Edit Next of Kin</Text>
 
       <View style={styles.formGroup}>
-        <Text style={styles.label}>First Name</Text>
+        <Text style={[styles.label, { color: colors.text }]}>First Name</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.textSecondary }]}
           value={firstName}
           onChangeText={setFirstName}
           editable={false}
@@ -54,66 +56,49 @@ export default function NextOfKin() {
       </View>
 
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Last Name</Text>
+        <Text style={[styles.label, { color: colors.text }]}>Last Name</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.textSecondary }]}
           value={lastName}
           onChangeText={setLastName}
           editable={false}
         />
       </View>
 
-      {/* <View style={styles.formGroup}>
-        <Smile size={18} color="black" />
-        <RNPickerSelect
-          onValueChange={(value) => setRelationship(value)}
-          placeholder={{ label: "Select relationship", value: "" }}
-          items={Relationship}
-          value={relationship}
-          style={pickerSelectStyles}
-          useNativeAndroidPickerStyle={false}
-        />
-      </View> */}
-
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Phone Number</Text>
+        <Text style={[styles.label, { color: colors.text }]}>Phone Number</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.textSecondary }]}
           value={phone}
           onChangeText={setPhone}
           editable={false}
         />
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>Submit</Text>
+      <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary }]} onPress={handleSubmit}>
+        <Text style={[styles.buttonText, { color: colors.onPrimary }]}>Submit</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#fff" },
-  title: { fontSize: 20, fontWeight: "600", marginBottom: 20, fontFamily: 'Poppins_400Regular', },
+  container: { flex: 1, padding: 20 },
+  title: { fontSize: 20, fontWeight: "600", marginBottom: 20, fontFamily: 'Poppins_400Regular' },
   formGroup: { marginBottom: 15 },
-  label: { fontSize: 14, marginBottom: 5, color: "#333", fontFamily: 'Poppins_400Regular', },
+  label: { fontSize: 14, marginBottom: 5, fontFamily: 'Poppins_400Regular' },
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
     borderRadius: 8,
     padding: 12,
-    backgroundColor: "#f5f5f5",
-    color: "#555",
     fontFamily: 'Poppins_400Regular',
   },
   button: {
-    backgroundColor: "#213400",
     borderRadius: 8,
     padding: 12,
     alignItems: "center",
   },
   buttonText: {
-    color: "#fff",
     fontWeight: "600",
     fontFamily: 'Poppins_400Regular',
   },

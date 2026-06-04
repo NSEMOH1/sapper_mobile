@@ -1,173 +1,149 @@
 import { router } from "expo-router";
-import { ArrowRight } from "lucide-react-native";
+import { Handshake } from "lucide-react-native";
 import {
-    Dimensions,
-    Image,
-    ImageBackground,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-
+import { LinearGradient } from "expo-linear-gradient";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ONBOARDING_COMPLETED_KEY } from "../index";
-
-const { width, height } = Dimensions.get("window");
+import { useTheme } from "@/hooks/use-theme";
 
 export default function Onboarding3() {
-  const handleNext = async () => {
+  const insets = useSafeAreaInsets();
+  const { colors, isDark } = useTheme();
+
+  const handleGetStarted = async () => {
     await AsyncStorage.setItem(ONBOARDING_COMPLETED_KEY, "true");
     router.replace("/auth");
   };
 
   return (
-    <ImageBackground
-      source={require("@/assets/images/army.jpg")}
-      style={styles.container}
-      resizeMode="cover"
-    >
-      <View style={styles.mainContent}>
-        <Image
-          source={require("@/assets/images/chain.png")}
-          style={styles.soldierImage}
-          resizeMode="contain"
-        />
-      </View>
+    <View style={styles.container}>
+      <LinearGradient
+        colors={isDark ? ["#1a2e0a", "#213400", "#2E4A0B"] : ["#213400", "#2E4A0B", "#3A5C15"]}
+        locations={[0, 0.5, 1]}
+        style={StyleSheet.absoluteFill}
+      />
 
-      <View style={styles.bottomSection}>
-        <View style={styles.content}>
-          <Text style={styles.title}>
-            Empowering our members through unity, trust, and service.
-          </Text>
-          <Text style={styles.subtitle}>
-            Discipline, dedication, and prosperity for every member.
-          </Text>
-        </View>
-
-        <View style={styles.indicators}>
-          <View style={styles.indicator} />
-          <View style={styles.indicator} />
-          <View style={[styles.indicator, styles.activeIndicator]} />
-        </View>
-
-        <View style={styles.navigation}>
-          <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-            <ArrowRight color="black" />
-          </TouchableOpacity>
+      <View style={styles.topSection}>
+        <View style={styles.iconContainer}>
+          <Handshake size={72} color="#fff" strokeWidth={1.5} />
         </View>
       </View>
 
-      {/* Bottom overlay image */}
-      <View style={styles.bottomImageContainer}>
-        <Image
-          source={require("@/assets/images/down.png")}
-          style={styles.bottomImage}
-          resizeMode="cover"
-        />
+      <View style={[styles.bottomCard, { paddingBottom: insets.bottom + 24, backgroundColor: colors.card }]}>
+        <Text style={[styles.title, { color: colors.text }]}>Together, We Grow</Text>
+        <Text style={[styles.description, { color: colors.textSecondary }]}>
+          Empowering our members through unity, trust, and financial service.
+        </Text>
+
+        <View style={styles.footer}>
+          <View style={styles.indicators}>
+            <View style={[styles.dot, { backgroundColor: colors.border }]} />
+            <View style={[styles.dot, { backgroundColor: colors.border }]} />
+            <View style={[styles.dot, styles.dotActive, { backgroundColor: colors.primary }]} />
+          </View>
+        </View>
+
+        <TouchableOpacity
+          style={styles.getStartedButton}
+          onPress={handleGetStarted}
+          activeOpacity={0.9}
+        >
+          <LinearGradient
+            colors={[colors.primary, "#00853c"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.getStartedGradient}
+          >
+            <Text style={[styles.getStartedText, { color: colors.onPrimary }]}>Get Started</Text>
+          </LinearGradient>
+        </TouchableOpacity>
       </View>
-    </ImageBackground>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    position: "relative",
   },
-  mainContent: {
+  topSection: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingTop: 50,
   },
-  soldierImage: {
-    width: width * 0.8,
-    height: height * 0.4,
-    marginBottom: 20,
-  },
-  bottomSection: {
-    paddingBottom: 50,
-    paddingHorizontal: 20,
-  },
-  content: {
+  iconContainer: {
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    justifyContent: "center",
     alignItems: "center",
-    marginBottom: 30,
-    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+  },
+  bottomCard: {
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    paddingHorizontal: 28,
+    paddingTop: 36,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 20,
   },
   title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "white",
-    textAlign: "center",
-    marginBottom: 15,
-    lineHeight: 28,
-        fontFamily: 'Poppins_400Regular', 
+    fontSize: 28,
+    fontFamily: "Poppins_700Bold",
+    lineHeight: 36,
   },
-  subtitle: {
-    fontSize: 16,
-    color: "rgba(255, 255, 255, 0.9)",
-    textAlign: "center",
-    lineHeight: 22,
-        fontFamily: 'Poppins_400Regular', 
+  description: {
+    fontSize: 15,
+    fontFamily: "Poppins_400Regular",
+    marginTop: 10,
+    lineHeight: 24,
+  },
+  footer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 36,
+    marginBottom: 24,
   },
   indicators: {
     flexDirection: "row",
-    marginTop: 20,
-    marginBottom: 40,
-    gap: 10,
-    justifyContent: "flex-end",
+    gap: 8,
   },
-  indicator: {
+  dot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "rgba(255, 255, 255, 0.5)",
   },
-  activeIndicator: {
-    backgroundColor: "white",
-    width: 20,
+  dotActive: {
+    width: 24,
+    borderRadius: 4,
   },
-  navigation: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
+  getStartedButton: {
+    borderRadius: 16,
+    overflow: "hidden",
+    shadowColor: "#00612c",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 8,
   },
-  skipText: {
-    color: "white",
-    fontSize: 16,
-        fontFamily: 'Poppins_400Regular', 
-  },
-  nextButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: "white",
-    justifyContent: "center",
+  getStartedGradient: {
+    paddingVertical: 18,
     alignItems: "center",
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    zIndex: 3
+    justifyContent: "center",
   },
-  nextIcon: {
-    fontSize: 24,
-    color: "black",
-    fontWeight: "bold",
-    textAlign: "center",
-    textAlignVertical: "center",
-    lineHeight: 24,
-  },
-  bottomImageContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    zIndex: 1, // Behind the content but above background
-  },
-  bottomImage: {
-    width: width,
-    height: 140, // Adjust height as needed
+  getStartedText: {
+    fontSize: 17,
+    fontFamily: "Poppins_700Bold",
   },
 });

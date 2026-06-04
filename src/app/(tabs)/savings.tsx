@@ -3,6 +3,7 @@ import { getInitials } from "@/constants/data";
 import { useAuthStore } from "@/hooks/useAuth";
 import { useBalances } from "@/hooks/useBalances";
 import { useSavingsBalance } from "@/hooks/useSavings";
+import { useTheme } from "@/hooks/use-theme";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useState } from "react";
@@ -17,9 +18,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Decimal from "decimal.js";
 
-const BG = "#F5F7FA";
-const ACCENT = "#213400";
-
 export default function Savings() {
   const { data: savingsBalance, refetch } = useSavingsBalance();
   const { data: balance } = useBalances();
@@ -28,6 +26,7 @@ export default function Savings() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const { user } = useAuthStore();
+  const { colors } = useTheme();
 
   const handleDeposit = () => router.push("/payments" as any);
   const handleWithdrawal = () => router.push("/withdrawal" as any);
@@ -47,7 +46,7 @@ export default function Savings() {
   };
 
   const fmt = (v: number | Decimal) =>
-    `₦${Number(v).toLocaleString()}`;
+    `\u20A6${Number(v).toLocaleString()}`;
 
   const savingsTotal = Number(savingsBalance?.totalSavings ?? balance?.savings_balance ?? 0);
   const monthlyDed = Number(savingsBalance?.monthlyDeduction ?? 0);
@@ -59,15 +58,15 @@ export default function Savings() {
 
   if (success) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
         <View style={s.successWrap}>
-          <View style={s.successCard}>
+          <View style={[s.successCard, { backgroundColor: colors.card }]}>
             <View style={s.successIcon}>
               <Ionicons name="checkmark" size={36} color="#fff" />
             </View>
-            <Text style={s.successTitle}>Savings Adjusted Successfully</Text>
-            <Text style={s.successSub}>Your monthly deduction has been updated.</Text>
-            <TouchableOpacity style={s.successBtn} onPress={() => setSuccess(false)}>
+            <Text style={[s.successTitle, { color: colors.text }]}>Savings Adjusted Successfully</Text>
+            <Text style={[s.successSub, { color: colors.textSecondary }]}>Your monthly deduction has been updated.</Text>
+            <TouchableOpacity style={[s.successBtn, { backgroundColor: colors.primary }]} onPress={() => setSuccess(false)}>
               <Text style={s.successBtnText}>Done</Text>
             </TouchableOpacity>
           </View>
@@ -77,41 +76,39 @@ export default function Savings() {
   }
 
   return (
-    <SafeAreaView style={s.container}>
+    <SafeAreaView style={[s.container, { backgroundColor: colors.background }]}>
       <View style={s.header}>
         <View>
-          <Text style={s.greeting}>Good afternoon,</Text>
-          <Text style={s.userName}>{user?.first_name || "User"}</Text>
+          <Text style={[s.greeting, { color: colors.textSecondary }]}>Good afternoon,</Text>
+          <Text style={[s.userName, { color: colors.text }]}>{user?.first_name || "User"}</Text>
         </View>
         <View style={s.headerRight}>
-          <View style={s.avatar}>
+          <View style={[s.avatar, { backgroundColor: colors.primary }]}>
             <Text style={s.avatarText}>{getInitials(user?.first_name || "")}</Text>
           </View>
           <TouchableOpacity onPress={() => router.push("/notifications" as any)}>
-            <Ionicons name="notifications-outline" size={22} color="#1A1A2E" />
+            <Ionicons name="notifications-outline" size={22} color={colors.text} />
           </TouchableOpacity>
         </View>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
-        {/* ── Stats Strip ────────────────────────────── */}
         <View style={s.statsRow}>
-          <View style={s.statCard}>
-            <Text style={s.statLabel}>Total Savings</Text>
-            <Text style={s.statValue}>{fmt(savingsTotal)}</Text>
+          <View style={[s.statCard, { backgroundColor: colors.card }]}>
+            <Text style={[s.statLabel, { color: colors.textSecondary }]}>Total Savings</Text>
+            <Text style={[s.statValue, { color: colors.text }]}>{fmt(savingsTotal)}</Text>
           </View>
-          <View style={s.statCard}>
-            <Text style={s.statLabel}>Monthly</Text>
-            <Text style={s.statValue}>{fmt(monthlyDed)}</Text>
+          <View style={[s.statCard, { backgroundColor: colors.card }]}>
+            <Text style={[s.statLabel, { color: colors.textSecondary }]}>Monthly</Text>
+            <Text style={[s.statValue, { color: colors.text }]}>{fmt(monthlyDed)}</Text>
           </View>
-          <View style={s.statCard}>
-            <Text style={s.statLabel}>Quick</Text>
-            <Text style={s.statValue}>{fmt(normalSavings)}</Text>
+          <View style={[s.statCard, { backgroundColor: colors.card }]}>
+            <Text style={[s.statLabel, { color: colors.textSecondary }]}>Quick</Text>
+            <Text style={[s.statValue, { color: colors.text }]}>{fmt(normalSavings)}</Text>
           </View>
         </View>
 
-        {/* ── Balance Card ───────────────────────────── */}
-        <View style={s.balanceCard}>
+        <View style={[s.balanceCard, { backgroundColor: "#6A7814" }]}>
           <Text style={s.balanceCardLabel}>Savings Balance</Text>
           <Text style={s.balanceCardAmount}>{fmt(savingsTotal)}</Text>
 
@@ -145,11 +142,10 @@ export default function Savings() {
           </View>
         </View>
 
-        {/* ── Savings Breakdown ──────────────────────── */}
         {categories.length > 0 && (
           <View style={s.section}>
-            <Text style={s.sectionTitle}>Savings Breakdown</Text>
-            <View style={s.breakdownCard}>
+            <Text style={[s.sectionTitle, { color: colors.text }]}>Savings Breakdown</Text>
+            <View style={[s.breakdownCard, { backgroundColor: colors.card }]}>
               {categories.map((cat, i) => {
                 const pct =
                   Number(maxCategory) > 0
@@ -158,10 +154,10 @@ export default function Savings() {
                 return (
                   <View
                     key={cat.categoryId}
-                    style={[s.breakdownItem, i < categories.length - 1 && s.breakdownBorder]}
+                    style={[s.breakdownItem, i < categories.length - 1 && { borderBottomColor: colors.borderLight, borderBottomWidth: 1 }]}
                   >
                     <View style={s.breakdownLeft}>
-                      <View style={s.breakdownIcon}>
+                      <View style={[s.breakdownIcon, { backgroundColor: colors.primaryLight }]}>
                         <Ionicons
                           name={
                             cat.categoryName === "QUICK" || cat.categoryName === "NORMAL"
@@ -169,17 +165,17 @@ export default function Savings() {
                               : "people-outline"
                           }
                           size={16}
-                          color={ACCENT}
+                          color={colors.primary}
                         />
                       </View>
                       <View style={{ flex: 1 }}>
-                        <Text style={s.breakdownName}>{cat.categoryName}</Text>
+                        <Text style={[s.breakdownName, { color: colors.text }]}>{cat.categoryName}</Text>
                         <View style={s.breakdownBar}>
-                          <View style={[s.breakdownFill, { width: `${pct}%` }]} />
+                          <View style={[s.breakdownFill, { backgroundColor: colors.primary, width: `${pct}%` }]} />
                         </View>
                       </View>
                     </View>
-                    <Text style={s.breakdownAmount}>{fmt(cat.amount)}</Text>
+                    <Text style={[s.breakdownAmount, { color: colors.text }]}>{fmt(cat.amount)}</Text>
                   </View>
                 );
               })}
@@ -187,10 +183,9 @@ export default function Savings() {
           </View>
         )}
 
-        {/* ── Monthly Deduction ──────────────────────── */}
         <View style={s.section}>
-          <Text style={s.sectionTitle}>Monthly Deduction</Text>
-          <View style={s.deductionCard}>
+          <Text style={[s.sectionTitle, { color: colors.text }]}>Monthly Deduction</Text>
+          <View style={[s.deductionCard, { backgroundColor: "#ADB7F0" }]}>
             <View style={s.deductionHeader}>
               <View style={s.deductionLeft}>
                 <View style={s.deductionIcon}>
@@ -208,22 +203,25 @@ export default function Savings() {
           </View>
         </View>
 
-        {/* ── Adjustment ─────────────────────────────── */}
         <View style={s.section}>
-          <Text style={s.sectionTitle}>Adjust Deduction</Text>
-          <View style={s.adjustCard}>
-            <Text style={s.adjustLabel}>New monthly amount</Text>
+          <Text style={[s.sectionTitle, { color: colors.text }]}>Adjust Deduction</Text>
+          <View style={[s.adjustCard, { backgroundColor: colors.card }]}>
+            <Text style={[s.adjustLabel, { color: colors.textSecondary }]}>New monthly amount</Text>
             <TextInput
-              style={s.adjustInput}
+              style={[s.adjustInput, {
+                backgroundColor: colors.background,
+                borderColor: colors.border,
+                color: colors.text,
+              }]}
               value={newSavings}
               onChangeText={setNewSavings}
               keyboardType="numeric"
               placeholder={`Enter amount (current: ${fmt(monthlyDed)})`}
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={colors.textSecondary}
             />
             {!!errorMessage && <Text style={s.errorText}>{errorMessage}</Text>}
             <TouchableOpacity
-              style={[s.saveBtn, (!newSavings || loading) && s.saveBtnDisabled]}
+              style={[s.saveBtn, { backgroundColor: colors.primary }, (!newSavings || loading) && s.saveBtnDisabled]}
               onPress={handleMonthlyDeduction}
               disabled={!newSavings || loading}
             >
@@ -240,10 +238,9 @@ export default function Savings() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: BG },
+  container: { flex: 1 },
   scroll: { paddingBottom: 32 },
 
-  // ── Header ─────────────────────────────────────────────
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -252,34 +249,31 @@ const s = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 12,
   },
-  greeting: { fontSize: 14, fontFamily: "Poppins_400Regular", color: "#6B7280" },
-  userName: { fontSize: 20, fontFamily: "Poppins_700Bold", color: "#1A1A2E", marginTop: 2 },
+  greeting: { fontSize: 14, fontFamily: "Poppins_400Regular" },
+  userName: { fontSize: 20, fontFamily: "Poppins_700Bold", marginTop: 2 },
   headerRight: { flexDirection: "row", alignItems: "center", gap: 12 },
   avatar: {
-    width: 38, height: 38, borderRadius: 19, backgroundColor: ACCENT,
+    width: 38, height: 38, borderRadius: 19,
     justifyContent: "center", alignItems: "center",
   },
   avatarText: { color: "#fff", fontSize: 14, fontFamily: "Poppins_700Bold" },
 
-  // ── Stats Strip ────────────────────────────────────────
   statsRow: {
     flexDirection: "row", paddingHorizontal: 20, gap: 10, marginBottom: 20,
   },
   statCard: {
-    flex: 1, backgroundColor: "#fff", borderRadius: 14, padding: 14,
+    flex: 1, borderRadius: 14, padding: 14,
     alignItems: "center",
     shadowColor: "#000", shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04, shadowRadius: 6, elevation: 2,
   },
-  statLabel: { fontSize: 10, fontFamily: "Poppins_500Medium", color: "#6B7280", marginBottom: 4 },
-  statValue: { fontSize: 14, fontFamily: "Poppins_700Bold", color: "#1A1A2E" },
+  statLabel: { fontSize: 10, fontFamily: "Poppins_500Medium", marginBottom: 4 },
+  statValue: { fontSize: 14, fontFamily: "Poppins_700Bold" },
 
-  // ── Balance Card ───────────────────────────────────────
   balanceCard: {
     marginHorizontal: 20,
     padding: 22,
     borderRadius: 24,
-    backgroundColor: "#6A7814",
     marginBottom: 24,
     shadowColor: "#000", shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15, shadowRadius: 12, elevation: 6,
@@ -314,13 +308,12 @@ const s = StyleSheet.create({
   },
   outlineBtnText: { color: "#fff", fontSize: 13, fontFamily: "Poppins_600SemiBold" },
 
-  // ── Savings Breakdown ────────────────────────────────
   section: { marginBottom: 24, paddingHorizontal: 20 },
   sectionTitle: {
-    fontSize: 17, fontFamily: "Poppins_700Bold", color: "#1A1A2E", marginBottom: 14,
+    fontSize: 17, fontFamily: "Poppins_700Bold", marginBottom: 14,
   },
   breakdownCard: {
-    backgroundColor: "#fff", borderRadius: 16, padding: 16,
+    borderRadius: 16, padding: 16,
     shadowColor: "#000", shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04, shadowRadius: 8, elevation: 2,
   },
@@ -328,26 +321,24 @@ const s = StyleSheet.create({
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
     paddingVertical: 12, gap: 12,
   },
-  breakdownBorder: { borderBottomWidth: 1, borderBottomColor: "#F3F4F6" },
   breakdownLeft: { flex: 1, flexDirection: "row", alignItems: "center", gap: 10 },
   breakdownIcon: {
-    width: 32, height: 32, borderRadius: 8, backgroundColor: "#F3FCF1",
+    width: 32, height: 32, borderRadius: 8,
     justifyContent: "center", alignItems: "center",
   },
   breakdownName: {
-    fontSize: 13, fontFamily: "Poppins_500Medium", color: "#1A1A2E", marginBottom: 6,
+    fontSize: 13, fontFamily: "Poppins_500Medium", marginBottom: 6,
   },
   breakdownBar: {
     height: 4, borderRadius: 2, backgroundColor: "#E5E7EB", overflow: "hidden",
   },
-  breakdownFill: { height: "100%", borderRadius: 2, backgroundColor: ACCENT },
+  breakdownFill: { height: "100%", borderRadius: 2 },
   breakdownAmount: {
-    fontSize: 14, fontFamily: "Poppins_700Bold", color: "#1A1A2E",
+    fontSize: 14, fontFamily: "Poppins_700Bold",
   },
 
-  // ── Monthly Deduction ─────────────────────────────────
   deductionCard: {
-    backgroundColor: "#ADB7F0", borderRadius: 16, padding: 18,
+    borderRadius: 16, padding: 18,
     shadowColor: "#000", shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06, shadowRadius: 8, elevation: 2,
   },
@@ -372,38 +363,36 @@ const s = StyleSheet.create({
   },
   deductionBadgeText: { fontSize: 11, fontFamily: "Poppins_600SemiBold", color: "#fff" },
 
-  // ── Adjustment ────────────────────────────────────────
   adjustLabel: {
-    fontSize: 13, fontFamily: "Poppins_400Regular", color: "#6B7280",
+    fontSize: 13, fontFamily: "Poppins_400Regular",
     marginBottom: 8,
   },
   adjustCard: {
-    backgroundColor: "#fff", borderRadius: 16, padding: 18,
+    borderRadius: 16, padding: 18,
     shadowColor: "#000", shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04, shadowRadius: 8, elevation: 2,
   },
   adjustInput: {
-    backgroundColor: "#F9FAFB", borderRadius: 12, borderWidth: 1, borderColor: "#E5E7EB",
+    borderRadius: 12, borderWidth: 1,
     paddingVertical: 12, paddingHorizontal: 14, fontSize: 16,
-    fontFamily: "Poppins_500Medium", color: "#1A1A2E", marginBottom: 12,
+    fontFamily: "Poppins_500Medium", marginBottom: 12,
   },
   errorText: {
     color: "#EF4444", fontSize: 13, fontFamily: "Poppins_400Regular", marginBottom: 8,
   },
   saveBtn: {
     flexDirection: "row", alignItems: "center", justifyContent: "center",
-    gap: 6, backgroundColor: ACCENT, borderRadius: 12,
+    gap: 6, borderRadius: 12,
     paddingVertical: 14, marginTop: 4,
   },
   saveBtnDisabled: { opacity: 0.5 },
   saveBtnText: { color: "#fff", fontSize: 14, fontFamily: "Poppins_600SemiBold" },
 
-  // ── Success ───────────────────────────────────────────
   successWrap: {
     flex: 1, justifyContent: "center", alignItems: "center", padding: 20,
   },
   successCard: {
-    backgroundColor: "#fff", borderRadius: 24, padding: 32, alignItems: "center",
+    borderRadius: 24, padding: 32, alignItems: "center",
     width: "100%", maxWidth: 340,
     shadowColor: "#000", shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08, shadowRadius: 16, elevation: 4,
@@ -415,15 +404,15 @@ const s = StyleSheet.create({
     shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
   },
   successTitle: {
-    fontSize: 20, fontFamily: "Poppins_700Bold", color: "#1A1A2E",
+    fontSize: 20, fontFamily: "Poppins_700Bold",
     textAlign: "center", marginBottom: 8,
   },
   successSub: {
-    fontSize: 14, fontFamily: "Poppins_400Regular", color: "#6B7280",
+    fontSize: 14, fontFamily: "Poppins_400Regular",
     textAlign: "center", marginBottom: 24,
   },
   successBtn: {
-    backgroundColor: ACCENT, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 40,
+    borderRadius: 12, paddingVertical: 14, paddingHorizontal: 40,
   },
   successBtnText: { color: "#fff", fontSize: 15, fontFamily: "Poppins_600SemiBold" },
 });

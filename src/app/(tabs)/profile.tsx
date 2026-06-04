@@ -14,6 +14,7 @@ import { router } from "expo-router";
 import { getInitials } from "@/constants/data";
 import { useAuthStore, useLogout } from "@/hooks/useAuth";
 import { useMemberStore } from "@/store/user";
+import { useTheme } from "@/hooks/use-theme";
 import AppIcon from "@/lib/useIcon";
 
 type MenuItem = {
@@ -65,6 +66,7 @@ export default function Profile() {
   const { user } = useAuthStore();
   const { member, loading, fetchMemberData } = useMemberStore();
   const logoutMutation = useLogout();
+  const { colors, isDark } = useTheme();
 
   useEffect(() => {
     if (user?.id && !member && !loading) {
@@ -92,93 +94,86 @@ export default function Profile() {
     : [];
 
   return (
-    <SafeAreaView style={s.container}>
+    <SafeAreaView style={[s.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
-        {/* ── Profile Header ────────────────────────────────── */}
         <View style={s.header}>
-          <View style={s.avatar}>
+          <View style={[s.avatar, { backgroundColor: colors.primary, shadowColor: colors.primary }]}>
             <Text style={s.avatarText}>{initials}</Text>
           </View>
-          <Text style={s.name}>{fullName}</Text>
-          <Text style={s.email}>{user?.email || ""}</Text>
+          <Text style={[s.name, { color: colors.text }]}>{fullName}</Text>
+          <Text style={[s.email, { color: colors.textSecondary }]}>{user?.email || ""}</Text>
           {user?.role && (
-            <View style={s.roleBadge}>
-              <Text style={s.roleText}>{user.role}</Text>
+            <View style={[s.roleBadge, { backgroundColor: colors.primaryLight }]}>
+              <Text style={[s.roleText, { color: colors.primary }]}>{user.role}</Text>
             </View>
           )}
         </View>
 
-        {/* ── Member Info Card ──────────────────────────────── */}
         {loading ? (
-          <View style={s.loadingBox}>
-            <ActivityIndicator size="small" color="#213400" />
+          <View style={[s.loadingBox, { backgroundColor: colors.card }]}>
+            <ActivityIndicator size="small" color={colors.primary} />
           </View>
         ) : infoRows.length > 0 ? (
-          <View style={s.infoCard}>
+          <View style={[s.infoCard, { backgroundColor: colors.card }]}>
             {infoRows.map((row, i) => (
-              <View key={row.label} style={[s.infoRow, i < infoRows.length - 1 && s.infoBorder]}>
+              <View key={row.label} style={[s.infoRow, i < infoRows.length - 1 && { borderBottomColor: colors.borderLight, borderBottomWidth: 1 }]}>
                 <View style={s.infoLeft}>
-                  <AppIcon name={row.icon} size={15} color="#6B7280" />
-                  <Text style={s.infoLabel}>{row.label}</Text>
+                  <AppIcon name={row.icon} size={15} color={colors.textSecondary} />
+                  <Text style={[s.infoLabel, { color: colors.textSecondary }]}>{row.label}</Text>
                 </View>
-                <Text style={s.infoValue}>{row.value}</Text>
+                <Text style={[s.infoValue, { color: colors.text }]}>{row.value}</Text>
               </View>
             ))}
           </View>
         ) : null}
 
-        {/* ── Menu Sections ─────────────────────────────────── */}
         {SECTIONS.map((section) => (
           <View key={section.title}>
-            <Text style={s.sectionTitle}>{section.title}</Text>
-            <View style={s.menuCard}>
+            <Text style={[s.sectionTitle, { color: colors.textSecondary }]}>{section.title}</Text>
+            <View style={[s.menuCard, { backgroundColor: colors.card }]}>
               {section.items.map((item, i) => (
                 <TouchableOpacity
                   key={item.id}
-                  style={[s.menuItem, i < section.items.length - 1 && s.menuBorder]}
+                  style={[s.menuItem, i < section.items.length - 1 && { borderBottomColor: colors.borderLight, borderBottomWidth: 1 }]}
                   onPress={() => router.push(item.route as any)}
                   activeOpacity={0.6}
                 >
                   <View style={s.menuLeft}>
-                    <View style={s.menuIcon}>
-                      <AppIcon name={item.icon} size={18} color="#213400" />
+                    <View style={[s.menuIcon, { backgroundColor: colors.primaryLight }]}>
+                      <AppIcon name={item.icon} size={18} color={colors.text} />
                     </View>
-                    <Text style={s.menuLabel}>{item.label}</Text>
+                    <Text style={[s.menuLabel, { color: colors.text }]}>{item.label}</Text>
                   </View>
-                  <AppIcon name="chevron-forward" size={16} color="#9CA3AF" />
+                  <AppIcon name="chevron-forward" size={16} color={colors.textSecondary} />
                 </TouchableOpacity>
               ))}
             </View>
           </View>
         ))}
 
-        {/* ── Logout ──────────────────────────────────────────── */}
-        <TouchableOpacity style={s.logoutBtn} onPress={handleLogout} activeOpacity={0.7}>
+        <TouchableOpacity style={[s.logoutBtn, { backgroundColor: colors.card, borderColor: isDark ? "#5C2020" : "#FEE2E2" }]} onPress={handleLogout} activeOpacity={0.7}>
           <AppIcon name="log-out-outline" size={20} color="#EF4444" />
           <Text style={s.logoutText}>Logout</Text>
         </TouchableOpacity>
 
-        <Text style={s.footer}>Version 1.0.0</Text>
+        <Text style={[s.footer, { color: colors.textSecondary }]}>Version 1.0.0</Text>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F5F7FA" },
+  container: { flex: 1 },
   scroll: { paddingHorizontal: 20, paddingBottom: 40 },
 
-  // ── Header ─────────────────────────────────────────────────
   header: { alignItems: "center", paddingTop: 12, paddingBottom: 20 },
   avatar: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "#213400",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 14,
-    shadowColor: "#213400",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -188,28 +183,23 @@ const s = StyleSheet.create({
   name: {
     fontSize: 22,
     fontFamily: "Poppins_700Bold",
-    color: "#1A1A2E",
     marginBottom: 4,
   },
-  email: { fontSize: 14, fontFamily: "Poppins_400Regular", color: "#6B7280", marginBottom: 10 },
+  email: { fontSize: 14, fontFamily: "Poppins_400Regular", marginBottom: 10 },
   roleBadge: {
-    backgroundColor: "#E8F5E9",
     paddingHorizontal: 14,
     paddingVertical: 4,
     borderRadius: 20,
   },
-  roleText: { fontSize: 12, fontFamily: "Poppins_500Medium", color: "#213400" },
+  roleText: { fontSize: 12, fontFamily: "Poppins_500Medium" },
 
-  // ── Info Card ──────────────────────────────────────────────
   loadingBox: {
-    backgroundColor: "#fff",
     borderRadius: 16,
     padding: 24,
     alignItems: "center",
     marginBottom: 20,
   },
   infoCard: {
-    backgroundColor: "#fff",
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
@@ -220,23 +210,19 @@ const s = StyleSheet.create({
     elevation: 2,
   },
   infoRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 10 },
-  infoBorder: { borderBottomWidth: 1, borderBottomColor: "#F3F4F6" },
   infoLeft: { flexDirection: "row", alignItems: "center", gap: 8 },
-  infoLabel: { fontSize: 13, fontFamily: "Poppins_400Regular", color: "#6B7280" },
-  infoValue: { fontSize: 13, fontFamily: "Poppins_600SemiBold", color: "#1A1A2E" },
+  infoLabel: { fontSize: 13, fontFamily: "Poppins_400Regular" },
+  infoValue: { fontSize: 13, fontFamily: "Poppins_600SemiBold" },
 
-  // ── Menu ───────────────────────────────────────────────────
   sectionTitle: {
     fontSize: 13,
     fontFamily: "Poppins_600SemiBold",
-    color: "#9CA3AF",
     textTransform: "uppercase",
     letterSpacing: 0.5,
     marginBottom: 8,
     marginLeft: 4,
   },
   menuCard: {
-    backgroundColor: "#fff",
     borderRadius: 16,
     marginBottom: 24,
     shadowColor: "#000",
@@ -252,29 +238,24 @@ const s = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
   },
-  menuBorder: { borderBottomWidth: 1, borderBottomColor: "#F3F4F6" },
   menuLeft: { flexDirection: "row", alignItems: "center", gap: 12 },
   menuIcon: {
     width: 34,
     height: 34,
     borderRadius: 10,
-    backgroundColor: "#F3FCF1",
     justifyContent: "center",
     alignItems: "center",
   },
-  menuLabel: { fontSize: 15, fontFamily: "Poppins_500Medium", color: "#1A1A2E" },
+  menuLabel: { fontSize: 15, fontFamily: "Poppins_500Medium" },
 
-  // ── Logout ─────────────────────────────────────────────────
   logoutBtn: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    backgroundColor: "#fff",
     borderRadius: 16,
     paddingVertical: 14,
     borderWidth: 1,
-    borderColor: "#FEE2E2",
     marginBottom: 16,
   },
   logoutText: { fontSize: 15, fontFamily: "Poppins_600SemiBold", color: "#EF4444" },
@@ -283,6 +264,5 @@ const s = StyleSheet.create({
     textAlign: "center",
     fontSize: 12,
     fontFamily: "Poppins_400Regular",
-    color: "#9CA3AF",
   },
 });

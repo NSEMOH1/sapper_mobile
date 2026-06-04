@@ -9,6 +9,8 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { fetchTransactions } from "@/services/api.service";
 import type { TransactionResponseItem } from "@/services/api.service";
+import { useTheme } from "@/hooks/use-theme";
+import { ThemeColor } from "@/constants/theme";
 
 export interface Transaction {
   id: string;
@@ -38,12 +40,12 @@ export const TransactionIcon = ({ type }: { type: "credit" | "debit" }) => {
   );
 };
 
-export const TransactionItem = ({ transaction }: { transaction: Transaction }) => (
+export const TransactionItem = ({ transaction, color }: { transaction: Transaction, color?: any }) => (
   <TouchableOpacity style={styles.transactionItem}>
     <TransactionIcon type={transaction.type} />
 
     <View style={styles.transactionDetails}>
-      <Text style={styles.transactionTitle}>{transaction.title}</Text>
+      <Text style={[styles.transactionTitle, { color: color.text }]}>{transaction.title}</Text>
       <Text style={styles.transactionCategory}>{transaction.category}</Text>
     </View>
 
@@ -111,6 +113,9 @@ interface TransactionsModuleProps {
 }
 
 export const TransactionsModule = ({ onViewAll, limit }: TransactionsModuleProps) => {
+
+  const { colors } = useTheme();
+    
   const { transactions, loading, error } = useTransactionsData();
   const displayed = limit ? transactions.slice(0, limit) : transactions;
 
@@ -133,29 +138,29 @@ export const TransactionsModule = ({ onViewAll, limit }: TransactionsModuleProps
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>
           {limit ? "Recent Transactions" : "Transactions"}
         </Text>
         {onViewAll && (
           <TouchableOpacity style={styles.viewAllButton} onPress={onViewAll}>
-            <Text style={styles.viewAllText}>View All</Text>
-            <Ionicons name="chevron-forward" size={16} color="#213400" />
+            <Text style={[styles.viewAllText, { color: colors.primary }]}>View All</Text>
+            <Ionicons name="chevron-forward" size={16} color={colors.primary} />
           </TouchableOpacity>
         )}
       </View>
 
       {displayed.length === 0 ? (
         <View style={styles.emptyTransactions}>
-          <Ionicons name="receipt-outline" size={48} color="#9CA3AF" />
-          <Text style={styles.emptyText}>No recent transactions</Text>
-          <Text style={styles.emptySubtext}>
+          <Ionicons name="receipt-outline" size={48} color={colors.textSecondary} />
+          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No recent transactions</Text>
+          <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>
             Your transaction history will appear here
           </Text>
         </View>
       ) : (
-        <View style={styles.transactionsList}>
+        <View style={[styles.transactionsList, { backgroundColor: colors.card }]}>
           {displayed.map((transaction) => (
-            <TransactionItem key={transaction.id} transaction={transaction} />
+            <TransactionItem key={transaction.id} transaction={transaction} color={colors} />
           ))}
         </View>
       )}
@@ -177,7 +182,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 17,
     fontFamily: "Poppins_700Bold",
-    color: "#1A1A2E",
   },
   viewAllButton: {
     flexDirection: "row",
@@ -187,25 +191,21 @@ const styles = StyleSheet.create({
   viewAllText: {
     fontSize: 13,
     fontFamily: "Poppins_600SemiBold",
-    color: "#213400",
   },
   transactionsList: {
-    backgroundColor: "#FFFFFF",
     borderRadius: 16,
     paddingVertical: 8,
-    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 2,
+    // backgroundColor: "#FFFFFF",
   },
   transactionItem: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
   },
   iconContainer: {
     width: 40,
@@ -227,7 +227,6 @@ const styles = StyleSheet.create({
   transactionTitle: {
     fontSize: 14,
     fontFamily: "Poppins_500Medium",
-    color: "#1A1A2E",
     marginBottom: 2,
   },
   transactionCategory: {
@@ -268,7 +267,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 48,
     paddingHorizontal: 24,
-    backgroundColor: "#FFFFFF",
+    // backgroundColor: "#FFFFFF",
     borderRadius: 16,
   },
   emptyText: {

@@ -6,7 +6,6 @@
     "scheme": "sappers",
     "orientation": "portrait",
     "icon": "./assets/icons/icon.png",
-    "backgroundColor": "#00612c",
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,

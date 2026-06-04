@@ -4,7 +4,7 @@ import { Redirect } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 
-export const ONBOARDING_COMPLETED_KEY = "naowa_onboarding_completed";
+export const ONBOARDING_COMPLETED_KEY = "sappers_onboarding_completed";
 
 export default function HomeScreen() {
   const [onboardingDone, setOnboardingDone] = useState<boolean | null>(null);

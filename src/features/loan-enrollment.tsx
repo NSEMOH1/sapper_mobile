@@ -21,6 +21,7 @@ import SuccessScreen from "@/components/Success";
 import { useBalances } from "@/hooks/useBalances";
 import { applyForLoan, verifyLoanOTP } from "@/services/api.service";
 import { useMember } from "@/hooks/useMember";
+import { useTheme } from "@/hooks/use-theme";
 
 interface UploadedFile {
   uri: string;
@@ -46,6 +47,7 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
   const [amount, setAmount] = useState("");
   const [tenure, setTenure] = useState("");
   const [category, setCategory] = useState("REGULAR");
+  const { colors, isDark } = useTheme();
 
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFiles>({
     recommendation: null,
@@ -311,17 +313,14 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
       const statusCode = error?.response?.status;
       const serverData = error?.response?.data;
 
-      // Log everything so you can see exactly what the backend sends
       console.log("Status:", statusCode);
       console.log("Response data:", JSON.stringify(serverData, null, 2));
 
       let errorMessage = "Failed to submit loan application. Please try again.";
 
       if (!error?.response) {
-        // No response at all — network/timeout issue
         errorMessage = "Network error. Please check your connection and try again.";
       } else if (statusCode === 500) {
-        // Backend is swallowing the real error — map known cases client-side
         errorMessage =
           "Something went wrong on our end. This may be because:\n\n" +
           "• You already have an active or pending loan\n" +
@@ -405,64 +404,68 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
 
     return (
       <TouchableOpacity
-        style={[styles.uploadBox, isUploaded && styles.uploadedBox]}
+        style={[
+          styles.uploadBox,
+          { borderColor: isUploaded ? colors.success : colors.border, backgroundColor: isUploaded ? (isDark ? '#1A2E1A' : '#f8fff8') : 'transparent' },
+        ]}
         onPress={() => handleFileUpload(fileType)}
       >
         {isUploaded ? (
-          <CheckCircle size={24} color="#4CAF50" />
+          <CheckCircle size={24} color={colors.success} />
         ) : (
-          <Upload size={24} color="#666" />
+          <Upload size={24} color={colors.textSecondary} />
         )}
-        <Text style={styles.uploadTitle}>{title}</Text>
-        <Text style={styles.uploadSubtitle}>
+        <Text style={[styles.uploadTitle, { color: colors.text }]}>{title}</Text>
+        <Text style={[styles.uploadSubtitle, { color: colors.textSecondary }]}>
           {isUploaded ? file.name : "Tap to upload"}
         </Text>
         {isUploaded && file.size && (
-          <Text>{(file.size / 1024 / 1024).toFixed(2)} MB</Text>
+          <Text style={{ color: colors.textSecondary }}>{(file.size / 1024 / 1024).toFixed(2)} MB</Text>
         )}
       </TouchableOpacity>
     );
   };
 
   if (isLoading) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
+    return <ActivityIndicator size="large" color={colors.primary} />;
   }
 
   return (
     <>
       <Modal visible={visible} animationType="slide" transparent statusBarTranslucent={true}>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <View style={styles.header}>
+        <View style={[styles.modalContainer, { backgroundColor: colors.overlay }]}>
+          <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
+            <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
               <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-                <ArrowLeft size={24} color="#333" />
+                <ArrowLeft size={24} color={colors.text} />
               </TouchableOpacity>
               <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                <X size={24} color="#333" />
+                <X size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
 
-            {/* Step 1: Form Questions */}
             {step === 1 && (
               <ScrollView contentContainerStyle={styles.scrollContent}>
-                <Text style={styles.sectionTitle}>Loan Application Form</Text>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>Loan Application Form</Text>
 
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>
+                  <Text style={[styles.label, { color: colors.text }]}>
                     Are you currently servicing a loan? *
                   </Text>
                   <View style={styles.radioGroup}>
                     <TouchableOpacity
                       style={[
                         styles.radioButton,
-                        servicingLoan === "yes" && styles.selectedRadio,
+                        { borderColor: colors.border },
+                        servicingLoan === "yes" && { borderColor: colors.primary, backgroundColor: colors.primary },
                       ]}
                       onPress={() => setServicingLoan("yes")}
                     >
                       <Text
                         style={[
                           styles.radioText,
-                          servicingLoan === "yes" && styles.selectedRadioText,
+                          { color: colors.text },
+                          servicingLoan === "yes" && { color: colors.onPrimary },
                         ]}
                       >
                         Yes
@@ -471,14 +474,16 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
                     <TouchableOpacity
                       style={[
                         styles.radioButton,
-                        servicingLoan === "no" && styles.selectedRadio,
+                        { borderColor: colors.border },
+                        servicingLoan === "no" && { borderColor: colors.primary, backgroundColor: colors.primary },
                       ]}
                       onPress={() => setServicingLoan("no")}
                     >
                       <Text
                         style={[
                           styles.radioText,
-                          servicingLoan === "no" && styles.selectedRadioText,
+                          { color: colors.text },
+                          servicingLoan === "no" && { color: colors.onPrimary },
                         ]}
                       >
                         No
@@ -488,26 +493,26 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Total Savings (₦)</Text>
+                  <Text style={[styles.label, { color: colors.text }]}>Total Savings (₦)</Text>
                   <TextInput
-                    style={[styles.input, styles.disabledInput]}
+                    style={[styles.input, styles.disabledInput, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.textSecondary }]}
                     value={`₦${balance.data?.savings_balance || 0}`}
                     editable={false}
                   />
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Monthly Deduction (₦)</Text>
+                  <Text style={[styles.label, { color: colors.text }]}>Monthly Deduction (₦)</Text>
                   <TextInput
-                    style={[styles.input, styles.disabledInput]}
+                    style={[styles.input, styles.disabledInput, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.textSecondary }]}
                     value={`₦${savingsBalance?.monthlyDeduction || 0}`}
                     editable={false}
                   />
                 </View>
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Authorized Signature</Text>
-                  <View style={styles.signatureContainer}>
-                    <Text style={styles.signatureText}>
+                  <Text style={[styles.label, { color: colors.text }]}>Authorized Signature</Text>
+                  <View style={[styles.signatureContainer, { borderColor: colors.border }]}>
+                    <Text style={[styles.signatureText, { color: colors.text }]}>
                       {member?.user.first_name} {member?.user?.last_name}
                     </Text>
                     <TouchableOpacity
@@ -519,54 +524,53 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
                         )
                       }
                     >
-                      <Text style={styles.changeSignatureText}>Change</Text>
+                      <Text style={[styles.changeSignatureText, { color: colors.primary }]}>Change</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
 
-                <Text style={styles.sectionSubTitle}>Bank Details</Text>
+                <Text style={[styles.sectionSubTitle, { color: colors.text }]}>Bank Details</Text>
 
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Bank Name *</Text>
+                  <Text style={[styles.label, { color: colors.text }]}>Bank Name *</Text>
                   <TextInput
-                    style={[styles.input, styles.disabledInput]}
+                    style={[styles.input, styles.disabledInput, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.textSecondary }]}
                     value={member?.user?.bank[0]?.name || ""}
                     editable={false}
                   />
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Account Number *</Text>
+                  <Text style={[styles.label, { color: colors.text }]}>Account Number *</Text>
                   <TextInput
-                    style={[styles.input, styles.disabledInput]}
+                    style={[styles.input, styles.disabledInput, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.textSecondary }]}
                     value={member?.user?.bank?.[0]?.account_number || ""}
                     editable={false}
                   />
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Account Name *</Text>
+                  <Text style={[styles.label, { color: colors.text }]}>Account Name *</Text>
                   <TextInput
-                    style={[styles.input, styles.disabledInput]}
+                    style={[styles.input, styles.disabledInput, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.textSecondary }]}
                     value={member?.user?.bank?.[0]?.account_name || ""}
                     editable={false}
                   />
                 </View>
 
                 <TouchableOpacity
-                  style={styles.primaryButton}
+                  style={[styles.primaryButton, { backgroundColor: colors.primary }]}
                   onPress={handleProceed}
                 >
-                  <Text style={styles.primaryButtonText}>Proceed</Text>
+                  <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>Proceed</Text>
                 </TouchableOpacity>
               </ScrollView>
             )}
 
-            {/* Step 2: Document Upload */}
             {step === 2 && (
               <ScrollView contentContainerStyle={styles.scrollContent}>
-                <Text style={styles.sectionTitle}>Upload Documents</Text>
-                <Text style={styles.subTitle}>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>Upload Documents</Text>
+                <Text style={[styles.subTitle, { color: colors.textSecondary }]}>
                   Upload clear photos or PDFs of the required documents
                 </Text>
 
@@ -583,59 +587,63 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
                 </View>
 
                 <TouchableOpacity
-                  style={styles.primaryButton}
+                  style={[styles.primaryButton, { backgroundColor: colors.primary }]}
                   onPress={handleProceed}
                   disabled={loading}
                 >
                   {loading ? (
-                    <ActivityIndicator color="#fff" />
+                    <ActivityIndicator color={colors.onPrimary} />
                   ) : (
-                    <Text style={styles.primaryButtonText}>Continue</Text>
+                    <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>Continue</Text>
                   )}
                 </TouchableOpacity>
               </ScrollView>
             )}
 
-            {/* Step 3: Loan Details */}
             {step === 3 && (
               <ScrollView contentContainerStyle={styles.scrollContent}>
-                <Text style={styles.sectionTitle}>Loan Details</Text>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>Loan Details</Text>
 
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Loan Amount (₦)</Text>
+                  <Text style={[styles.label, { color: colors.text }]}>Loan Amount (₦)</Text>
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
                     keyboardType="numeric"
                     placeholder="Enter amount"
+                    placeholderTextColor={colors.textSecondary}
                     value={amount}
                     onChangeText={setAmount}
                   />
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Rank</Text>
-                  <TextInput style={styles.input} value={member?.user.rank} />
+                  <Text style={[styles.label, { color: colors.text }]}>Rank</Text>
+                  <TextInput
+                    style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
+                    value={member?.user.rank}
+                  />
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Interest Rate</Text>
+                  <Text style={[styles.label, { color: colors.text }]}>Interest Rate</Text>
                   <TextInput
-                    style={[styles.input, styles.disabledInput]}
+                    style={[styles.input, styles.disabledInput, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.textSecondary }]}
                     value={`${interestRate}%`}
                     editable={false}
                   />
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Tenure (months)</Text>
+                  <Text style={[styles.label, { color: colors.text }]}>Tenure (months)</Text>
                   <View style={styles.tenureOptions}>
                     {tenureOptions.map((option) => (
                       <TouchableOpacity
                         key={option.value}
                         style={[
                           styles.tenureButton,
-                          tenure === option.value && styles.selectedTenure,
-                          option.disabled && styles.disabledTenure,
+                          { borderColor: colors.border },
+                          tenure === option.value && { borderColor: colors.primary, backgroundColor: colors.primary },
+                          option.disabled && { borderColor: colors.borderLight, backgroundColor: colors.inputBackground, opacity: 0.6 },
                         ]}
                         onPress={() =>
                           !option.disabled && setTenure(option.value)
@@ -644,10 +652,10 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
                       >
                         <Text
                           style={[
-                            tenure === option.value
-                              ? styles.selectedTenureText
-                              : styles.tenureText,
-                            option.disabled && styles.disabledTenureText,
+                            styles.tenureText,
+                            { color: colors.text },
+                            tenure === option.value && { color: colors.onPrimary },
+                            option.disabled && { color: colors.textSecondary },
                           ]}
                         >
                           {option.label}
@@ -658,9 +666,9 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Monthly Repayment (₦)</Text>
+                  <Text style={[styles.label, { color: colors.text }]}>Monthly Repayment (₦)</Text>
                   <TextInput
-                    style={[styles.input, styles.disabledInput]}
+                    style={[styles.input, styles.disabledInput, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.textSecondary }]}
                     value={
                       isNaN(monthlyPayment)
                         ? "0"
@@ -671,88 +679,87 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
                 </View>
 
                 <TouchableOpacity
-                  style={styles.primaryButton}
+                  style={[styles.primaryButton, { backgroundColor: colors.primary }]}
                   onPress={handleProceed}
                 >
-                  <Text style={styles.primaryButtonText}>Proceed</Text>
+                  <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>Proceed</Text>
                 </TouchableOpacity>
               </ScrollView>
             )}
 
             {step === 4 && (
               <ScrollView contentContainerStyle={styles.scrollContent}>
-                <Text style={styles.sectionTitle}>Loan Summary</Text>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>Loan Summary</Text>
 
-                <View style={styles.previewBox}>
+                <View style={[styles.previewBox, { borderColor: colors.border }]}>
                   <View style={styles.previewRow}>
-                    <Text style={styles.previewLabel}>Applicant:</Text>
-                    <Text style={styles.previewValue}>
+                    <Text style={[styles.previewLabel, { color: colors.textSecondary }]}>Applicant:</Text>
+                    <Text style={[styles.previewValue, { color: colors.text }]}>
                       {member?.user.first_name} {member?.user.last_name}
                     </Text>
                   </View>
                   <View style={styles.previewRow}>
-                    <Text style={styles.previewLabel}>Loan Amount:</Text>
-                    <Text style={styles.previewValue}>
+                    <Text style={[styles.previewLabel, { color: colors.textSecondary }]}>Loan Amount:</Text>
+                    <Text style={[styles.previewValue, { color: colors.text }]}>
                       ₦{loanAmount.toLocaleString()}
                     </Text>
                   </View>
                   <View style={styles.previewRow}>
-                    <Text style={styles.previewLabel}>Tenure:</Text>
-                    <Text style={styles.previewValue}>{tenure} months</Text>
+                    <Text style={[styles.previewLabel, { color: colors.textSecondary }]}>Tenure:</Text>
+                    <Text style={[styles.previewValue, { color: colors.text }]}>{tenure} months</Text>
                   </View>
                   <View style={styles.previewRow}>
-                    <Text style={styles.previewLabel}>Interest Rate:</Text>
-                    <Text style={styles.previewValue}>{interestRate}%</Text>
+                    <Text style={[styles.previewLabel, { color: colors.textSecondary }]}>Interest Rate:</Text>
+                    <Text style={[styles.previewValue, { color: colors.text }]}>{interestRate}%</Text>
                   </View>
                   <View style={styles.previewRow}>
-                    <Text style={styles.previewLabel}>Total Interest:</Text>
-                    <Text style={styles.previewValue}>
+                    <Text style={[styles.previewLabel, { color: colors.textSecondary }]}>Total Interest:</Text>
+                    <Text style={[styles.previewValue, { color: colors.text }]}>
                       ₦{interestAmount.toLocaleString()}
                     </Text>
                   </View>
                   <View style={styles.previewRow}>
-                    <Text style={styles.previewLabel}>Total Payable:</Text>
-                    <Text style={[styles.previewValue, styles.totalValue]}>
+                    <Text style={[styles.previewLabel, { color: colors.textSecondary }]}>Total Payable:</Text>
+                    <Text style={[styles.previewValue, styles.totalValue, { color: colors.primary }]}>
                       ₦{totalAmount.toLocaleString()}
                     </Text>
                   </View>
                   <View style={styles.previewRow}>
-                    <Text style={styles.previewLabel}>Monthly Payment:</Text>
-                    <Text style={styles.previewValue}>
+                    <Text style={[styles.previewLabel, { color: colors.textSecondary }]}>Monthly Payment:</Text>
+                    <Text style={[styles.previewValue, { color: colors.text }]}>
                       ₦{monthlyPayment.toLocaleString()}
                     </Text>
                   </View>
                   <View style={styles.previewRow}>
-                    <Text style={styles.previewLabel}>Bank Details:</Text>
-                    <Text style={styles.previewValue}>
+                    <Text style={[styles.previewLabel, { color: colors.textSecondary }]}>Bank Details:</Text>
+                    <Text style={[styles.previewValue, { color: colors.text }]}>
                       {member?.user.bank[0].name} -{" "}
                       {member?.user.bank[0].account_number}
                     </Text>
                   </View>
                 </View>
 
-                <Text style={styles.noteText}>
+                <Text style={[styles.noteText, { color: colors.textSecondary }]}>
                   By proceeding, you agree to our terms and conditions. The loan
                   will be disbursed to your registered account.
                 </Text>
 
                 <TouchableOpacity
-                  style={styles.primaryButton}
+                  style={[styles.primaryButton, { backgroundColor: colors.primary }]}
                   onPress={handleProceed}
                   disabled={loading}
                 >
-                  <Text style={styles.primaryButtonText}>
+                  <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>
                     {loading ? "Please wait..." : "Confirm & Proceed"}
                   </Text>
                 </TouchableOpacity>
               </ScrollView>
             )}
 
-            {/* Step 5: OTP Verification */}
             {step === 5 && (
               <ScrollView contentContainerStyle={styles.scrollContent}>
-                <Text style={styles.sectionTitle}>OTP Verification</Text>
-                <Text style={styles.subTitle}>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>OTP Verification</Text>
+                <Text style={[styles.subTitle, { color: colors.textSecondary }]}>
                   Enter the 6-digit OTP sent to your phone number
                 </Text>
 
@@ -769,14 +776,14 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
                 </View>
 
                 <TouchableOpacity
-                  style={styles.primaryButton}
+                  style={[styles.primaryButton, { backgroundColor: colors.primary }]}
                   onPress={handleVerifyOTP}
                   disabled={loading}
                 >
                   {loading ? (
-                    <ActivityIndicator color="#fff" />
+                    <ActivityIndicator color={colors.onPrimary} />
                   ) : (
-                    <Text style={styles.primaryButtonText}>Verify OTP</Text>
+                    <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>Verify OTP</Text>
                   )}
                 </TouchableOpacity>
               </ScrollView>
@@ -797,11 +804,9 @@ const LoanEnrollmentFlow: React.FC<LoanEnrollmentFlowProps> = ({
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "flex-end",
   },
   modalContent: {
-    backgroundColor: "#fff",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: "90%",
@@ -816,7 +821,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
   },
   backButton: {
     padding: 5,
@@ -827,21 +831,18 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#333",
     marginBottom: 20,
     fontFamily: "Poppins_400Regular",
   },
   sectionSubTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#333",
     marginTop: 20,
     marginBottom: 15,
     fontFamily: "Poppins_400Regular",
   },
   subTitle: {
     fontSize: 14,
-    color: "#666",
     marginBottom: 30,
     textAlign: "center",
     fontFamily: "Poppins_400Regular",
@@ -851,48 +852,32 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: "black",
     marginBottom: 8,
     fontFamily: "Poppins_400Regular",
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
     borderRadius: 8,
     padding: 15,
     fontSize: 16,
   },
-  disabledInput: {
-    backgroundColor: "#f5f5f5",
-    color: "#888",
-  },
+  disabledInput: {},
   radioGroup: {
     flexDirection: "row",
     gap: 15,
   },
   radioButton: {
     borderWidth: 1,
-    borderColor: "#ddd",
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 20,
   },
-  selectedRadio: {
-    borderColor: "#6A7814",
-    backgroundColor: "#6A7814",
-  },
   radioText: {
-    color: "#333",
     fontSize: 14,
-    fontFamily: "Poppins_400Regular",
-  },
-  selectedRadioText: {
-    color: "#fff",
     fontFamily: "Poppins_400Regular",
   },
   signatureContainer: {
     borderWidth: 1,
-    borderColor: "#ddd",
     borderStyle: "dashed",
     borderRadius: 8,
     padding: 20,
@@ -902,7 +887,6 @@ const styles = StyleSheet.create({
   },
   signatureText: {
     fontSize: 16,
-    color: "#333",
     fontStyle: "italic",
     fontFamily: "Poppins_400Regular",
   },
@@ -911,7 +895,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   changeSignatureText: {
-    color: "#6A7814",
     fontSize: 14,
     fontWeight: "500",
     fontFamily: "Poppins_400Regular",
@@ -921,7 +904,6 @@ const styles = StyleSheet.create({
   },
   uploadBox: {
     borderWidth: 2,
-    borderColor: "#ddd",
     borderStyle: "dashed",
     borderRadius: 12,
     padding: 20,
@@ -930,14 +912,9 @@ const styles = StyleSheet.create({
     minHeight: 100,
     justifyContent: "center",
   },
-  uploadedBox: {
-    borderColor: "#4CAF50",
-    backgroundColor: "#f8fff8",
-  },
   uploadTitle: {
     fontSize: 14,
     fontWeight: "500",
-    color: "#333",
     textAlign: "center",
     marginTop: 10,
     marginBottom: 5,
@@ -945,7 +922,6 @@ const styles = StyleSheet.create({
   },
   uploadSubtitle: {
     fontSize: 12,
-    color: "#666",
     textAlign: "center",
     fontFamily: "Poppins_400Regular",
   },
@@ -956,43 +932,19 @@ const styles = StyleSheet.create({
   },
   tenureButton: {
     borderWidth: 1,
-    borderColor: "#ddd",
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 15,
     minWidth: 100,
     alignItems: "center",
   },
-  selectedTenure: {
-    borderColor: "#6A7814",
-    backgroundColor: "#6A7814",
-  },
-  disabledTenure: {
-    borderColor: "#e0e0e0",
-    backgroundColor: "#f5f5f5",
-    opacity: 0.6,
-  },
   tenureText: {
     textAlign: "center",
-    color: "#333",
-    fontSize: 14,
-    fontFamily: "Poppins_400Regular",
-  },
-  selectedTenureText: {
-    textAlign: "center",
-    color: "#fff",
-    fontSize: 14,
-    fontFamily: "Poppins_400Regular",
-  },
-  disabledTenureText: {
-    textAlign: "center",
-    color: "#999",
     fontSize: 14,
     fontFamily: "Poppins_400Regular",
   },
   previewBox: {
     borderWidth: 1,
-    borderColor: "#eee",
     borderRadius: 12,
     padding: 20,
     marginBottom: 20,
@@ -1004,23 +956,19 @@ const styles = StyleSheet.create({
   },
   previewLabel: {
     fontSize: 14,
-    color: "#666",
     fontFamily: "Poppins_400Regular",
   },
   previewValue: {
     fontSize: 14,
     fontWeight: "500",
-    color: "#333",
     fontFamily: "Poppins_400Regular",
   },
   totalValue: {
     fontWeight: "bold",
-    color: "#6A7814",
     fontFamily: "Poppins_400Regular",
   },
   noteText: {
     fontSize: 12,
-    color: "#999",
     textAlign: "center",
     marginBottom: 30,
     lineHeight: 18,
@@ -1031,63 +979,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 30,
   },
-  otpInput: {
-    width: 60,
-    height: 60,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    textAlign: "center",
-    fontSize: 20,
-    fontFamily: "Poppins_400Regular",
-  },
-  resendButton: {
-    alignSelf: "center",
-    marginBottom: 30,
-  },
-  resendText: {
-    color: "#6A7814",
-    fontSize: 14,
-    fontFamily: "Poppins_400Regular",
-  },
   primaryButton: {
-    backgroundColor: "#6A7814",
     borderRadius: 8,
     padding: 18,
     alignItems: "center",
   },
   primaryButtonText: {
-    color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
-    fontFamily: "Poppins_400Regular",
-  },
-  successContent: {
-    padding: 30,
-    alignItems: "center",
-  },
-  successIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: "#E8F5E9",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  successTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 10,
-    fontFamily: "Poppins_400Regular",
-  },
-  successMessage: {
-    fontSize: 14,
-    color: "#666",
-    textAlign: "center",
-    marginBottom: 30,
-    lineHeight: 20,
     fontFamily: "Poppins_400Regular",
   },
 });

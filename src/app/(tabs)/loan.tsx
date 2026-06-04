@@ -12,67 +12,72 @@ import { Ionicons } from "@expo/vector-icons";
 import LoanEnrollmentFlow from "@/features/loan-enrollment";
 import { useAuthStore } from "@/hooks/useAuth";
 import { useLoanBalances } from "@/hooks/useLoan";
+import { useTheme } from "@/hooks/use-theme";
 import { router } from "expo-router";
 import { getInitials } from "@/constants/data";
-
-const BG = "#F5F7FA";
-const ACCENT = "#213400";
 
 export default function Loan() {
   const [showLoanModal, setShowLoanModal] = useState(false);
   const { user } = useAuthStore();
   const { data, isLoading } = useLoanBalances();
+  const { colors } = useTheme();
 
   const summary = data?.summary;
   const loans = data?.loans ?? [];
   const categories = data?.categories ?? [];
 
-  const formatCurrency = (n: number) => `₦${n.toLocaleString()}`;
+  const formatCurrency = (n: number) => `\u20A6${n.toLocaleString()}`;
 
   const handlePayment = () => router.push("/payments" as any);
 
+  const isRegular = (cat: any) =>
+    (cat.categoryName && cat.categoryName === "REGULAR") || cat === 1;
+
+  const handleCategoryPress = (cat: any) => {
+    if (!isRegular(cat)) return;
+    setShowLoanModal(true);
+  };
+
   return (
-    <SafeAreaView style={s.container}>
+    <SafeAreaView style={[s.container, { backgroundColor: colors.background }]}>
       <View style={s.header}>
         <View>
-          <Text style={s.greeting}>Good afternoon,</Text>
-          <Text style={s.userName}>{user?.first_name || "User"}</Text>
+          <Text style={[s.greeting, { color: colors.textSecondary }]}>Good afternoon,</Text>
+          <Text style={[s.userName, { color: colors.text }]}>{user?.first_name || "User"}</Text>
         </View>
         <View style={s.headerRight}>
-          <View style={s.avatar}>
+          <View style={[s.avatar, { backgroundColor: colors.primary }]}>
             <Text style={s.avatarText}>{getInitials(user?.first_name || "")}</Text>
           </View>
           <TouchableOpacity onPress={() => router.push("/notifications" as any)}>
-            <Ionicons name="notifications-outline" size={22} color="#1A1A2E" />
+            <Ionicons name="notifications-outline" size={22} color={colors.text} />
           </TouchableOpacity>
         </View>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
-        {/* ── Stats Strip ────────────────────────────── */}
         {isLoading ? (
           <View style={s.loadingStrip}>
-            <ActivityIndicator size="small" color={ACCENT} />
+            <ActivityIndicator size="small" color={colors.primary} />
           </View>
         ) : (
           <View style={s.statsRow}>
-            <View style={s.statCard}>
-              <Text style={s.statLabel}>Outstanding</Text>
-              <Text style={s.statValue}>{formatCurrency(summary?.totalOutstanding ?? 0)}</Text>
+            <View style={[s.statCard, { backgroundColor: colors.card }]}>
+              <Text style={[s.statLabel, { color: colors.textSecondary }]}>Outstanding</Text>
+              <Text style={[s.statValue, { color: colors.text }]}>{formatCurrency(summary?.totalOutstanding ?? 0)}</Text>
             </View>
-            <View style={s.statCard}>
-              <Text style={s.statLabel}>Active</Text>
-              <Text style={s.statValue}>{summary?.activeLoans ?? 0}</Text>
+            <View style={[s.statCard, { backgroundColor: colors.card }]}>
+              <Text style={[s.statLabel, { color: colors.textSecondary }]}>Active</Text>
+              <Text style={[s.statValue, { color: colors.text }]}>{summary?.activeLoans ?? 0}</Text>
             </View>
-            <View style={s.statCard}>
-              <Text style={s.statLabel}>Paid</Text>
-              <Text style={s.statValue}>{formatCurrency(summary?.totalPaid ?? 0)}</Text>
+            <View style={[s.statCard, { backgroundColor: colors.card }]}>
+              <Text style={[s.statLabel, { color: colors.textSecondary }]}>Paid</Text>
+              <Text style={[s.statValue, { color: colors.text }]}>{formatCurrency(summary?.totalPaid ?? 0)}</Text>
             </View>
           </View>
         )}
 
-        {/* ── Balance Card ───────────────────────────── */}
-        <View style={s.balanceCard}>
+        <View style={[s.balanceCard, { backgroundColor: "#6A7814" }]}>
           <Text style={s.balanceCardLabel}>Loan Balance</Text>
           <Text style={s.balanceCardAmount}>
             {formatCurrency(summary?.totalOutstanding ?? 0)}
@@ -119,23 +124,22 @@ export default function Loan() {
           </View>
         </View>
 
-        {/* ── Active Loans ───────────────────────────── */}
         {loans.length > 0 && (
           <View style={s.section}>
-            <Text style={s.sectionTitle}>Active Loans</Text>
+            <Text style={[s.sectionTitle, { color: colors.text }]}>Active Loans</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.loanScroll}>
               {loans.map((loan) => (
-                <TouchableOpacity key={loan.loanId} style={s.loanCard} activeOpacity={0.8}>
+                <TouchableOpacity key={loan.loanId} style={[s.loanCard, { backgroundColor: colors.card }]} activeOpacity={0.8}>
                   <View style={s.loanCardTop}>
-                    <View style={s.loanCardIcon}>
-                      <Ionicons name="briefcase-outline" size={18} color={ACCENT} />
+                    <View style={[s.loanCardIcon, { backgroundColor: colors.primaryLight }]}>
+                      <Ionicons name="briefcase-outline" size={18} color={colors.text} />
                     </View>
-                    <View style={s.loanCardBadge}>
-                      <Text style={s.loanCardBadgeText}>{loan.status}</Text>
+                    <View style={[s.loanCardBadge, { backgroundColor: colors.primaryLight }]}>
+                      <Text style={[s.loanCardBadgeText, { color: colors.text }]}>{loan.status}</Text>
                     </View>
                   </View>
-                  <Text style={s.loanCardCategory}>{loan.category}</Text>
-                  <Text style={s.loanCardAmount}>{formatCurrency(loan.approvedAmount)}</Text>
+                  <Text style={[s.loanCardCategory, { color: colors.text }]}>{loan.category}</Text>
+                  <Text style={[s.loanCardAmount, { color: colors.textSecondary }]}>{formatCurrency(loan.approvedAmount)}</Text>
                   <View style={s.loanCardProgress}>
                     <View style={s.loanCardBar}>
                       <View
@@ -147,7 +151,7 @@ export default function Loan() {
                     </View>
                     <Text style={s.loanCardPct}>{loan.repaymentProgress?.percentage ?? 0}%</Text>
                   </View>
-                  <Text style={s.loanCardOutstanding}>
+                  <Text style={[s.loanCardOutstanding, { color: colors.textSecondary }]}>
                     Outstanding: {formatCurrency(loan.outstandingBalance)}
                   </Text>
                 </TouchableOpacity>
@@ -156,30 +160,31 @@ export default function Loan() {
           </View>
         )}
 
-        {/* ── Loan Categories ────────────────────────── */}
         <View style={s.section}>
           <View style={s.sectionHead}>
-            <Text style={s.sectionTitle}>Loan Categories</Text>
+            <Text style={[s.sectionTitle, { color: colors.text }]}>Loan Categories</Text>
             <TouchableOpacity onPress={() => setShowLoanModal(true)}>
-              <Text style={s.seeAll}>Apply</Text>
+              <Text style={[s.seeAll, { color: colors.primary }]}>Apply</Text>
             </TouchableOpacity>
           </View>
           <View style={s.catGrid}>
             {categories.length > 0
               ? categories.map((cat) => {
                   const pct = cat.percentageCollected ?? 0;
+                  const regular = cat.categoryName === "REGULAR";
                   return (
                     <TouchableOpacity
                       key={cat.categoryId}
-                      style={s.catCard}
-                      onPress={() => setShowLoanModal(true)}
-                      activeOpacity={0.7}
+                      style={[s.catCard, { backgroundColor: colors.card }]}
+                      onPress={() => handleCategoryPress(cat)}
+                      activeOpacity={regular ? 0.7 : 1}
+                      disabled={!regular}
                     >
                       <View style={s.catCardTop}>
-                        <View style={s.catIcon}>
+                        <View style={[s.catIcon, { backgroundColor: colors.primaryLight }]}>
                           <Ionicons
                             name={
-                              cat.categoryName === "REGULAR"
+                              regular
                                 ? "briefcase-outline"
                                 : cat.categoryName === "HOME"
                                   ? "home-outline"
@@ -188,54 +193,67 @@ export default function Loan() {
                                     : "flash-outline"
                             }
                             size={18}
-                            color={ACCENT}
+                            color={colors.text}
                           />
                         </View>
-                        <Text style={s.catUtil}>{pct}%</Text>
+                        {!regular && (
+                          <View style={[s.comingSoonBadge, { backgroundColor: colors.primaryLight }]}>
+                            <Text style={s.comingSoonText}>Coming Soon</Text>
+                          </View>
+                        )}
+                        {regular && <Text style={[s.catUtil, { color: colors.primary }]}>{pct}%</Text>}
                       </View>
-                      <Text style={s.catName}>{cat.categoryName}</Text>
-                      <Text style={s.catAmount}>{formatCurrency(cat.maxAmount)}</Text>
+                      <Text style={[s.catName, { color: colors.text }]}>{cat.categoryName}</Text>
+                      <Text style={[s.catAmount, { color: colors.text }]}>{formatCurrency(cat.maxAmount)}</Text>
                       <View style={s.catBar}>
                         <View style={[s.catFill, { width: `${pct}%` }]} />
                       </View>
-                      <Text style={s.catRemain}>
+                      <Text style={[s.catRemain, { color: colors.textSecondary }]}>
                         {formatCurrency(cat.remainingAmount)} left
                       </Text>
                     </TouchableOpacity>
                   );
                 })
-              : // Fallback when no API data
-                [1, 2, 3, 4].map((i) => (
-                  <TouchableOpacity
-                    key={i}
-                    style={s.catCard}
-                    onPress={() => setShowLoanModal(true)}
-                    activeOpacity={0.7}
-                  >
-                    <View style={s.catCardTop}>
-                      <View style={s.catIcon}>
-                        <Ionicons
-                          name={
-                            i === 1 ? "briefcase-outline" : i === 2 ? "home-outline" : i === 3 ? "cart-outline" : "flash-outline"
-                          }
-                          size={18}
-                          color={ACCENT}
-                        />
+              : [1, 2, 3, 4].map((i) => {
+                  const regular = i === 1;
+                  return (
+                    <TouchableOpacity
+                      key={i}
+                      style={[s.catCard, { backgroundColor: colors.card }]}
+                      onPress={() => regular && setShowLoanModal(true)}
+                      activeOpacity={regular ? 0.7 : 1}
+                      disabled={!regular}
+                    >
+                      <View style={s.catCardTop}>
+                        <View style={[s.catIcon, { backgroundColor: colors.primaryLight }]}>
+                          <Ionicons
+                            name={
+                              regular ? "briefcase-outline" : i === 2 ? "home-outline" : i === 3 ? "cart-outline" : "flash-outline"
+                            }
+                            size={18}
+                            color={colors.primary}
+                          />
+                        </View>
+                        {!regular && (
+                          <View style={[s.comingSoonBadge, { backgroundColor: colors.primaryLight }]}>
+                            <Text style={s.comingSoonText}>Coming Soon</Text>
+                          </View>
+                        )}
+                        {regular && <Text style={[s.catUtil, { color: colors.primary }]}>{i === 1 ? "57%" : "0%"}</Text>}
                       </View>
-                      <Text style={s.catUtil}>{i === 1 ? "57%" : "0%"}</Text>
-                    </View>
-                    <Text style={s.catName}>
-                      {i === 1 ? "REGULAR" : i === 2 ? "HOME" : i === 3 ? "COMMODITY" : "EMERGENCY"}
-                    </Text>
-                    <Text style={s.catAmount}>₦200,000</Text>
-                    <View style={s.catBar}>
-                      <View style={[s.catFill, { width: i === 1 ? "57%" : "0%" }]} />
-                    </View>
-                    <Text style={s.catRemain}>
-                      {i === 1 ? "₦86,000 left" : "₦200,000 left"}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                      <Text style={[s.catName, { color: colors.text }]}>
+                        {regular ? "REGULAR" : i === 2 ? "HOME" : i === 3 ? "COMMODITY" : "EMERGENCY"}
+                      </Text>
+                      <Text style={[s.catAmount, { color: colors.text }]}>\u20A6200,000</Text>
+                      <View style={s.catBar}>
+                        <View style={[s.catFill, { width: regular ? "57%" : "0%" }]} />
+                      </View>
+                      <Text style={[s.catRemain, { color: colors.textSecondary }]}>
+                        {regular ? "\u20A686,000 left" : "\u20A6200,000 left"}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
           </View>
         </View>
       </ScrollView>
@@ -246,10 +264,9 @@ export default function Loan() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: BG },
+  container: { flex: 1 },
   scroll: { paddingBottom: 32 },
 
-  // ── Header ─────────────────────────────────────────────
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -258,35 +275,32 @@ const s = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 12,
   },
-  greeting: { fontSize: 14, fontFamily: "Poppins_400Regular", color: "#6B7280" },
-  userName: { fontSize: 20, fontFamily: "Poppins_700Bold", color: "#1A1A2E", marginTop: 2 },
+  greeting: { fontSize: 14, fontFamily: "Poppins_400Regular" },
+  userName: { fontSize: 20, fontFamily: "Poppins_700Bold", marginTop: 2 },
   headerRight: { flexDirection: "row", alignItems: "center", gap: 12 },
   avatar: {
-    width: 38, height: 38, borderRadius: 19, backgroundColor: ACCENT,
+    width: 38, height: 38, borderRadius: 19,
     justifyContent: "center", alignItems: "center",
   },
   avatarText: { color: "#fff", fontSize: 14, fontFamily: "Poppins_700Bold" },
 
-  // ── Stats Strip ────────────────────────────────────────
   loadingStrip: { padding: 40, alignItems: "center" },
   statsRow: {
     flexDirection: "row", paddingHorizontal: 20, gap: 10, marginBottom: 20,
   },
   statCard: {
-    flex: 1, backgroundColor: "#fff", borderRadius: 14, padding: 14,
+    flex: 1, borderRadius: 14, padding: 14,
     alignItems: "center",
     shadowColor: "#000", shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04, shadowRadius: 6, elevation: 2,
   },
-  statLabel: { fontSize: 10, fontFamily: "Poppins_500Medium", color: "#6B7280", marginBottom: 4 },
-  statValue: { fontSize: 16, fontFamily: "Poppins_700Bold", color: "#1A1A2E" },
+  statLabel: { fontSize: 10, fontFamily: "Poppins_500Medium", marginBottom: 4 },
+  statValue: { fontSize: 16, fontFamily: "Poppins_700Bold" },
 
-  // ── Balance Card ───────────────────────────────────────
   balanceCard: {
     marginHorizontal: 20,
     padding: 22,
     borderRadius: 24,
-    backgroundColor: "#6A7814",
     marginBottom: 24,
     shadowColor: "#000", shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15, shadowRadius: 12, elevation: 6,
@@ -323,57 +337,61 @@ const s = StyleSheet.create({
   },
   outlineBtnText: { color: "#fff", fontSize: 13, fontFamily: "Poppins_600SemiBold" },
 
-  // ── Active Loans ───────────────────────────────────────
   section: { marginBottom: 24, paddingHorizontal: 20 },
   sectionTitle: {
-    fontSize: 17, fontFamily: "Poppins_700Bold", color: "#1A1A2E", marginBottom: 14,
+    fontSize: 17, fontFamily: "Poppins_700Bold", marginBottom: 14,
   },
   sectionHead: {
     flexDirection: "row", justifyContent: "space-between", alignItems: "center",
     marginBottom: 14,
   },
-  seeAll: { fontSize: 13, fontFamily: "Poppins_600SemiBold", color: ACCENT },
+  seeAll: { fontSize: 13, fontFamily: "Poppins_600SemiBold" },
   loanScroll: { gap: 12, paddingRight: 20 },
   loanCard: {
-    width: 220, backgroundColor: "#fff", borderRadius: 18, padding: 16,
+    width: 220, borderRadius: 18, padding: 16,
     shadowColor: "#000", shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06, shadowRadius: 10, elevation: 3,
   },
   loanCardTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
   loanCardIcon: {
-    width: 34, height: 34, borderRadius: 10, backgroundColor: "#F3FCF1",
+    width: 34, height: 34, borderRadius: 10,
     justifyContent: "center", alignItems: "center",
   },
   loanCardBadge: {
-    backgroundColor: "#F3FCF1", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 20,
+    paddingHorizontal: 8, paddingVertical: 3, borderRadius: 20,
   },
-  loanCardBadgeText: { fontSize: 10, fontFamily: "Poppins_600SemiBold", color: ACCENT },
-  loanCardCategory: { fontSize: 15, fontFamily: "Poppins_600SemiBold", color: "#1A1A2E", marginBottom: 2 },
-  loanCardAmount: { fontSize: 12, fontFamily: "Poppins_400Regular", color: "#6B7280", marginBottom: 10 },
+  loanCardBadgeText: { fontSize: 10, fontFamily: "Poppins_600SemiBold" },
+  loanCardCategory: { fontSize: 15, fontFamily: "Poppins_600SemiBold", marginBottom: 2 },
+  loanCardAmount: { fontSize: 12, fontFamily: "Poppins_400Regular", marginBottom: 10 },
   loanCardProgress: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 },
   loanCardBar: {
     flex: 1, height: 5, borderRadius: 3, backgroundColor: "#E5E7EB", overflow: "hidden",
   },
   loanCardFill: { height: "100%", borderRadius: 3, backgroundColor: "#4CAF50" },
   loanCardPct: { fontSize: 12, fontFamily: "Poppins_700Bold", color: "#4CAF50", width: 36, textAlign: "right" },
-  loanCardOutstanding: { fontSize: 11, fontFamily: "Poppins_400Regular", color: "#9CA3AF" },
+  loanCardOutstanding: { fontSize: 11, fontFamily: "Poppins_400Regular" },
 
-  // ── Categories ────────────────────────────────────────
   catGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
   catCard: {
-    width: "47%", backgroundColor: "#fff", borderRadius: 16, padding: 14,
+    width: "47%", borderRadius: 16, padding: 14,
     shadowColor: "#000", shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04, shadowRadius: 8, elevation: 2,
   },
   catCardTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
   catIcon: {
-    width: 34, height: 34, borderRadius: 10, backgroundColor: "#F3FCF1",
+    width: 34, height: 34, borderRadius: 10,
     justifyContent: "center", alignItems: "center",
   },
-  catUtil: { fontSize: 14, fontFamily: "Poppins_700Bold", color: ACCENT },
-  catName: { fontSize: 13, fontFamily: "Poppins_600SemiBold", color: "#1A1A2E", marginBottom: 2 },
-  catAmount: { fontSize: 15, fontFamily: "Poppins_700Bold", color: "#1A1A2E", marginBottom: 8 },
+  catUtil: { fontSize: 14, fontFamily: "Poppins_700Bold" },
+  comingSoonBadge: {
+    paddingHorizontal: 8, paddingVertical: 3, borderRadius: 20,
+  },
+  comingSoonText: {
+    fontSize: 9, fontFamily: "Poppins_600SemiBold", color: "#213400",
+  },
+  catName: { fontSize: 13, fontFamily: "Poppins_600SemiBold", marginBottom: 2 },
+  catAmount: { fontSize: 15, fontFamily: "Poppins_700Bold", marginBottom: 8 },
   catBar: { height: 4, borderRadius: 2, backgroundColor: "#E5E7EB", overflow: "hidden", marginBottom: 6 },
-  catFill: { height: "100%", borderRadius: 2, backgroundColor: ACCENT },
-  catRemain: { fontSize: 10, fontFamily: "Poppins_400Regular", color: "#9CA3AF" },
+  catFill: { height: "100%", borderRadius: 2, backgroundColor: "#213400" },
+  catRemain: { fontSize: 10, fontFamily: "Poppins_400Regular" },
 });

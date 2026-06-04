@@ -1,60 +1,59 @@
 // import { HapticTab } from "@/components/HapticTab";
 import TabBarBackground from "@/components/ui/TabBarBackground";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { useTheme } from "@/hooks/use-theme";
 import { Tabs } from "expo-router";
 import React from "react";
 import { Image, Platform } from "react-native";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const { colors } = useTheme();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#213400",
-        tabBarInactiveTintColor: "#8E8E93",
+        tabBarActiveTintColor: colors.tabBarActive,
+        tabBarInactiveTintColor: colors.tabBarInactive,
         headerShown: false,
-        // tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
             position: "absolute",
-            backgroundColor: "rgba(255, 255, 255, 0.95)",
+            backgroundColor: colors.tabBarBackground,
             borderTopWidth: 1,
-            borderTopColor: "rgba(0, 0, 0, 0.1)",
+            borderTopColor: colors.tabBarBorder,
             paddingTop: 8,
             paddingBottom: 25,
             height: 85,
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
-            shadowColor: "#000",
+            // borderTopLeftRadius: 20,
+            // borderTopRightRadius: 20,
+            shadowColor: colors.tabBarBorder,
             shadowOffset: {
               width: 0,
               height: -2,
             },
             shadowOpacity: 0.1,
-            shadowRadius: 8,
+            shadowRadius: 0,
           },
           android: {
-            backgroundColor: "#FFFFFF",
+            backgroundColor: colors.tabBarBackground,
             borderTopWidth: 1,
-            borderTopColor: "rgba(0, 0, 0, 0.1)",
+            borderTopColor: colors.tabBarBorder,
             paddingTop: 8,
             paddingBottom: 8,
-            height: 70,
+            // height: 70,
             elevation: 8,
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
+            // borderTopLeftRadius: 20,
+            // borderTopRightRadius: 20,
           },
           default: {
-            backgroundColor: "#FFFFFF",
+            backgroundColor: colors.tabBarBackground,
             borderTopWidth: 1,
-            borderTopColor: "rgba(0, 0, 0, 0.1)",
+            borderTopColor: colors.tabBarBorder,
             paddingTop: 8,
             paddingBottom: 8,
             height: 70,
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
+            // borderTopLeftRadius: 20,
+            // borderTopRightRadius: 20,
           },
         }),
         tabBarLabelStyle: {

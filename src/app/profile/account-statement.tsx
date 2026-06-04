@@ -9,8 +9,10 @@ import {
   Alert,
   Modal,
 } from "react-native";
+import { useTheme } from "@/hooks/use-theme";
 
 const AccountStatement = () => {
+  const { colors } = useTheme();
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [selectedType, setSelectedType] = useState("loans");
@@ -36,51 +38,51 @@ const AccountStatement = () => {
       "Success",
       "Account statement will be generated and sent to your email"
     );
-    // API call here
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Account Statement</Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Account Statement</Text>
 
       <View style={styles.formGroup}>
-        <Text style={styles.label}>From Date</Text>
+        <Text style={[styles.label, { color: colors.text }]}>From Date</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
           value={fromDate}
           onChangeText={setFromDate}
           placeholder="DD/MM/YYYY"
+          placeholderTextColor={colors.textSecondary}
         />
       </View>
 
       <View style={styles.formGroup}>
-        <Text style={styles.label}>To Date</Text>
+        <Text style={[styles.label, { color: colors.text }]}>To Date</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
           value={toDate}
           onChangeText={setToDate}
           placeholder="DD/MM/YYYY"
+          placeholderTextColor={colors.textSecondary}
         />
       </View>
 
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Statement Type</Text>
+        <Text style={[styles.label, { color: colors.text }]}>Statement Type</Text>
         <TouchableOpacity
-          style={styles.dropdown}
+          style={[styles.dropdown, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}
           onPress={() => setShowDropdown(true)}
         >
-          <Text style={styles.dropdownText}>
+          <Text style={[styles.dropdownText, { color: colors.text }]}>
             {statementTypes.find((type) => type.value === selectedType)?.label}
           </Text>
-          <Text style={styles.dropdownArrow}>▼</Text>
+          <Text style={[styles.dropdownArrow, { color: colors.textSecondary }]}>▼</Text>
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>Generate Statement</Text>
+      <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary }]} onPress={handleSubmit}>
+        <Text style={[styles.buttonText, { color: colors.onPrimary }]}>Generate Statement</Text>
       </TouchableOpacity>
 
-      {/* Dropdown Modal */}
       <Modal
         visible={showDropdown}
         transparent
@@ -88,21 +90,21 @@ const AccountStatement = () => {
         onRequestClose={() => setShowDropdown(false)}
       >
         <TouchableOpacity
-          style={styles.modalOverlay}
+          style={[styles.modalOverlay, { backgroundColor: colors.overlay }]}
           activeOpacity={1}
           onPress={() => setShowDropdown(false)}
         >
-          <View style={styles.dropdownModal}>
+          <View style={[styles.dropdownModal, { backgroundColor: colors.card }]}>
             {statementTypes.map((type) => (
               <TouchableOpacity
                 key={type.value}
-                style={styles.dropdownItem}
+                style={[styles.dropdownItem, { borderBottomColor: colors.borderLight }]}
                 onPress={() => {
                   setSelectedType(type.value);
                   setShowDropdown(false);
                 }}
               >
-                <Text style={styles.dropdownItemText}>{type.label}</Text>
+                <Text style={[styles.dropdownItemText, { color: colors.text }]}>{type.label}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -118,13 +120,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#fff",
   },
   title: {
     fontSize: 20,
     fontWeight: "600",
     marginBottom: 20,
-    color: "#333",
     fontFamily: "Poppins_400Regular",
   },
   formGroup: {
@@ -133,45 +133,36 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     marginBottom: 5,
-    color: "#333",
     fontFamily: "Poppins_400Regular",
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
     borderRadius: 8,
     padding: 12,
-    backgroundColor: "#fff",
     fontSize: 16,
     fontFamily: "Poppins_400Regular",
   },
   dropdown: {
     borderWidth: 1,
-    borderColor: "#ccc",
     borderRadius: 8,
     padding: 12,
-    backgroundColor: "#fff",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
   dropdownText: {
     fontSize: 16,
-    color: "#333",
     fontFamily: "Poppins_400Regular",
   },
   dropdownArrow: {
     fontSize: 12,
-    color: "#666",
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "center",
     alignItems: "center",
   },
   dropdownModal: {
-    backgroundColor: "#fff",
     borderRadius: 8,
     padding: 10,
     minWidth: 200,
@@ -180,22 +171,18 @@ const styles = StyleSheet.create({
   dropdownItem: {
     padding: 15,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
   },
   dropdownItemText: {
     fontSize: 16,
-    color: "#333",
     fontFamily: "Poppins_400Regular",
   },
   button: {
     marginTop: 20,
-    backgroundColor: "#213400",
     padding: 15,
     borderRadius: 8,
     alignItems: "center",
   },
   buttonText: {
-    color: "#fff",
     fontSize: 16,
     fontWeight: "600",
     fontFamily: "Poppins_400Regular",

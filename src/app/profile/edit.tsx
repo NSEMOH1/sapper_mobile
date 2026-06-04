@@ -1,5 +1,6 @@
 import { useAuthStore } from "@/hooks/useAuth";
 import { useMember } from "@/hooks/useMember";
+import { useTheme } from "@/hooks/use-theme";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -15,6 +16,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function EditProfile() {
+  const { colors } = useTheme();
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -141,50 +143,53 @@ export default function EditProfile() {
 
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
       >
 
         {errorMessage ? (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{errorMessage}</Text>
+          <View style={[styles.errorContainer, { backgroundColor: colors.error + '15', borderColor: colors.error }]}>
+            <Text style={[styles.errorText, { color: colors.error }]}>{errorMessage}</Text>
           </View>
         ) : null}
 
-        <View style={styles.formSection}>
-          <Text style={styles.sectionTitle}>Personal Information</Text>
+        <View style={[styles.formSection, { backgroundColor: colors.card }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text, borderBottomColor: colors.borderLight }]}>Personal Information</Text>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>First Name *</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>First Name *</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
               value={formData.first_name}
               onChangeText={(text) => updateFormData("first_name", text)}
               placeholder={member?.user?.first_name}
+              placeholderTextColor={colors.textSecondary}
               editable={!loading}
             />
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Last Name *</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>Last Name *</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
               value={formData.last_name}
               onChangeText={(text) => updateFormData("last_name", text)}
               placeholder={member?.user?.last_name}
+              placeholderTextColor={colors.textSecondary}
               editable={!loading}
             />
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Email Address *</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>Email Address *</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
               value={formData.email}
               onChangeText={(text) => updateFormData("email", text)}
               placeholder={member?.user?.email}
+              placeholderTextColor={colors.textSecondary}
               keyboardType="email-address"
               autoCapitalize="none"
               editable={!loading}
@@ -192,12 +197,13 @@ export default function EditProfile() {
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Phone Number</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>Phone Number</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
               value={formData.phone}
               onChangeText={(text) => updateFormData("phone", text)}
               placeholder={member?.user?.phone}
+              placeholderTextColor={colors.textSecondary}
               keyboardType="phone-pad"
               maxLength={15}
               editable={!loading}
@@ -205,12 +211,13 @@ export default function EditProfile() {
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Address</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>Address</Text>
             <TextInput
-              style={[styles.input, styles.textArea]}
+              style={[styles.input, styles.textArea, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
               value={formData.address}
               onChangeText={(text) => updateFormData("address", text)}
               placeholder={member?.user?.address}
+              placeholderTextColor={colors.textSecondary}
               multiline
               numberOfLines={3}
               textAlignVertical="top"
@@ -219,27 +226,29 @@ export default function EditProfile() {
           </View>
         </View>
 
-        <View style={styles.formSection}>
-          <Text style={styles.sectionTitle}>Bank Details (Optional)</Text>
+        <View style={[styles.formSection, { backgroundColor: colors.card }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text, borderBottomColor: colors.borderLight }]}>Bank Details (Optional)</Text>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Bank Name</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>Bank Name</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
               value={formData.bank_name}
               onChangeText={(text) => updateFormData("bank_name", text)}
               placeholder={member?.user?.bank[0]?.name}
+              placeholderTextColor={colors.textSecondary}
               editable={!loading}
             />
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Account Number</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>Account Number</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
               value={formData.account_number}
               onChangeText={(text) => updateFormData("account_number", text)}
               placeholder={member?.user?.bank[0]?.account_number}
+              placeholderTextColor={colors.textSecondary}
               keyboardType="numeric"
               maxLength={20}
               editable={!loading}
@@ -248,23 +257,23 @@ export default function EditProfile() {
         </View>
 
         <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
+          style={[styles.button, { backgroundColor: colors.primary }, loading && { opacity: 0.7 }]}
           onPress={handleSubmit}
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator size="small" color="#fff" />
+            <ActivityIndicator size="small" color={colors.onPrimary} />
           ) : (
-            <Text style={styles.buttonText}>Update Profile</Text>
+            <Text style={[styles.buttonText, { color: colors.onPrimary }]}>Update Profile</Text>
           )}
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.cancelButton}
+          style={[styles.cancelButton, { borderColor: colors.border }]}
           onPress={() => router.back()}
           disabled={loading}
         >
-          <Text style={styles.cancelButtonText}>Cancel</Text>
+          <Text style={[styles.cancelButtonText, { color: colors.textSecondary }]}>Cancel</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -274,7 +283,6 @@ export default function EditProfile() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f9fa",
   },
   scrollContainer: {
     padding: 10,
@@ -288,20 +296,17 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
     fontSize: 16,
-    color: "#666",
     fontFamily: "Poppins_400Regular",
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
     marginBottom: 25,
-    color: "#1a1a1a",
     textAlign: "center",
     fontFamily: "Poppins_600SemiBold",
   },
   formSection: {
     marginBottom: 30,
-    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 20,
     shadowColor: "#000",
@@ -314,10 +319,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     marginBottom: 20,
-    color: "#333",
     fontFamily: "Poppins_600SemiBold",
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
     paddingBottom: 10,
   },
   formGroup: {
@@ -326,18 +329,14 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     marginBottom: 8,
-    color: "#555",
     fontWeight: "500",
     fontFamily: "Poppins_500Medium",
   },
   input: {
     borderWidth: 1,
-    borderColor: "#E5E5EA",
     borderRadius: 8,
     padding: 14,
     fontSize: 16,
-    backgroundColor: "#fff",
-    color: "#333",
     fontFamily: "Poppins_400Regular",
   },
   textArea: {
@@ -345,33 +344,24 @@ const styles = StyleSheet.create({
     paddingTop: 14,
   },
   errorContainer: {
-    backgroundColor: "#FFF5F5",
     borderWidth: 1,
-    borderColor: "#FF3B30",
     borderRadius: 8,
     padding: 12,
     marginBottom: 20,
   },
   errorText: {
-    color: "#FF3B30",
     fontSize: 14,
     textAlign: "center",
     fontFamily: "Poppins_400Regular",
   },
   button: {
-    backgroundColor: "#982323",
     borderRadius: 12,
     padding: 18,
     alignItems: "center",
     marginTop: 10,
     marginBottom: 15,
   },
-  buttonDisabled: {
-    backgroundColor: "#CC9999",
-    opacity: 0.7,
-  },
   buttonText: {
-    color: "#fff",
     fontSize: 16,
     fontWeight: "600",
     fontFamily: "Poppins_600SemiBold",
@@ -381,11 +371,9 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#E5E5EA",
     backgroundColor: "transparent",
   },
   cancelButtonText: {
-    color: "#666",
     fontSize: 16,
     fontWeight: "500",
     fontFamily: "Poppins_500Medium",

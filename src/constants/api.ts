@@ -11,7 +11,7 @@ import axios from "axios";
 import { router } from "expo-router";
 
 export const config = {
-  apiUrl: process.env.EXPO_PUBLIC_API_URL || "",
+  apiUrl: "https://api.sappersapi.com",
 };
 
 const api = axios.create({

@@ -3,6 +3,7 @@ import LoanEnrollmentFlow from "@/features/loan-enrollment";
 import { TransactionsModule } from "@/features/transaction";
 import { useAuthStore } from "@/hooks/useAuth";
 import { useBalances } from "@/hooks/useBalances";
+import { useTheme } from "@/hooks/use-theme";
 import { useUnreadCount } from "@/hooks/useNotifications";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -16,9 +17,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AppIcon from '@/lib/useIcon';
-
-const ACCENT = "#213400";
-const BG = "#F5F7FA";
 
 const getGreeting = () => {
   const h = new Date().getHours();
@@ -46,6 +44,7 @@ export default function HomeScreen() {
   const [hideBalance, setHideBalance] = useState(false);
   const { user } = useAuthStore();
   const { data, refetch } = useBalances();
+  const { colors } = useTheme();
   const { data: unreadData } = useUnreadCount(user?.id);
   const unreadCount = unreadData?.count ?? 0;
 
@@ -53,7 +52,7 @@ export default function HomeScreen() {
   const loanBalance = useMemo(() => Number(data?.loan_balance || 0), [data]);
   const totalBalance = savingsBalance + loanBalance;
 
-  const obscured = (n: number) => (hideBalance ? `₦${"•".repeat(Math.max(4, n.toString().length))}` : `₦${n.toLocaleString()}`);
+  const obscured = (n: number) => (hideBalance ? `\u20A6${"\u2022".repeat(Math.max(4, n.toString().length))}` : `\u20A6${n.toLocaleString()}`);
 
   const handleQuickAction = useCallback(
     (action: (typeof quickActions)[number]) => {
@@ -67,26 +66,25 @@ export default function HomeScreen() {
   );
 
   return (
-    <SafeAreaView style={s.container}>
+    <SafeAreaView style={[s.container, { backgroundColor: colors.background }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
-        {/* ── Header ─────────────────────────────────────── */}
         <View style={s.header}>
           <View>
-            <Text style={s.greeting}>
+            <Text style={[s.greeting, { color: colors.textSecondary }]}>
               {getGreeting()},
             </Text>
-            <Text style={s.userName}>{user?.first_name || "User"}</Text>
+            <Text style={[s.userName, { color: colors.text }]}>{user?.first_name || "User"}</Text>
           </View>
           <View style={s.headerRight}>
-            <View style={s.avatar}>
+            <View style={[s.avatar, { backgroundColor: colors.primary }]}>
               <Text style={s.avatarText}>
                 {getInitials(user?.first_name || "")}
               </Text>
             </View>
             <TouchableOpacity style={s.notifBtn} onPress={() => router.push("/notifications" as any)}>
-              <AppIcon name="notifications-outline" size={22} color="#1A1A2E" />
+              <Ionicons name="notifications-outline" size={22} color={colors.text} />
               {unreadCount > 0 && (
-                <View style={s.notifBadge}>
+                <View style={[s.notifBadge, { borderColor: colors.background }]}>
                   <Text style={s.notifBadgeText}>{unreadCount > 9 ? "9+" : unreadCount}</Text>
                 </View>
               )}
@@ -94,21 +92,18 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* ── Balance Card ────────────────────────────────── */}
-        <View style={s.balanceCard}>
+        <View style={[s.balanceCard, { backgroundColor: colors.primary }]}>
           <TouchableOpacity style={s.balanceRefresh} onPress={() => refetch()}>
-            <AppIcon name="refresh-outline" size={16} color="rgba(255,255,255,0.7)" />
+            <Ionicons name="refresh-outline" size={16} color="rgba(255,255,255,0.7)" />
           </TouchableOpacity>
           <View style={s.balanceTitleRow}>
             <Text style={s.balanceTitle}>Balance Overview</Text>
           </View>
 
           <View style={s.balanceTitleRow}>
-            
           <Text style={s.balanceTotal}>
             {obscured(totalBalance)}
           </Text>
-
             <TouchableOpacity onPress={() => setHideBalance((v) => !v)} style={s.eyeBtn}>
               <AppIcon
                 name={hideBalance ? "eye-off-outline" : "eye-outline"}
@@ -119,20 +114,20 @@ export default function HomeScreen() {
           </View>
           <Text style={s.balanceSub}>Combined balance</Text>
 
-          <View style={s.balanceRow}>
+          <View style={[s.balanceRow, { backgroundColor: colors.card }]}>
             <View style={s.balanceItem}>
               <View style={[s.balanceDot, { backgroundColor: "#4CAF50" }]} />
               <View>
-                <Text style={s.balanceLabel}>Savings</Text>
-                <Text style={s.balanceValue}>{obscured(savingsBalance)}</Text>
+                <Text style={[s.balanceLabel, { color: colors.textSecondary }]}>Savings</Text>
+                <Text style={[s.balanceValue, { color: colors.text }]}>{obscured(savingsBalance)}</Text>
               </View>
             </View>
-            <View style={s.balanceDivider} />
+            <View style={[s.balanceDivider, { backgroundColor: colors.border }]} />
             <View style={s.balanceItem}>
-              <View style={[s.balanceDot, { backgroundColor: "#EF4444" }]} />
+              <View style={[s.balanceDot, { backgroundColor: colors.error }]} />
               <View>
-                <Text style={s.balanceLabel}>Loan</Text>
-                <Text style={s.balanceValue}>{obscured(loanBalance)}</Text>
+                <Text style={[s.balanceLabel, { color: colors.textSecondary }]}>Loan</Text>
+                <Text style={[s.balanceValue, { color: colors.text }]}>{obscured(loanBalance)}</Text>
               </View>
             </View>
           </View>
@@ -149,35 +144,33 @@ export default function HomeScreen() {
               style={[s.balanceActionBtn, s.balanceActionOutline]}
               onPress={() => router.push("/payments" as any)}
             >
-              <AppIcon name="checkmark-circle-outline" size={16} color={ACCENT} />
-              <Text style={[s.balanceActionText, { color: ACCENT }]}>Pay Off</Text>
+              <AppIcon name="checkmark-circle-outline" size={16} color={colors.primary} />
+              <Text style={[s.balanceActionText, { color: colors.primary }]}>Pay Off</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* ── Quick Actions ──────────────────────────────── */}
-        <Text style={s.sectionTitle}>Quick Actions</Text>
+        <Text style={[s.sectionTitle, { color: colors.text }]}>Quick Actions</Text>
         <View style={s.quickGrid}>
           {quickActions.map((action) => (
             <TouchableOpacity
               key={action.label}
-              style={s.quickCard}
+              style={[s.quickCard, { backgroundColor: colors.card }]}
               onPress={() => handleQuickAction(action)}
               activeOpacity={0.7}
             >
-              <View style={s.quickIcon}>
-                <AppIcon name={action.icon as any} size={24} color={ACCENT} />
+              <View style={[s.quickIcon, { backgroundColor: colors.primaryLight }]}>
+                <AppIcon name={action.icon as any} size={24} color={colors.text} />
               </View>
-              <Text style={s.quickLabel}>{action.label}</Text>
+              <Text style={[s.quickLabel, { color: colors.text }]}>{action.label}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        {/* ── Loan Products ──────────────────────────────── */}
         <View style={s.sectionHead}>
-          <Text style={s.sectionTitle}>Loan Products</Text>
+          <Text style={[s.sectionTitle, { color: colors.text }]}>Loan Products</Text>
           <TouchableOpacity onPress={() => router.push("/(tabs)/loan" as any)}>
-            <Text style={s.seeAll}>See All</Text>
+            <Text style={[s.seeAll, { color: colors.primary }]}>See All</Text>
           </TouchableOpacity>
         </View>
         <View style={s.loanGrid}>
@@ -189,7 +182,7 @@ export default function HomeScreen() {
               onPress={() => setShowLoanModal(true)}
             >
               <View style={s.loanIconWrap}>
-                <AppIcon name={product.icon} size={20} color="#fff" />
+                <Ionicons name={product.icon} size={20} color="#fff" />
               </View>
               <Text style={s.loanName} numberOfLines={2}>
                 {product.title}
@@ -201,7 +194,6 @@ export default function HomeScreen() {
           ))}
         </View>
 
-        {/* ── Transactions ────────────────────────────────── */}
         <TransactionsModule
           limit={5}
           onViewAll={() => router.push("/transactions" as any)}
@@ -217,10 +209,9 @@ export default function HomeScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: BG },
+  container: { flex: 1 },
   scroll: { paddingBottom: 32 },
 
-  // ── Header ─────────────────────────────────────────────
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -232,12 +223,10 @@ const s = StyleSheet.create({
   greeting: {
     fontSize: 14,
     fontFamily: "Poppins_400Regular",
-    color: "#6B7280",
   },
   userName: {
     fontSize: 20,
     fontFamily: "Poppins_700Bold",
-    color: "#1A1A2E",
     marginTop: 2,
   },
   headerRight: { flexDirection: "row", alignItems: "center", gap: 12 },
@@ -245,7 +234,6 @@ const s = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: ACCENT,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -263,7 +251,6 @@ const s = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 4,
     borderWidth: 1.5,
-    borderColor: BG,
   },
   notifBadgeText: {
     color: "#fff",
@@ -272,10 +259,8 @@ const s = StyleSheet.create({
     lineHeight: 14,
   },
 
-  // ── Balance Card ──────────────────────────────────────
   balanceCard: {
     marginHorizontal: 20,
-    backgroundColor: ACCENT,
     borderRadius: 20,
     padding: 20,
     marginBottom: 24,
@@ -318,16 +303,15 @@ const s = StyleSheet.create({
   balanceRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F9FAFB",
     borderRadius: 12,
     padding: 12,
     marginBottom: 16,
   },
   balanceItem: { flex: 1, flexDirection: "row", alignItems: "center", gap: 8 },
   balanceDot: { width: 10, height: 10, borderRadius: 5 },
-  balanceDivider: { width: 1, height: 32, backgroundColor: "#E5E7EB", marginHorizontal: 8 },
-  balanceLabel: { fontSize: 11, fontFamily: "Poppins_400Regular", color: "#6B7280" },
-  balanceValue: { fontSize: 15, fontFamily: "Poppins_700Bold", color: "#1A1A2E" },
+  balanceDivider: { width: 1, height: 32, marginHorizontal: 8 },
+  balanceLabel: { fontSize: 11, fontFamily: "Poppins_400Regular" },
+  balanceValue: { fontSize: 15, fontFamily: "Poppins_700Bold" },
   balanceActions: { flexDirection: "row", gap: 10 },
   balanceActionBtn: {
     flex: 1,
@@ -350,11 +334,9 @@ const s = StyleSheet.create({
     color: "#fff",
   },
 
-  // ── Quick Actions ─────────────────────────────────────
   sectionTitle: {
     fontSize: 17,
     fontFamily: "Poppins_700Bold",
-    color: "#1A1A2E",
     paddingHorizontal: 20,
     marginBottom: 12,
   },
@@ -366,7 +348,6 @@ const s = StyleSheet.create({
   },
   quickCard: {
     flex: 1,
-    backgroundColor: "#fff",
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: "center",
@@ -380,7 +361,6 @@ const s = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 14,
-    backgroundColor: "#F3FCF1",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 8,
@@ -388,10 +368,8 @@ const s = StyleSheet.create({
   quickLabel: {
     fontSize: 12,
     fontFamily: "Poppins_500Medium",
-    color: "#1A1A2E",
   },
 
-  // ── Loan Products ─────────────────────────────────────
   sectionHead: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -401,7 +379,6 @@ const s = StyleSheet.create({
   seeAll: {
     fontSize: 13,
     fontFamily: "Poppins_600SemiBold",
-    color: ACCENT,
   },
   loanGrid: {
     flexDirection: "row",

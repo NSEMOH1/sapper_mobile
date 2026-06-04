@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -24,8 +24,8 @@ import {
 import type { MonoVerificationResult } from "@/services/api.service";
 import { useSavingsBalanceStore } from "@/store/savings";
 import { queryKeys } from "@/lib/queryKeys";
+import { useTheme } from "@/hooks/use-theme";
 
-const PRIMARY = "#982323";
 const QUICK_AMOUNTS = [5000, 10000, 15000, 20000, 30000];
 const PAYMENT_TYPES = [
   { label: "Loan Repayment", value: "LOAN_REPAYMENT" },
@@ -34,6 +34,9 @@ const PAYMENT_TYPES = [
 
 const formatAmount = (v: string | number) =>
   v.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+
+const formatCurrency = (n: number) => `\u20A6${n.toLocaleString()}`;
 
 type Screen = "form" | "webview" | "verifying" | "success" | "failed";
 
@@ -91,31 +94,20 @@ function PaymentTypeModal({
   onSelect: (value: string) => void;
   onClose: () => void;
 }) {
+  const { colors } = useTheme();
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <TouchableOpacity style={s.overlay} activeOpacity={1} onPress={onClose}>
-        <View style={s.dropdownModal}>
-          <Text style={s.dropdownModalTitle}>Payment Type</Text>
+        <View style={[s.dropdownModal, { backgroundColor: colors.card }]}>
+          <Text style={[s.dropdownModalTitle, { color: colors.text, borderBottomColor: colors.borderLight }]}>Payment Type</Text>
           {PAYMENT_TYPES.map((t) => (
             <TouchableOpacity
               key={t.value}
-              style={[s.dropdownItem, selected === t.value && s.dropdownItemActive]}
-              onPress={() => {
-                onSelect(t.value);
-                onClose();
-              }}
+              style={[s.dropdownItem, { borderBottomColor: colors.borderLight }, selected === t.value && { backgroundColor: colors.primaryLight }]}
+              onPress={() => { onSelect(t.value); onClose(); }}
             >
-              <Text
-                style={[
-                  s.dropdownItemText,
-                  selected === t.value && s.dropdownItemTextActive,
-                ]}
-              >
-                {t.label}
-              </Text>
-              {selected === t.value && (
-                <Ionicons name="checkmark" size={18} color={PRIMARY} />
-              )}
+              <Text style={[s.dropdownItemText, { color: colors.text }, selected === t.value && { color: colors.primary }]}>{t.label}</Text>
+              {selected === t.value && <Ionicons name="checkmark" size={18} color={colors.primary} />}
             </TouchableOpacity>
           ))}
         </View>
@@ -137,29 +129,23 @@ function LoanSelectorModal({
   onSelect: (id: string) => void;
   onClose: () => void;
 }) {
+  const { colors } = useTheme();
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <TouchableOpacity style={s.overlay} activeOpacity={1} onPress={onClose}>
-        <View style={s.dropdownModal}>
-          <Text style={s.dropdownModalTitle}>Select Loan</Text>
+        <View style={[s.dropdownModal, { backgroundColor: colors.card }]}>
+          <Text style={[s.dropdownModalTitle, { color: colors.text, borderBottomColor: colors.borderLight }]}>Select Loan</Text>
           {loans.map((loan) => (
             <TouchableOpacity
               key={loan.id}
-              style={[s.dropdownItem, selectedId === loan.id && s.dropdownItemActive]}
-              onPress={() => {
-                onSelect(loan.id);
-                onClose();
-              }}
+              style={[s.dropdownItem, { borderBottomColor: colors.borderLight }, selectedId === loan.id && { backgroundColor: colors.primaryLight }]}
+              onPress={() => { onSelect(loan.id); onClose(); }}
             >
               <View>
-                <Text style={s.dropdownItemText}>{loan.reference}</Text>
-                <Text style={s.dropdownItemSub}>
-                  ₦{Number(loan.approvedAmount).toLocaleString()}
-                </Text>
+                <Text style={[s.dropdownItemText, { color: colors.text }]}>{loan.reference}</Text>
+                <Text style={[s.dropdownItemSub, { color: colors.text }]}>\u20A6{Number(loan.approvedAmount).toLocaleString()}</Text>
               </View>
-              {selectedId === loan.id && (
-                <Ionicons name="checkmark" size={18} color={PRIMARY} />
-              )}
+              {selectedId === loan.id && <Ionicons name="checkmark" size={18} color={colors.primary} />}
             </TouchableOpacity>
           ))}
         </View>
@@ -170,22 +156,17 @@ function LoanSelectorModal({
 
 const PaymentFlow = () => {
   const [screen, setScreen] = useState<Screen>("form");
-
   const [paymentType, setPaymentType] = useState("");
   const [amount, setAmount] = useState("");
   const [loanId, setLoanId] = useState<string | undefined>();
   const [showPaymentTypeModal, setShowPaymentTypeModal] = useState(false);
   const [showLoanModal, setShowLoanModal] = useState(false);
+  const { colors } = useTheme();
 
-  const { data: activeLoans = [], isLoading: loadingLoans } = useActiveLoans(
-    paymentType === "LOAN_REPAYMENT",
-  );
-  const { data: memberLoanBalance = 0 } = useMemberLoanBalance(
-    paymentType === "LOAN_REPAYMENT",
-  );
+  const { data: activeLoans = [], isLoading: loadingLoans } = useActiveLoans(paymentType === "LOAN_REPAYMENT");
+  const { data: memberLoanBalance = 0 } = useMemberLoanBalance(paymentType === "LOAN_REPAYMENT");
 
   const selectedLoanBalance = loanId ? memberLoanBalance : 0;
-
   const [loading, setLoading] = useState(false);
   const [monoUrl, setMonoUrl] = useState("");
   const [pendingReference, setPendingReference] = useState("");
@@ -195,17 +176,15 @@ const PaymentFlow = () => {
   const [rateLimitError, setRateLimitError] = useState("");
 
   const queryClient = useQueryClient();
-  const fetchSavingsBalance = useSavingsBalanceStore(
-    (state) => state.fetchSavingsBalance,
-  );
+  const fetchSavingsBalance = useSavingsBalanceStore((state) => state.fetchSavingsBalance);
 
   const validateAmount = useCallback((): string | null => {
     const n = Number(amount);
-    if (!n || n < 100) return "Minimum payment amount is ₦100";
-    if (n > 10_000_000) return "Maximum payment amount is ₦10,000,000";
+    if (!n || n < 100) return "Minimum payment amount is \u20A6100";
+    if (n > 10_000_000) return "Maximum payment amount is \u20A610,000,000";
     if (!Number.isInteger(n * 100)) return "Amount can have at most 2 decimal places";
     if (paymentType === "LOAN_REPAYMENT" && selectedLoanBalance > 0 && n > selectedLoanBalance) {
-      return `Amount cannot exceed outstanding balance of ₦${selectedLoanBalance.toLocaleString()}`;
+      return `Amount cannot exceed outstanding balance of \u20A6${selectedLoanBalance.toLocaleString()}`;
     }
     return null;
   }, [amount, paymentType, selectedLoanBalance]);
@@ -222,41 +201,23 @@ const PaymentFlow = () => {
 
   const handlePayNow = useCallback(async () => {
     setRateLimitError("");
-
     const err = validateAmount();
-    if (err) {
-      Alert.alert("Invalid Amount", err);
-      return;
-    }
-
+    if (err) { Alert.alert("Invalid Amount", err); return; }
     setLoading(true);
     try {
-      const { monoUrl: url } = await initializeMonoPayment({
-        paymentType,
-        amount: Number(amount),
-        loanId,
-      });
+      const { monoUrl: url } = await initializeMonoPayment({ paymentType, amount: Number(amount), loanId });
       setMonoUrl(url);
-
-      console.log("Initialized Mono payment:", { paymentType, amount, loanId, url });
-
       setScreen("webview");
     } catch (error: any) {
       const status = error.response?.status;
-      const msg =
-        error.response?.data?.error?.message ||
-        error.response?.data?.message ||
-        "Failed to initialize payment.";
-
+      const msg = error.response?.data?.error?.message || error.response?.data?.message || "Failed to initialize payment.";
       if (status === 429) {
         const retryAfter = error.response?.headers["retry-after"] || "60";
         setRateLimitError(`Too many attempts. Please try again in ${retryAfter} seconds.`);
       } else {
         Alert.alert(status === 400 ? "Validation Error" : "Payment Error", msg);
       }
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   }, [validateAmount, paymentType, amount, loanId]);
 
   const refetchData = useCallback(async () => {
@@ -268,108 +229,78 @@ const PaymentFlow = () => {
         queryClient.invalidateQueries({ queryKey: queryKeys.loans.balances() }),
         queryClient.invalidateQueries({ queryKey: queryKeys.savings.balances() }),
       ]);
-    } catch {
-      // Refetch is best-effort; don't block navigation
-    }
+    } catch {}
   }, [fetchSavingsBalance, queryClient]);
 
   const handleVerify = useCallback(async (reference: string, retryCount = 0) => {
     setVerificationAttempts(retryCount + 1);
     setScreen("verifying");
-
     try {
       const data = await verifyMonoPayment(reference);
-      // API-level success means payment was verified — no nested success field
       setResult(data);
       await refetchData();
       setScreen("success");
     } catch (error: any) {
       const status = error.response?.status;
-
       if (status === 500 && retryCount < 3) {
         setTimeout(() => handleVerify(reference, retryCount + 1), 2000 * (retryCount + 1));
         return;
       }
-
       const msg =
-        status === 404
-          ? "Payment not found. Contact support if you were charged."
-          : status === 429
-            ? "Too many verification attempts. Please wait and retry."
-            : status === 402
-              ? error.response?.data?.error?.message || "Payment verification failed."
-              : error.response?.data?.error?.message ||
-              error.response?.data?.message ||
-              "Failed to verify payment. Please contact support.";
-
+        status === 404 ? "Payment not found. Contact support if you were charged."
+        : status === 429 ? "Too many verification attempts. Please wait and retry."
+        : status === 402 ? (error.response?.data?.error?.message || "Payment verification failed.")
+        : error.response?.data?.error?.message || error.response?.data?.message || "Failed to verify payment. Please contact support.";
       setErrorMessage(msg);
       setScreen("failed");
     }
   }, [refetchData]);
 
-  const handleWebViewNavChange = useCallback(
-    (navState: { url: string }) => {
-      const { url } = navState;
-      try {
-        const urlObj = new URL(url);
-        // Only intercept the success redirect path (fallback if onShouldStartLoadWithRequest is missed)
-        if (!urlObj.pathname.includes("mono-success")) return;
+  const handleWebViewNavChange = useCallback((navState: { url: string }) => {
+    const { url } = navState;
+    try {
+      const urlObj = new URL(url);
+      if (!urlObj.pathname.includes("mono-success")) return;
+      const ref = urlObj.searchParams.get("reference");
+      const status = urlObj.searchParams.get("status");
+      if (ref && !isVerifyingOrDone.current) {
+        if (status && status !== "success") {
+          const reason = urlObj.searchParams.get("reason") || "Payment was not completed";
+          setErrorMessage(reason);
+          setScreen("failed");
+          return;
+        }
+        isVerifyingOrDone.current = true;
+        setPendingReference(ref);
+        handleVerify(ref);
+      }
+    } catch {}
+  }, [handleVerify]);
 
-        const ref = urlObj.searchParams.get("reference");
-        const status = urlObj.searchParams.get("status");
+  const isVerifyingOrDone = useRef(false);
 
-        if (ref && !isVerifyingOrDone.current) {
-          if (status && status !== "success") {
-            const reason = urlObj.searchParams.get("reason") || "Payment was not completed";
-            setErrorMessage(reason);
-            setScreen("failed");
-            return;
-          }
+  const handleShouldStartLoad = useCallback((request: { url: string }) => {
+    const { url } = request;
+    try {
+      const urlObj = new URL(url);
+      if (!urlObj.pathname.includes("mono-success")) return true;
+      const ref = urlObj.searchParams.get("reference");
+      const status = urlObj.searchParams.get("status");
+      if (ref) {
+        if (status && status !== "success") {
+          const reason = urlObj.searchParams.get("reason") || "Payment was not completed";
+          setErrorMessage(reason);
+          setScreen("failed");
+        } else if (!isVerifyingOrDone.current) {
           isVerifyingOrDone.current = true;
           setPendingReference(ref);
           handleVerify(ref);
         }
-      } catch {
-        // URL parsing failed; ignore
+        return false;
       }
-    },
-
-    [handleVerify],
-  );
-
-  const isVerifyingOrDone = useRef(false);
-
-  const handleShouldStartLoad = useCallback(
-    (request: { url: string }) => {
-      const { url } = request;
-      try {
-        const urlObj = new URL(url);
-        // Intercept any URL whose path ends with /payments/mono-success
-        if (!urlObj.pathname.includes("mono-success")) return true;
-
-        const ref = urlObj.searchParams.get("reference");
-        const status = urlObj.searchParams.get("status");
-
-        if (ref) {
-          if (status && status !== "success") {
-            const reason = urlObj.searchParams.get("reason") || "Payment was not completed";
-            setErrorMessage(reason);
-            setScreen("failed");
-          } else if (!isVerifyingOrDone.current) {
-            isVerifyingOrDone.current = true;
-            setPendingReference(ref);
-            handleVerify(ref);
-          }
-          return false; // STOP the WebView from navigating
-        }
-      } catch {
-        // ignore parse errors
-      }
-      return true;
-    },
-    [handleVerify],
-  );
-
+    } catch {}
+    return true;
+  }, [handleVerify]);
 
   const handleRetry = useCallback(() => {
     setErrorMessage("");
@@ -378,18 +309,11 @@ const PaymentFlow = () => {
   }, [handleVerify, pendingReference]);
 
   const navigateAfterSuccess = useCallback(() => {
-    if (!result) {
-      router.replace("/(tabs)");
-      return;
-    }
+    if (!result) { router.replace("/(tabs)"); return; }
     const txnType = result.paymentType || result.transaction?.type;
-    if (txnType === "SAVINGS_DEPOSIT") {
-      router.replace("/(tabs)/savings");
-    } else if (txnType === "LOAN_REPAYMENT") {
-      router.replace("/(tabs)/loan");
-    } else {
-      router.replace("/(tabs)");
-    }
+    if (txnType === "SAVINGS_DEPOSIT") router.replace("/(tabs)/savings");
+    else if (txnType === "LOAN_REPAYMENT") router.replace("/(tabs)/loan");
+    else router.replace("/(tabs)");
   }, [result]);
 
   const handlePaymentTypeChange = useCallback((value: string) => {
@@ -401,24 +325,20 @@ const PaymentFlow = () => {
     if (/^\d*\.?\d{0,2}$/.test(v)) setAmount(v);
   }, []);
 
-  // ── Screens ─────────────────────────────────────────────────────────────
-
   if (screen === "webview") {
     return (
-      <SafeAreaView style={s.safeArea}>
-        <View style={s.webviewHeader}>
+      <SafeAreaView style={[s.safeArea, { backgroundColor: colors.background }]}>
+        <View style={[s.webviewHeader, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
           <TouchableOpacity
-            onPress={() =>
-              Alert.alert("Cancel Payment", "Are you sure you want to cancel this payment?", [
-                { text: "No", style: "cancel" },
-                { text: "Yes", onPress: () => { isVerifyingOrDone.current = false; setScreen("form"); } },
-              ])
-            }
+            onPress={() => Alert.alert("Cancel Payment", "Are you sure you want to cancel this payment?", [
+              { text: "No", style: "cancel" },
+              { text: "Yes", onPress: () => { isVerifyingOrDone.current = false; setScreen("form"); } },
+            ])}
             style={s.webviewBack}
           >
-            <Ionicons name="close" size={22} color="#333" />
+            <Ionicons name="close" size={22} color={colors.text} />
           </TouchableOpacity>
-          <Text style={s.webviewTitle}>Mono Payment</Text>
+          <Text style={[s.webviewTitle, { color: colors.text }]}>Mono Payment</Text>
           <View style={s.webviewLock}>
             <Ionicons name="lock-closed" size={14} color="#4CAF50" />
           </View>
@@ -429,9 +349,9 @@ const PaymentFlow = () => {
           onNavigationStateChange={handleWebViewNavChange}
           startInLoadingState
           renderLoading={() => (
-            <View style={s.webviewLoading}>
-              <ActivityIndicator size="large" color={PRIMARY} />
-              <Text style={s.webviewLoadingText}>Loading secure payment page...</Text>
+            <View style={[s.webviewLoading, { backgroundColor: colors.background }]}>
+              <ActivityIndicator size="large" color={colors.primary} />
+              <Text style={[s.webviewLoadingText, { color: colors.text }]}>Loading secure payment page...</Text>
             </View>
           )}
           style={{ flex: 1 }}
@@ -442,20 +362,20 @@ const PaymentFlow = () => {
 
   if (screen === "verifying") {
     return (
-      <SafeAreaView style={s.safeArea}>
-        <View style={s.centeredScreen}>
-          <View style={s.statusCard}>
-            <ActivityIndicator size="large" color={PRIMARY} style={{ marginBottom: 20 }} />
-            <Text style={s.statusTitle}>Verifying Payment</Text>
-            <Text style={s.statusSubtitle}>
+      <SafeAreaView style={[s.safeArea, { backgroundColor: colors.background }]}>
+        <View style={[s.centeredScreen, { backgroundColor: colors.background }]}>
+          <View style={[s.statusCard, { backgroundColor: colors.card }]}>
+            <ActivityIndicator size="large" color={colors.primary} style={{ marginBottom: 20 }} />
+            <Text style={[s.statusTitle, { color: colors.text }]}>Verifying Payment</Text>
+            <Text style={[s.statusSubtitle, { color: colors.text }]}>
               Please wait while we securely confirm your payment...
             </Text>
             {verificationAttempts > 1 && (
-              <Text style={s.attemptText}>Attempt {verificationAttempts} of 4</Text>
+              <Text style={[s.attemptText, { color: colors.text }]}>Attempt {verificationAttempts} of 4</Text>
             )}
             <View style={s.secureRow}>
-              <Ionicons name="lock-closed" size={14} color="#999" />
-              <Text style={s.secureText}> Secure verification in progress</Text>
+              <Ionicons name="lock-closed" size={14} color={colors.text} />
+              <Text style={[s.secureText, { color: colors.text }]}> Secure verification in progress</Text>
             </View>
           </View>
         </View>
@@ -465,27 +385,21 @@ const PaymentFlow = () => {
 
   if (screen === "success" && result) {
     return (
-      <SafeAreaView style={s.safeArea}>
-        <View style={s.centeredScreen}>
-          <View style={s.statusCard}>
+      <SafeAreaView style={[s.safeArea, { backgroundColor: colors.background }]}>
+        <View style={[s.centeredScreen, { backgroundColor: colors.background }]}>
+          <View style={[s.statusCard, { backgroundColor: colors.card }]}>
             <View style={s.successCircle}>
               <Ionicons name="checkmark" size={44} color="white" />
             </View>
-            <Text style={s.statusTitle}>
+            <Text style={[s.statusTitle, { color: colors.text }]}>
               {result.loanCompleted ? "Loan Completed!" : "Payment Successful!"}
             </Text>
-            <Text style={s.statusSubtitle}>
-              {result.alreadyProcessed
-                ? "This payment has already been processed."
-                : result.message || "Your payment has been processed successfully."}
+            <Text style={[s.statusSubtitle, { color: colors.text }]}>
+              {result.alreadyProcessed ? "This payment has already been processed." : result.message || "Your payment has been processed successfully."}
             </Text>
-
             {result.transaction && (
-              <View style={s.detailsBox}>
-                <SummaryRow
-                  label="Amount"
-                  value={`₦${Number(result.transaction.amount).toLocaleString()}`}
-                />
+              <View style={[s.detailsBox, { backgroundColor: colors.background }]}>
+                <SummaryRow label="Amount" value={'\u20A6${Number(result.transaction.amount).toLocaleString()}'} />
                 <SummaryRow label="Reference" value={result.transaction.reference} />
                 <SummaryRow label="Status" value="Completed" valueColor="#4CAF50" />
                 {result.loanCompleted && (
@@ -494,15 +408,11 @@ const PaymentFlow = () => {
                   </View>
                 )}
                 {result.remainingBalance !== undefined && result.remainingBalance > 0 && (
-                  <SummaryRow
-                    label="Remaining Balance"
-                    value={`₦${result.remainingBalance.toLocaleString()}`}
-                  />
+                  <SummaryRow label="Remaining Balance" value={'\u20A6${result.remainingBalance.toLocaleString()}'} />
                 )}
               </View>
             )}
-
-            <TouchableOpacity style={s.primaryBtn} onPress={navigateAfterSuccess}>
+            <TouchableOpacity style={[s.primaryBtn, { backgroundColor: colors.primary }]} onPress={navigateAfterSuccess}>
               <Text style={s.primaryBtnText}>Done</Text>
             </TouchableOpacity>
           </View>
@@ -513,47 +423,37 @@ const PaymentFlow = () => {
 
   if (screen === "failed") {
     return (
-      <SafeAreaView style={s.safeArea}>
-        <View style={s.centeredScreen}>
-          <View style={s.statusCard}>
+      <SafeAreaView style={[s.safeArea, { backgroundColor: colors.background }]}>
+        <View style={[s.centeredScreen, { backgroundColor: colors.background }]}>
+          <View style={[s.statusCard, { backgroundColor: colors.card }]}>
             <View style={s.failedCircle}>
               <Ionicons name="close" size={44} color="white" />
             </View>
-            <Text style={s.statusTitle}>Payment Failed</Text>
-
-            <View style={s.errorBox}>
-              <Ionicons name="alert-circle-outline" size={16} color={PRIMARY} />
-              <Text style={s.errorText}>{errorMessage || "Unable to process your payment."}</Text>
+            <Text style={[s.statusTitle, { color: colors.text }]}>Payment Failed</Text>
+            <View style={[s.errorBox, { backgroundColor: colors.error + "15" }]}>
+              <Ionicons name="alert-circle-outline" size={16} color={colors.error} />
+              <Text style={[s.errorText, { color: colors.error }]}>{errorMessage || "Unable to process your payment."}</Text>
             </View>
-
-            <View style={s.warningBox}>
+            <View style={[s.warningBox, { backgroundColor: "#FFFDE7", borderLeftColor: "#FFC107" }]}>
               <Text style={s.warningTitle}>What to do next:</Text>
-              <Text style={s.warningItem}>• Check your email for payment confirmation</Text>
-              <Text style={s.warningItem}>• Contact support with your payment reference</Text>
-              <Text style={s.warningItem}>• Your payment may still be processing</Text>
+              <Text style={s.warningItem}>{"\u2022"} Check your email for payment confirmation</Text>
+              <Text style={s.warningItem}>{"\u2022"} Contact support with your payment reference</Text>
+              <Text style={s.warningItem}>{"\u2022"} Your payment may still be processing</Text>
             </View>
-
             {pendingReference ? (
-              <View style={s.referenceBox}>
-                <Text style={s.referenceLabel}>Payment Reference:</Text>
-                <Text style={s.referenceValue}>{pendingReference}</Text>
+              <View style={[s.referenceBox, { backgroundColor: colors.background }]}>
+                <Text style={[s.referenceLabel, { color: colors.text }]}>Payment Reference:</Text>
+                <Text style={[s.referenceValue, { color: colors.text }]}>{pendingReference}</Text>
               </View>
             ) : null}
-
             <View style={s.buttonRow}>
               {verificationAttempts < 4 && (
-                <TouchableOpacity
-                  style={[s.primaryBtn, { flex: 1, marginRight: 8 }]}
-                  onPress={handleRetry}
-                >
+                <TouchableOpacity style={[s.primaryBtn, { backgroundColor: colors.primary, flex: 1, marginRight: 8 }]} onPress={handleRetry}>
                   <Text style={s.primaryBtnText}>Retry</Text>
                 </TouchableOpacity>
               )}
-              <TouchableOpacity
-                style={[s.outlineBtn, { flex: 1 }]}
-                onPress={() => { isVerifyingOrDone.current = false; setScreen("form"); }}
-              >
-                <Text style={s.outlineBtnText}>Go Back</Text>
+              <TouchableOpacity style={[s.outlineBtn, { borderColor: colors.border, flex: 1 }]} onPress={() => { isVerifyingOrDone.current = false; setScreen("form"); }}>
+                <Text style={[s.outlineBtnText, { color: colors.text }]}>Go Back</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -562,23 +462,23 @@ const PaymentFlow = () => {
     );
   }
 
-  // ── Payment Form ──────────────────────────────────────────────────────────
   return (
-    <SafeAreaView style={s.safeArea}>
-      <ScrollView
-        contentContainerStyle={s.scrollContent}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Header */}
+    <SafeAreaView style={[s.safeArea, { backgroundColor: colors.background }]}>
+      <View style={[s.backToHome, { borderBottomColor: colors.border }]}>
+        <TouchableOpacity onPress={() => router.replace("/(tabs)")} style={s.backToHomeBtn}>
+          <Ionicons name="arrow-back" size={22} color={colors.text} />
+          <Text style={[s.backToHomeText, { color: colors.text }]}>Home</Text>
+        </TouchableOpacity>
+      </View>
+      <ScrollView contentContainerStyle={s.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <View style={s.formHeader}>
           <View style={s.formIconWrapper}>
             <Ionicons name="card-outline" size={30} color="white" />
           </View>
-          <Text style={s.formTitle}>Make Payment</Text>
+          <Text style={[s.formTitle, { color: colors.text }]}>Make Payment</Text>
           <View style={s.encryptionBadge}>
-            <Ionicons name="lock-closed" size={12} color="#666" />
-            <Text style={s.encryptionText}> 256-bit encryption</Text>
+            <Ionicons name="lock-closed" size={12} color={colors.text} />
+            <Text style={[s.encryptionText, { color: colors.text }]}> 256-bit encryption</Text>
           </View>
         </View>
 
@@ -589,333 +489,235 @@ const PaymentFlow = () => {
           </View>
         )}
 
-        {/* Payment Type */}
         <View style={s.section}>
-          <Text style={s.label}>Payment Type *</Text>
-          <TouchableOpacity
-            style={s.dropdown}
-            onPress={() => setShowPaymentTypeModal(true)}
-            disabled={loading}
-          >
-            <Text style={[s.dropdownText, !paymentType && s.placeholder]}>
+          <Text style={[s.label, { color: colors.text }]}>Payment Type *</Text>
+          <TouchableOpacity style={[s.dropdown, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={() => setShowPaymentTypeModal(true)} disabled={loading}>
+            <Text style={[s.dropdownText, { color: colors.text }, !paymentType && { color: colors.text }]}>
               {PAYMENT_TYPES.find((t) => t.value === paymentType)?.label || "Select payment type"}
             </Text>
-            <Ionicons name="chevron-down" size={20} color="#666" />
+            <Ionicons name="chevron-down" size={20} color={colors.text} />
           </TouchableOpacity>
         </View>
 
-        {/* Loan selector */}
         {paymentType === "LOAN_REPAYMENT" && (
           <View style={s.section}>
-            <Text style={s.label}>Select Loan *</Text>
+            <Text style={[s.label, { color: colors.text }]}>Select Loan *</Text>
             {loadingLoans ? (
               <View style={s.loansLoading}>
-                <ActivityIndicator size="small" color={PRIMARY} />
-                <Text style={s.loansLoadingText}>Loading loans...</Text>
+                <ActivityIndicator size="small" color={colors.primary} />
+                <Text style={[s.loansLoadingText, { color: colors.text }]}>Loading loans...</Text>
               </View>
             ) : activeLoans.length > 0 ? (
               <>
-                <TouchableOpacity
-                  style={s.dropdown}
-                  onPress={() => setShowLoanModal(true)}
-                  disabled={loading}
-                >
-                  <Text style={[s.dropdownText, !loanId && s.placeholder]}>
-                    {loanId
-                      ? `${activeLoans.find((l) => l.id === loanId)?.reference} — ₦${Number(
-                        activeLoans.find((l) => l.id === loanId)?.approvedAmount,
-                      ).toLocaleString()}`
-                      : "Select loan to repay"}
+                <TouchableOpacity style={[s.dropdown, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={() => setShowLoanModal(true)} disabled={loading}>
+                  <Text style={[s.dropdownText, { color: colors.text }, !loanId && { color: colors.text }]}>
+                    {loanId ? `${activeLoans.find((l) => l.id === loanId)?.reference} \u2014 \u20A6${Number(activeLoans.find((l) => l.id === loanId)?.approvedAmount).toLocaleString()}` : "Select loan to repay"}
                   </Text>
-                  <Ionicons name="chevron-down" size={20} color="#666" />
+                  <Ionicons name="chevron-down" size={20} color={colors.text} />
                 </TouchableOpacity>
                 {selectedLoanBalance > 0 && (
                   <View style={s.balanceBadge}>
                     <Ionicons name="information-circle-outline" size={14} color="#1565C0" />
-                    <Text style={s.balanceText}>
-                      {" "}Outstanding Balance: ₦{selectedLoanBalance.toLocaleString()}
-                    </Text>
+                    <Text style={s.balanceText}> Outstanding Balance: \u20A6${selectedLoanBalance.toLocaleString()}</Text>
                   </View>
                 )}
               </>
             ) : (
-              <View style={s.noLoansBox}>
-                <Text style={s.noLoansText}>No active loans found</Text>
+              <View style={[s.noLoansBox, { backgroundColor: colors.background }]}>
+                <Text style={[s.noLoansText, { color: colors.text }]}>No active loans found</Text>
               </View>
             )}
           </View>
         )}
 
-        {/* Amount */}
         <View style={s.section}>
-          <Text style={s.label}>Amount (NGN) *</Text>
+          <Text style={[s.label, { color: colors.text }]}>Amount (NGN) *</Text>
           <TextInput
-            style={s.input}
+            style={[s.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
             placeholder="Enter amount"
-            placeholderTextColor="#aaa"
+            placeholderTextColor={colors.text}
             value={amount}
             onChangeText={handleAmountChange}
             keyboardType="numeric"
             editable={!loading}
           />
-          <Text style={s.inputHint}>Min: ₦100 | Max: ₦10,000,000</Text>
+          <Text style={[s.inputHint, { color: colors.text }]}>Min: {formatCurrency(100)} | Max: {formatCurrency(10000000)}</Text>
         </View>
 
-        {/* Quick amounts */}
         <View style={s.section}>
-          <Text style={s.quickLabel}>Quick amounts</Text>
+          <Text style={[s.quickLabel, { color: colors.text }]}>Quick amounts</Text>
           <View style={s.quickAmounts}>
             {QUICK_AMOUNTS.map((qa) => (
               <TouchableOpacity
                 key={qa}
-                style={[s.quickBtn, amount === qa.toString() && s.quickBtnActive]}
+                style={[s.quickBtn, { borderColor: colors.border, backgroundColor: colors.card }, amount === qa.toString() && { borderColor: colors.primary, backgroundColor: colors.primaryLight }]}
                 onPress={() => setAmount(qa.toString())}
               >
-                <Text style={[s.quickBtnText, amount === qa.toString() && s.quickBtnTextActive]}>
-                  ₦{formatAmount(qa.toString())}
+                <Text style={[s.quickBtnText, { color: colors.text }, amount === qa.toString() && { color: colors.primary }]}>
+                  {formatAmount(qa.toString())}
                 </Text>
               </TouchableOpacity>
             ))}
           </View>
         </View>
 
-        {/* Summary */}
-        <View style={s.summaryBox}>
-          <SummaryRow
-            label="Payment Type"
-            value={PAYMENT_TYPES.find((t) => t.value === paymentType)?.label || "Not selected"}
-          />
+        <View style={[s.summaryBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <SummaryRow label="Payment Type" value={PAYMENT_TYPES.find((t) => t.value === paymentType)?.label || "Not selected"} />
           {paymentType === "LOAN_REPAYMENT" && selectedLoanBalance > 0 && (
-            <SummaryRow label="Outstanding" value={`₦${selectedLoanBalance.toLocaleString()}`} />
+            <SummaryRow label="Outstanding" value={formatCurrency(selectedLoanBalance)} />
           )}
-          <SummaryRow
-            label="Amount"
-            value={amount ? `₦${formatAmount(amount)}` : "₦0"}
-          />
-          <View style={s.summaryDivider} />
-          <SummaryRow
-            label="Total"
-            value={amount ? `₦${formatAmount(amount)}` : "₦0"}
-            bold
-            valueColor="#4CAF50"
-          />
+          <SummaryRow label="Amount" value={amount ? formatCurrency(Number(amount)) : formatCurrency(0)} />
+          <View style={[s.summaryDivider, { backgroundColor: colors.border }]} />
+          <SummaryRow label="Total" value={amount ? formatCurrency(Number(amount)) : formatCurrency(0)} bold valueColor="#4CAF50" />
         </View>
 
-        {/* Pay button */}
-        <TouchableOpacity
-          style={[s.payBtn, (!isFormValid() || loading) && s.payBtnDisabled]}
-          onPress={handlePayNow}
-          disabled={!isFormValid() || loading}
-        >
+        <TouchableOpacity style={[s.payBtn, { backgroundColor: colors.primary }, (!isFormValid() || loading) && s.payBtnDisabled]} onPress={handlePayNow} disabled={!isFormValid() || loading}>
           {loading ? (
             <ActivityIndicator color="white" size="small" />
           ) : (
             <>
               <Ionicons name="card" size={20} color="white" style={{ marginRight: 8 }} />
-              <Text style={s.payBtnText}>
-                {!isFormValid() ? "Fill all fields to proceed" : "Pay Now"}
-              </Text>
+              <Text style={s.payBtnText}>{!isFormValid() ? "Fill all fields to proceed" : "Pay Now"}</Text>
             </>
           )}
         </TouchableOpacity>
 
-        {/* Security info */}
-        <View style={s.securityCard}>
-          <SecurityBadge
-            icon="shield-checkmark"
-            title="Secure Payment"
-            desc="All transactions are encrypted end-to-end"
-          />
-          <SecurityBadge
-            icon="flash"
-            title="Instant Processing"
-            desc="Payments are verified in real-time"
-          />
-          <SecurityBadge
-            icon="eye-off"
-            title="Fraud Protection"
-            desc="Advanced security prevents unauthorised transactions"
-          />
+        <View style={[s.securityCard, { backgroundColor: colors.card }]}>
+          <SecurityBadge icon="shield-checkmark" title="Secure Payment" desc="All transactions are encrypted end-to-end" />
+          <SecurityBadge icon="flash" title="Instant Processing" desc="Payments are verified in real-time" />
+          <SecurityBadge icon="eye-off" title="Fraud Protection" desc="Advanced security prevents unauthorised transactions" />
         </View>
 
-        <Text style={s.poweredBy}>Secured by Mono Payment Gateway</Text>
+        <Text style={[s.poweredBy, { color: colors.text }]}>Secured by Mono Payment Gateway</Text>
       </ScrollView>
 
-      <PaymentTypeModal
-        visible={showPaymentTypeModal}
-        selected={paymentType}
-        onSelect={handlePaymentTypeChange}
-        onClose={() => setShowPaymentTypeModal(false)}
-      />
-
-      <LoanSelectorModal
-        visible={showLoanModal}
-        loans={activeLoans}
-        selectedId={loanId}
-        onSelect={setLoanId}
-        onClose={() => setShowLoanModal(false)}
-      />
+      <PaymentTypeModal visible={showPaymentTypeModal} selected={paymentType} onSelect={handlePaymentTypeChange} onClose={() => setShowPaymentTypeModal(false)} />
+      <LoanSelectorModal visible={showLoanModal} loans={activeLoans} selectedId={loanId} onSelect={setLoanId} onClose={() => setShowLoanModal(false)} />
     </SafeAreaView>
   );
 };
 
 export default PaymentFlow;
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
 const s = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#f5f5f5" },
+  safeArea: { flex: 1 },
   scrollContent: { padding: 16, paddingBottom: 48 },
-
+  backToHome: {
+    flexDirection: "row", alignItems: "center",
+    paddingHorizontal: 8, paddingVertical: 4,
+    borderBottomWidth: 1,
+  },
+  backToHomeBtn: { flexDirection: "row", alignItems: "center", padding: 8, gap: 4 },
+  backToHomeText: { fontSize: 14, fontFamily: "Poppins_400Regular" },
   formHeader: { alignItems: "center", marginBottom: 24, marginTop: 8 },
   formIconWrapper: {
     width: 64, height: 64, borderRadius: 32, backgroundColor: "#4CAF50",
     justifyContent: "center", alignItems: "center", marginBottom: 12,
   },
-  formTitle: {
-    fontSize: 24, fontWeight: "bold", color: "#1a1a1a",
-    fontFamily: "Poppins_700Bold", marginBottom: 6,
-  },
+  formTitle: { fontSize: 24, fontWeight: "bold", fontFamily: "Poppins_700Bold", marginBottom: 6 },
   encryptionBadge: { flexDirection: "row", alignItems: "center" },
-  encryptionText: { fontSize: 12, color: "#666", fontFamily: "Poppins_400Regular" },
-
+  encryptionText: { fontSize: 12, fontFamily: "Poppins_400Regular" },
   rateLimitBox: {
     flexDirection: "row", alignItems: "center", backgroundColor: "#FFF3E0",
     borderRadius: 10, padding: 12, marginBottom: 16, borderLeftWidth: 4,
     borderLeftColor: "#FF9800", gap: 8,
   },
   rateLimitText: { flex: 1, fontSize: 13, color: "#E65100", fontFamily: "Poppins_400Regular" },
-
   section: { marginBottom: 20 },
-  label: {
-    fontSize: 14, fontWeight: "500", color: "#333", marginBottom: 8,
-    fontFamily: "Poppins_500Medium",
-  },
-
+  label: { fontSize: 14, fontWeight: "500", marginBottom: 8, fontFamily: "Poppins_500Medium" },
   dropdown: {
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    backgroundColor: "white", borderRadius: 12, borderWidth: 1.5,
-    borderColor: "#e0e0e0", paddingHorizontal: 16, paddingVertical: 14,
+    borderRadius: 12, borderWidth: 1.5, paddingHorizontal: 16, paddingVertical: 14,
   },
-  dropdownText: { fontSize: 15, color: "#333", fontFamily: "Poppins_400Regular" },
-  placeholder: { color: "#aaa" },
-
+  dropdownText: { fontSize: 15, fontFamily: "Poppins_400Regular" },
   loansLoading: { flexDirection: "row", alignItems: "center", padding: 16, gap: 10 },
-  loansLoadingText: { color: "#666", fontFamily: "Poppins_400Regular" },
+  loansLoadingText: { fontFamily: "Poppins_400Regular" },
   balanceBadge: {
     flexDirection: "row", alignItems: "center", backgroundColor: "#E3F2FD",
     borderRadius: 8, padding: 10, marginTop: 8,
   },
   balanceText: { fontSize: 13, color: "#1565C0", fontFamily: "Poppins_500Medium" },
-  noLoansBox: { backgroundColor: "#f5f5f5", borderRadius: 10, padding: 16, alignItems: "center" },
-  noLoansText: { color: "#999", fontFamily: "Poppins_400Regular" },
-
+  noLoansBox: { borderRadius: 10, padding: 16, alignItems: "center" },
+  noLoansText: { fontFamily: "Poppins_400Regular" },
   input: {
-    backgroundColor: "white", borderRadius: 12, borderWidth: 1.5,
-    borderColor: "#e0e0e0", paddingHorizontal: 16, paddingVertical: 14,
-    fontSize: 15, color: "#1a1a1a", fontFamily: "Poppins_400Regular",
+    borderRadius: 12, borderWidth: 1.5, paddingHorizontal: 16, paddingVertical: 14,
+    fontSize: 15, fontFamily: "Poppins_400Regular",
   },
-  inputHint: { fontSize: 12, color: "#999", marginTop: 6, fontFamily: "Poppins_400Regular" },
-
-  quickLabel: { fontSize: 13, color: "#666", marginBottom: 10, fontFamily: "Poppins_400Regular" },
+  inputHint: { fontSize: 12, marginTop: 6, fontFamily: "Poppins_400Regular" },
+  quickLabel: { fontSize: 13, marginBottom: 10, fontFamily: "Poppins_400Regular" },
   quickAmounts: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   quickBtn: {
-    borderRadius: 20, borderWidth: 1.5, borderColor: "#ddd",
-    paddingHorizontal: 14, paddingVertical: 8, backgroundColor: "white",
+    borderRadius: 20, borderWidth: 1.5, paddingHorizontal: 14, paddingVertical: 8,
   },
-  quickBtnActive: { borderColor: PRIMARY, backgroundColor: "#fff5f5" },
-  quickBtnText: { fontSize: 13, color: "#666", fontFamily: "Poppins_400Regular" },
-  quickBtnTextActive: { color: PRIMARY, fontFamily: "Poppins_600SemiBold" },
-
+  quickBtnText: { fontSize: 13, fontFamily: "Poppins_400Regular" },
   summaryBox: {
-    backgroundColor: "white", borderRadius: 12, padding: 16, marginBottom: 20,
-    borderWidth: 1, borderColor: "#eee",
+    borderRadius: 12, padding: 16, marginBottom: 20, borderWidth: 1,
   },
   summaryRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 10 },
   summaryLabel: { fontSize: 14, color: "#666", fontFamily: "Poppins_400Regular" },
   summaryLabelBold: { fontFamily: "Poppins_600SemiBold", color: "#1a1a1a", fontSize: 16 },
   summaryValue: { fontSize: 14, color: "#333", fontFamily: "Poppins_500Medium" },
   summaryValueBold: { fontFamily: "Poppins_700Bold", fontSize: 16 },
-  summaryDivider: { height: 1, backgroundColor: "#eee", marginVertical: 8 },
-
+  summaryDivider: { height: 1, marginVertical: 8 },
   payBtn: {
-    backgroundColor: PRIMARY, borderRadius: 12, paddingVertical: 16,
+    borderRadius: 12, paddingVertical: 16,
     flexDirection: "row", alignItems: "center", justifyContent: "center",
     marginBottom: 20, minHeight: 54,
   },
   payBtnDisabled: { opacity: 0.5 },
   payBtnText: { color: "white", fontSize: 16, fontFamily: "Poppins_600SemiBold" },
-
   securityCard: {
-    backgroundColor: "white", borderRadius: 12, padding: 16, borderLeftWidth: 4,
+    borderRadius: 12, padding: 16, borderLeftWidth: 4,
     borderLeftColor: "#4CAF50", marginBottom: 16, gap: 14,
   },
   badgeRow: { flexDirection: "row", alignItems: "flex-start" },
   badgeTitle: { fontSize: 13, fontFamily: "Poppins_600SemiBold", color: "#333" },
   badgeDesc: { fontSize: 12, color: "#666", fontFamily: "Poppins_400Regular", marginTop: 2 },
-
-  poweredBy: { textAlign: "center", fontSize: 12, color: "#999", fontFamily: "Poppins_400Regular" },
-
+  poweredBy: { textAlign: "center", fontSize: 12, fontFamily: "Poppins_400Regular" },
   overlay: {
     flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "center",
     alignItems: "center", padding: 20,
   },
   dropdownModal: {
-    backgroundColor: "white", borderRadius: 16, padding: 8, width: "100%",
-    maxWidth: 340,
+    borderRadius: 16, padding: 8, width: "100%", maxWidth: 340,
     shadowColor: "#000", shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15, shadowRadius: 12, elevation: 6,
   },
   dropdownModalTitle: {
-    fontSize: 14, color: "#999", fontFamily: "Poppins_500Medium",
+    fontSize: 14, fontFamily: "Poppins_500Medium",
     paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
   },
   dropdownItem: {
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
     paddingVertical: 14, paddingHorizontal: 16, borderBottomWidth: 1,
     borderBottomColor: "#f5f5f5",
   },
-  dropdownItemActive: { backgroundColor: "#fff5f5" },
-  dropdownItemText: { fontSize: 15, color: "#333", fontFamily: "Poppins_400Regular" },
-  dropdownItemTextActive: { color: PRIMARY, fontFamily: "Poppins_600SemiBold" },
-  dropdownItemSub: { fontSize: 12, color: "#999", fontFamily: "Poppins_400Regular", marginTop: 2 },
-
+  dropdownItemText: { fontSize: 15, fontFamily: "Poppins_400Regular" },
+  dropdownItemSub: { fontSize: 12, fontFamily: "Poppins_400Regular", marginTop: 2 },
   webviewHeader: {
     flexDirection: "row", alignItems: "center", paddingHorizontal: 16,
-    paddingVertical: 12, backgroundColor: "white", borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    paddingVertical: 12, borderBottomWidth: 1,
   },
   webviewBack: { padding: 4, marginRight: 12 },
-  webviewTitle: { flex: 1, fontSize: 16, fontFamily: "Poppins_600SemiBold", color: "#1a1a1a" },
+  webviewTitle: { flex: 1, fontSize: 16, fontFamily: "Poppins_600SemiBold" },
   webviewLock: { backgroundColor: "#E8F5E9", borderRadius: 12, padding: 6 },
   webviewLoading: {
     position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
-    justifyContent: "center", alignItems: "center", backgroundColor: "#f5f5f5",
+    justifyContent: "center", alignItems: "center",
   },
-  webviewLoadingText: { marginTop: 12, color: "#666", fontFamily: "Poppins_400Regular" },
-
-  centeredScreen: {
-    flex: 1, justifyContent: "center", alignItems: "center", padding: 20,
-    backgroundColor: "#f5f5f5",
-  },
+  webviewLoadingText: { marginTop: 12, fontFamily: "Poppins_400Regular" },
+  centeredScreen: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20 },
   statusCard: {
-    backgroundColor: "white", borderRadius: 20, padding: 28, alignItems: "center",
+    borderRadius: 20, padding: 28, alignItems: "center",
     width: "100%", maxWidth: 360,
     shadowColor: "#000", shadowOpacity: 0.06, shadowOffset: { width: 0, height: 4 },
     shadowRadius: 12, elevation: 4,
   },
-  statusTitle: {
-    fontSize: 22, fontFamily: "Poppins_700Bold", color: "#1a1a1a",
-    marginBottom: 8, textAlign: "center",
-  },
-  statusSubtitle: {
-    fontSize: 14, color: "#666", textAlign: "center", lineHeight: 22,
-    marginBottom: 20, fontFamily: "Poppins_400Regular",
-  },
-  attemptText: { fontSize: 13, color: "#999", marginBottom: 16, fontFamily: "Poppins_400Regular" },
+  statusTitle: { fontSize: 22, fontFamily: "Poppins_700Bold", marginBottom: 8, textAlign: "center" },
+  statusSubtitle: { fontSize: 14, textAlign: "center", lineHeight: 22, marginBottom: 20, fontFamily: "Poppins_400Regular" },
+  attemptText: { fontSize: 13, marginBottom: 16, fontFamily: "Poppins_400Regular" },
   secureRow: { flexDirection: "row", alignItems: "center", marginTop: 8 },
-  secureText: { fontSize: 12, color: "#999", fontFamily: "Poppins_400Regular" },
-
+  secureText: { fontSize: 12, fontFamily: "Poppins_400Regular" },
   successCircle: {
     width: 88, height: 88, borderRadius: 44, backgroundColor: "#4CAF50",
     justifyContent: "center", alignItems: "center", marginBottom: 20,
@@ -926,39 +728,32 @@ const s = StyleSheet.create({
     width: 88, height: 88, borderRadius: 44, backgroundColor: "#EF4444",
     justifyContent: "center", alignItems: "center", marginBottom: 20,
   },
-  detailsBox: {
-    backgroundColor: "#f9f9f9", borderRadius: 12, padding: 16,
-    width: "100%", marginBottom: 20,
-  },
+  detailsBox: { borderRadius: 12, padding: 16, width: "100%", marginBottom: 20 },
   loanCompletedBadge: { backgroundColor: "#E8F5E9", borderRadius: 8, padding: 10, marginTop: 8 },
   loanCompletedText: { color: "#2E7D32", fontSize: 13, fontFamily: "Poppins_500Medium" },
-
   errorBox: {
-    flexDirection: "row", alignItems: "flex-start", backgroundColor: "#fff0f0",
+    flexDirection: "row", alignItems: "flex-start",
     borderRadius: 10, padding: 12, marginBottom: 16, width: "100%", gap: 8,
   },
-  errorText: { flex: 1, fontSize: 13, color: PRIMARY, fontFamily: "Poppins_400Regular" },
+  errorText: { flex: 1, fontSize: 13, fontFamily: "Poppins_400Regular" },
   warningBox: {
-    backgroundColor: "#FFFDE7", borderRadius: 10, padding: 14, width: "100%",
-    marginBottom: 16, borderLeftWidth: 3, borderLeftColor: "#FFC107",
+    borderRadius: 10, padding: 14, width: "100%",
+    marginBottom: 16, borderLeftWidth: 3,
   },
   warningTitle: { fontSize: 13, fontFamily: "Poppins_600SemiBold", color: "#7B6000", marginBottom: 6 },
   warningItem: { fontSize: 12, color: "#7B6000", lineHeight: 20, fontFamily: "Poppins_400Regular" },
-  referenceBox: {
-    backgroundColor: "#f5f5f5", borderRadius: 10, padding: 12,
-    width: "100%", marginBottom: 16,
-  },
-  referenceLabel: { fontSize: 12, color: "#666", fontFamily: "Poppins_400Regular", marginBottom: 4 },
-  referenceValue: { fontSize: 12, color: "#333", fontFamily: "Poppins_500Medium" },
+  referenceBox: { borderRadius: 10, padding: 12, width: "100%", marginBottom: 16 },
+  referenceLabel: { fontSize: 12, fontFamily: "Poppins_400Regular", marginBottom: 4 },
+  referenceValue: { fontSize: 12, fontFamily: "Poppins_500Medium" },
   buttonRow: { flexDirection: "row", width: "100%" },
   primaryBtn: {
-    backgroundColor: PRIMARY, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 20,
+    borderRadius: 12, paddingVertical: 14, paddingHorizontal: 20,
     alignItems: "center", justifyContent: "center", minHeight: 50,
   },
   primaryBtnText: { color: "white", fontSize: 15, fontFamily: "Poppins_600SemiBold" },
   outlineBtn: {
-    borderWidth: 1.5, borderColor: "#ddd", borderRadius: 12, paddingVertical: 14,
+    borderWidth: 1.5, borderRadius: 12, paddingVertical: 14,
     alignItems: "center", justifyContent: "center",
   },
-  outlineBtnText: { color: "#555", fontSize: 15, fontFamily: "Poppins_500Medium" },
+  outlineBtnText: { fontSize: 15, fontFamily: "Poppins_500Medium" },
 });

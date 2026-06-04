@@ -101,6 +101,7 @@ export interface LoanCategory {
   collectedAmount: number;
   remainingAmount: number;
   percentageCollected: number;
+  
 }
 
 export interface LoanBalanceState {

@@ -1,6 +1,7 @@
 import { submitWithdrawal } from "@/services/api.service";
 import { useAuthStore } from "@/hooks/useAuth";
 import { useMember } from "@/hooks/useMember";
+import { useTheme } from "@/hooks/use-theme";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
@@ -19,17 +20,18 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function WithdrawalApplication() {
+  const { colors, isDark } = useTheme();
   const [currentStep, setCurrentStep] = useState(1);
   const [amount, setAmount] = useState("");
   const [pin, setPin] = useState("");
   const [isLoading, setLoading] = useState(false);
   const { user } = useAuthStore();
-  
+
   const { data: member, isLoading: isMemberLoading } = useMember(user?.id);
- 
+
 
   if (isMemberLoading) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
+    return <ActivityIndicator size="large" color={colors.primary} />;
   }
 
   const payload = {
@@ -76,66 +78,66 @@ export default function WithdrawalApplication() {
     <ScrollView style={styles.scrollView}>
       <View style={styles.formContainer}>
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Service Number</Text>
+          <Text style={[styles.label, { color: colors.text }]}>Service Number</Text>
           <TextInput
-            style={[styles.input, styles.disabledInput]}
+            style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.textSecondary }]}
             value={member?.user?.service_number}
             editable={false}
           />
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Rank</Text>
+          <Text style={[styles.label, { color: colors.text }]}>Rank</Text>
           <TouchableOpacity
-            style={[styles.dropdown, styles.disabledInput]}
+            style={[styles.dropdown, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}
             onPress={() => {}}
             disabled={true}
           >
-            <Text style={[styles.dropdownText, styles.disabledText]}>
+            <Text style={[styles.dropdownText, { color: colors.textSecondary }]}>
               {member?.user.rank}
             </Text>
-            <Ionicons name="chevron-down" size={20} color="#ccc" />
+            <Ionicons name="chevron-down" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Unit</Text>
+          <Text style={[styles.label, { color: colors.text }]}>Unit</Text>
           <TouchableOpacity
-            style={[styles.dropdown, styles.disabledInput]}
+            style={[styles.dropdown, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}
             onPress={() => {}}
             disabled={true}
           >
             <TextInput
-              style={[styles.input, styles.disabledInput]}
+              style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.textSecondary }]}
               value={member?.user.unit}
               editable={false}
             />
-            <Ionicons name="chevron-down" size={20} color="#ccc" />
+            <Ionicons name="chevron-down" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>First Name</Text>
+          <Text style={[styles.label, { color: colors.text }]}>First Name</Text>
           <TextInput
-            style={[styles.input, styles.disabledInput]}
+            style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.textSecondary }]}
             value={member?.user.first_name}
             editable={false}
           />
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Last Name</Text>
+          <Text style={[styles.label, { color: colors.text }]}>Last Name</Text>
           <TextInput
-            style={[styles.input, styles.disabledInput]}
+            style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.textSecondary }]}
             value={member?.user.last_name}
             editable={false}
           />
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Date of Birth</Text>
+          <Text style={[styles.label, { color: colors.text }]}>Date of Birth</Text>
           <TextInput
-            style={[styles.input, styles.disabledInput]}
+            style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.textSecondary }]}
             placeholder="10/02/1993"
             value={member?.user.date_of_birth}
             editable={false}
@@ -143,18 +145,18 @@ export default function WithdrawalApplication() {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Phone Number</Text>
+          <Text style={[styles.label, { color: colors.text }]}>Phone Number</Text>
           <TextInput
-            style={[styles.input, styles.disabledInput]}
+            style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.textSecondary }]}
             keyboardType="phone-pad"
             value={member?.user.phone}
             editable={false}
           />
         </View>
 
-        <TouchableOpacity style={styles.proceedButton} onPress={handleProceed}>
-          <Text style={styles.proceedButtonText}>Proceed</Text>
-          <Ionicons name="arrow-forward" size={20} color="#fff" />
+        <TouchableOpacity style={[styles.proceedButton, { backgroundColor: colors.primary }]} onPress={handleProceed}>
+          <Text style={[styles.proceedButtonText, { color: colors.onPrimary }]}>Proceed</Text>
+          <Ionicons name="arrow-forward" size={20} color={colors.onPrimary} />
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -163,25 +165,25 @@ export default function WithdrawalApplication() {
   const renderStep2 = () => (
     <ScrollView style={styles.scrollView}>
       <View style={styles.formContainer}>
-        <View style={styles.warningContainer}>
-          <Text style={styles.warningText}>
+        <View style={[styles.warningContainer, { backgroundColor: isDark ? '#3A3A00' : '#FFF3CD', borderColor: isDark ? '#5C5C00' : '#FFEAA7' }]}>
+          <Text style={[styles.warningText, { color: isDark ? '#FFEAA7' : '#856404' }]}>
             Verify your account details. If you notice an anomaly, contact Admin
           </Text>
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Salary Account Name</Text>
+          <Text style={[styles.label, { color: colors.text }]}>Salary Account Name</Text>
           <TextInput
-            style={[styles.input, styles.disabledInput]}
+            style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.textSecondary }]}
             value={member?.user.bank[0].account_name}
             editable={false}
           />
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Salary Account Number</Text>
+          <Text style={[styles.label, { color: colors.text }]}>Salary Account Number</Text>
           <TextInput
-            style={[styles.input, styles.disabledInput]}
+            style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.textSecondary }]}
             keyboardType="numeric"
             value={member?.user.bank[0].account_number}
             editable={false}
@@ -189,41 +191,41 @@ export default function WithdrawalApplication() {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Bank Name</Text>
+          <Text style={[styles.label, { color: colors.text }]}>Bank Name</Text>
           <TextInput
-            style={[styles.input, styles.disabledInput]}
+            style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.textSecondary }]}
             value={member?.user.bank[0].name}
             editable={false}
           />
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Amount</Text>
+          <Text style={[styles.label, { color: colors.text }]}>Amount</Text>
           <TextInput
-            style={[styles.input, styles.disabledInput]}
+            style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
             value={amount}
             onChangeText={setAmount}
           />
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Pin</Text>
+          <Text style={[styles.label, { color: colors.text }]}>Pin</Text>
           <TextInput
-            style={[styles.input, styles.disabledInput]}
+            style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
             value={pin}
             onChangeText={setPin}
           />
         </View>
 
         <TouchableOpacity
-          style={styles.proceedButton}
+          style={[styles.proceedButton, { backgroundColor: colors.primary }]}
           onPress={handleWithdrawal}
           disabled={isLoading}
         >
-          <Text style={styles.proceedButtonText}>
+          <Text style={[styles.proceedButtonText, { color: colors.onPrimary }]}>
             {isLoading ? "Submitting" : "Submit Application"}
           </Text>
-          <Ionicons name="arrow-forward" size={20} color="#fff" />
+          <Ionicons name="arrow-forward" size={20} color={colors.onPrimary} />
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -236,10 +238,10 @@ export default function WithdrawalApplication() {
         resizeMode="cover"
         style={styles.backgroundImage}
       >
-        <View style={styles.overlay}>
+        <View style={[styles.overlay, { backgroundColor: isDark ? 'rgba(41, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.9)' }]}>
           <View style={styles.logoContainer}>
             <View style={styles.logo}>
-              <View style={styles.logoCircle}>
+              <View style={[styles.logoCircle, { backgroundColor: colors.background }]}>
                 <Image
                   source={require("@/assets/images/sappper-logo.png")}
                 />
@@ -247,10 +249,10 @@ export default function WithdrawalApplication() {
             </View>
           </View>
 
-          <View style={styles.contentContainer}>
+          <View style={[styles.contentContainer, { backgroundColor: isDark ? 'rgba(28, 28, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)' }]}>
             {currentStep === 1 ? (
               <>
-                <Text style={styles.subtitle}>Time to Pull Out?</Text>
+                <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Time to Pull Out?</Text>
                 {renderStep1()}
               </>
             ) : (
@@ -272,7 +274,6 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
   },
   header: {
     flexDirection: "row",
@@ -288,7 +289,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#333",
     flex: 1,
     textAlign: "center",
   },
@@ -306,7 +306,6 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
     shadowColor: "#000",
@@ -321,12 +320,10 @@ const styles = StyleSheet.create({
   personnelText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#666",
     letterSpacing: 2,
   },
   contentContainer: {
     flex: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.95)",
     marginHorizontal: 20,
     borderRadius: 15,
     paddingHorizontal: 20,
@@ -334,7 +331,6 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: "#666",
     textAlign: "center",
     marginBottom: 20,
   },
@@ -345,8 +341,6 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   warningContainer: {
-    backgroundColor: "#FFF3CD",
-    borderColor: "#FFEAA7",
     borderWidth: 1,
     borderRadius: 8,
     padding: 12,
@@ -354,7 +348,6 @@ const styles = StyleSheet.create({
   },
   warningText: {
     fontSize: 14,
-    color: "#856404",
     textAlign: "center",
   },
   inputGroup: {
@@ -363,43 +356,28 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: "500",
-    color: "#333",
     marginBottom: 8,
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
   input: {
-    backgroundColor: "#fff",
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#ddd",
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
-    color: "#333",
-  },
-  disabledInput: {
-    backgroundColor: "#f5f5f5",
-    borderColor: "#e0e0e0",
-    color: "#999",
-  },
-  disabledText: {
-    color: "#999",
   },
   dropdown: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#fff",
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#ddd",
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
   dropdownText: {
     fontSize: 16,
-    color: "#333",
   },
   placeholderText: {
     color: "#999",
@@ -437,25 +415,22 @@ const styles = StyleSheet.create({
   },
   dropdownItemText: {
     fontSize: 16,
-    color: "#333",
   },
   selectedDropdownItemText: {
     color: "#2F4F2F",
     fontWeight: "600",
   },
   proceedButton: {
-    backgroundColor: "#2F4F2F",
     borderRadius: 8,
     paddingVertical: 15,
     paddingHorizontal: 30,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    width: "100%", // Made full width
+    width: "100%",
     marginTop: 20,
   },
   proceedButtonText: {
-    color: "#fff",
     fontSize: 16,
     fontWeight: "600",
     marginRight: 8,

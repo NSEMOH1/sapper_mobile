@@ -9,8 +9,11 @@ import {
   Linking,
   Alert
 } from "react-native";
+import { useTheme } from "@/hooks/use-theme";
 
 const ContactUs = () => {
+  const { colors } = useTheme();
+
   const handleCallUs = () => {
     Linking.openURL('tel:+2348012345678').catch((err) => {
       Alert.alert("Error", "Unable to make call");
@@ -33,37 +36,37 @@ const ContactUs = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView style={styles.scrollView}>
-        <Text style={styles.title}>Contact us</Text>
-        <Text style={styles.subtitle}>
+        <Text style={[styles.title, { color: colors.text }]}>Contact us</Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
           Call or Chat with us and we will answer any question.
         </Text>
 
-        <TouchableOpacity style={styles.contactButton} onPress={handleCallUs}>
+        <TouchableOpacity style={[styles.contactButton, { backgroundColor: colors.backgroundElement }]} onPress={handleCallUs}>
           <View style={styles.iconContainer}>
             <Text style={styles.icon}>📞</Text>
           </View>
-          <Text style={styles.contactText}>Call us</Text>
+          <Text style={[styles.contactText, { color: colors.primary }]}>Call us</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.contactButton} onPress={handleWhatsApp}>
+        <TouchableOpacity style={[styles.contactButton, { backgroundColor: colors.backgroundElement }]} onPress={handleWhatsApp}>
           <View style={styles.iconContainer}>
             <Text style={styles.icon}>💬</Text>
           </View>
-          <Text style={styles.contactText}>Get on Whatsapp</Text>
+          <Text style={[styles.contactText, { color: colors.primary }]}>Get on Whatsapp</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.contactButton} onPress={handleFAQ}>
+        <TouchableOpacity style={[styles.contactButton, { backgroundColor: colors.backgroundElement }]} onPress={handleFAQ}>
           <View style={styles.iconContainer}>
             <Text style={styles.icon}>❓</Text>
           </View>
-          <Text style={styles.contactText}>FAQ</Text>
+          <Text style={[styles.contactText, { color: colors.primary }]}>FAQ</Text>
         </TouchableOpacity>
       </ScrollView>
 
-      <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
-        <Text style={styles.continueButtonText}>Continue</Text>
+      <TouchableOpacity style={[styles.continueButton, { backgroundColor: colors.primary }]} onPress={handleContinue}>
+        <Text style={[styles.continueButtonText, { color: colors.onPrimary }]}>Continue</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -74,7 +77,6 @@ export default ContactUs
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
   },
   scrollView: {
     flex: 1,
@@ -83,20 +85,17 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "600",
-    color: "#333",
     marginBottom: 10,
     marginTop: 40,
-    fontFamily: 'Poppins_400Regular', 
+    fontFamily: 'Poppins_400Regular',
   },
   subtitle: {
     fontSize: 16,
-    color: "#666",
     lineHeight: 24,
     marginBottom: 40,
-    fontFamily: 'Poppins_400Regular', 
+    fontFamily: 'Poppins_400Regular',
   },
   contactButton: {
-    backgroundColor: "#F5F7F0",
     borderRadius: 12,
     padding: 20,
     flexDirection: "row",
@@ -112,25 +111,22 @@ const styles = StyleSheet.create({
   },
   icon: {
     fontSize: 18,
-    fontFamily: 'Poppins_400Regular', 
+    fontFamily: 'Poppins_400Regular',
   },
   contactText: {
     fontSize: 16,
-    color: "#4A5D23",
     fontWeight: "500",
-    fontFamily: 'Poppins_400Regular', 
+    fontFamily: 'Poppins_400Regular',
   },
   continueButton: {
-    backgroundColor: "#213400",
     margin: 20,
     padding: 18,
     borderRadius: 12,
     alignItems: "center",
   },
   continueButtonText: {
-    color: "#fff",
     fontSize: 18,
     fontWeight: "600",
-    fontFamily: 'Poppins_400Regular', 
+    fontFamily: 'Poppins_400Regular',
   },
 });

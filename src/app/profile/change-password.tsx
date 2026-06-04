@@ -1,4 +1,5 @@
 import api from "@/constants/api";
+import { useTheme } from "@/hooks/use-theme";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -12,6 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const ChangePassword = () => {
+  const { colors } = useTheme();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -48,44 +50,47 @@ const ChangePassword = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Change Password</Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Change Password</Text>
 
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Current Password</Text>
+        <Text style={[styles.label, { color: colors.text }]}>Current Password</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
           value={currentPassword}
           onChangeText={setCurrentPassword}
           secureTextEntry
           placeholder="Enter current password"
+          placeholderTextColor={colors.textSecondary}
         />
       </View>
 
       <View style={styles.formGroup}>
-        <Text style={styles.label}>New Password</Text>
+        <Text style={[styles.label, { color: colors.text }]}>New Password</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
           value={newPassword}
           onChangeText={setNewPassword}
           secureTextEntry
           placeholder="Enter new password"
+          placeholderTextColor={colors.textSecondary}
         />
       </View>
 
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Confirm New Password</Text>
+        <Text style={[styles.label, { color: colors.text }]}>Confirm New Password</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           secureTextEntry
           placeholder="Confirm new password"
+          placeholderTextColor={colors.textSecondary}
         />
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>Change Password</Text>
+      <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary }]} onPress={handleSubmit}>
+        <Text style={[styles.buttonText, { color: colors.onPrimary }]}>Change Password</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -97,14 +102,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#fff",
   },
   title: {
     fontSize: 20,
     fontWeight: "600",
     marginBottom: 20,
-    color: "#333",
-    fontFamily: 'Poppins_400Regular', 
+    fontFamily: 'Poppins_400Regular',
   },
   formGroup: {
     marginBottom: 15,
@@ -112,29 +115,24 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     marginBottom: 5,
-    color: "#333",
-    fontFamily: 'Poppins_400Regular', 
+    fontFamily: 'Poppins_400Regular',
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
     borderRadius: 8,
     padding: 12,
-    backgroundColor: "#fff",
     fontSize: 16,
-    fontFamily: 'Poppins_400Regular', 
+    fontFamily: 'Poppins_400Regular',
   },
   button: {
     marginTop: 20,
-    backgroundColor: "#213400",
     padding: 15,
     borderRadius: 8,
     alignItems: "center",
   },
   buttonText: {
-    color: "#fff",
     fontSize: 16,
     fontWeight: "600",
-    fontFamily: 'Poppins_400Regular', 
+    fontFamily: 'Poppins_400Regular',
   },
 });
