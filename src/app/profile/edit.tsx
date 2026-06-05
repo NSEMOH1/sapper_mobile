@@ -1,8 +1,9 @@
 import { useAuthStore } from "@/hooks/useAuth";
 import { useMember } from "@/hooks/useMember";
+import { updateMember } from "@/services/api.service";
 import { useTheme } from "@/hooks/use-theme";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Text,
   TextInput,
@@ -17,21 +18,39 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function EditProfile() {
   const { colors } = useTheme();
-  const [formData, setFormData] = useState({
-    first_name: "",
-    last_name: "",
-    email: "",
-    phone: "",
-    address: "",
-    bank_name: "",
-    account_number: "",
-  });
+ 
 
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const { user, logout } = useAuthStore();
+  const [initialized, setInitialized] = useState(false);
+  const { user } = useAuthStore();
 
   const { data: member } = useMember(user?.id);
+
+   const [formData, setFormData] = useState({
+    first_name: member?.user?.first_name || "",
+    last_name: member?.user?.last_name || "",
+    email: member?.user?.email || "",
+    phone: member?.user?.phone || "",
+    address: member?.user?.address || "",
+    bank_name: member?.user?.bank?.[0]?.name || "",
+    account_number: member?.user?.bank?.[0]?.account_number || "",
+  });
+
+  // useEffect(() => {
+  //   if (member?.user && !initialized) {
+  //     setFormData({
+  //       first_name: member.user.first_name || "",
+  //       last_name: member.user.last_name || "",
+  //       email: member.user.email || "",
+  //       phone: member.user.phone || "",
+  //       address: member.user.address || "",
+  //       bank_name: member.user.bank?.[0]?.name || "",
+  //       account_number: member.user.bank?.[0]?.account_number || "",
+  //     });
+  //     setInitialized(true);
+  //   }
+  // }, [member, initialized]);
 
   const updateFormData = (field: keyof typeof formData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -103,12 +122,12 @@ export default function EditProfile() {
         });
       }
 
-      if (user?.id) {
-        logout();
-        router.push("/auth/login");
+      if (!user?.id) {
+        setErrorMessage("User not found. Please login again.");
+        return;
       }
 
-    //   const response = await updateMember(updatePayload);
+      await updateMember(user.id, updatePayload);
 
       Alert.alert("Success", "Profile updated successfully", [{
         text: "OK",
@@ -163,6 +182,7 @@ export default function EditProfile() {
             <TextInput
               style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
               value={formData.first_name}
+              defaultValue={member?.user?.first_name}
               onChangeText={(text) => updateFormData("first_name", text)}
               placeholder={member?.user?.first_name}
               placeholderTextColor={colors.textSecondary}
@@ -175,6 +195,7 @@ export default function EditProfile() {
             <TextInput
               style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
               value={formData.last_name}
+              defaultValue={member?.user?.last_name}
               onChangeText={(text) => updateFormData("last_name", text)}
               placeholder={member?.user?.last_name}
               placeholderTextColor={colors.textSecondary}
@@ -187,6 +208,7 @@ export default function EditProfile() {
             <TextInput
               style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
               value={formData.email}
+              defaultValue={member?.user?.email}
               onChangeText={(text) => updateFormData("email", text)}
               placeholder={member?.user?.email}
               placeholderTextColor={colors.textSecondary}
@@ -201,6 +223,7 @@ export default function EditProfile() {
             <TextInput
               style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
               value={formData.phone}
+              defaultValue={member?.user?.phone}
               onChangeText={(text) => updateFormData("phone", text)}
               placeholder={member?.user?.phone}
               placeholderTextColor={colors.textSecondary}
@@ -216,7 +239,7 @@ export default function EditProfile() {
               style={[styles.input, styles.textArea, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
               value={formData.address}
               onChangeText={(text) => updateFormData("address", text)}
-              placeholder={member?.user?.address}
+              defaultValue={member?.user?.address}
               placeholderTextColor={colors.textSecondary}
               multiline
               numberOfLines={3}
@@ -235,7 +258,7 @@ export default function EditProfile() {
               style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
               value={formData.bank_name}
               onChangeText={(text) => updateFormData("bank_name", text)}
-              placeholder={member?.user?.bank[0]?.name}
+              defaultValue={member?.user?.bank[0]?.name}
               placeholderTextColor={colors.textSecondary}
               editable={!loading}
             />
@@ -247,7 +270,7 @@ export default function EditProfile() {
               style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
               value={formData.account_number}
               onChangeText={(text) => updateFormData("account_number", text)}
-              placeholder={member?.user?.bank[0]?.account_number}
+              defaultValue={member?.user?.bank[0]?.account_number}
               placeholderTextColor={colors.textSecondary}
               keyboardType="numeric"
               maxLength={20}

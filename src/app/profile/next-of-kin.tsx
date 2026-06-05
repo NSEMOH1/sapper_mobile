@@ -33,11 +33,15 @@ export default function NextOfKin() {
 
   const handleSubmit = async () => {
     try {
-      const res = await api.put(`/api/member/${user?.id}`, payload);
+      await api.put(`/api/member/${user?.id}`, payload);
       router.push("/(tabs)");
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      setErrorMessage("Login failed. Please check your credentials.");
+      const msg =
+        e.response?.data?.message ||
+        e.response?.data?.error ||
+        "Update failed. Please try again.";
+      setErrorMessage(msg);
     }
   };
 

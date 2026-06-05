@@ -43,9 +43,13 @@ const ChangePassword = () => {
       await api.post("/api/auth/change-password", payload);
       Alert.alert("Success", "Password changed successfully");
       router.push("/(tabs)/profile")
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      Alert.alert("Failed", "Please try again later");
+      const msg =
+        e.response?.data?.message ||
+        e.response?.data?.error ||
+        "Password change failed. Please try again.";
+      Alert.alert("Failed", msg);
     }
   };
 

@@ -65,6 +65,8 @@ export default function HomeScreen() {
     [],
   );
 
+  console.log("Home render", { user });
+
   return (
     <SafeAreaView style={[s.container, { backgroundColor: colors.background }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>

@@ -17,7 +17,7 @@ import { jwtDecode } from "jwt-decode";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { queryKeys } from "@/lib/queryKeys";
-import { loginUser, registerUser, type LoginPayload } from "@/services/api.service";
+import { fetchMember, loginUser, registerUser, type LoginPayload } from "@/services/api.service";
 import type { AuthData, AuthStore, JwtPayload } from "@/types";
 
 // ── Token helpers (plain async functions, not hooks) ─────────────────────────
@@ -56,16 +56,30 @@ export function useSession() {
       if (!token) return null;
 
       const decoded = jwtDecode<JwtPayload>(token);
+
+      console.log("Decoded JWT:", decoded);
+
       if (decoded.exp * 1000 < Date.now()) {
         await tokenStorage.remove();
         return null;
       }
 
+      const getUser = await fetchMember(decoded.id).catch(async (err) => {
+        console.error("Error fetching user data:", err);
+        await tokenStorage.remove();
+        return null;
+      });
+
+      if (!getUser) {
+        await tokenStorage.remove();
+        return null;
+      }
+
       return {
-        id: decoded.id,
-        first_name: decoded.first_name || "",
-        last_name: decoded.last_name || "",
-        email: decoded.email,
+        id: getUser.user?.id,
+        first_name: getUser.user?.first_name || "",
+        last_name: getUser.user?.last_name || "",
+        email: getUser.user?.email || "",
         role: decoded.role,
       };
     },

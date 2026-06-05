@@ -16,6 +16,7 @@ import { useAuthStore, useLogout } from "@/hooks/useAuth";
 import { useMemberStore } from "@/store/user";
 import { useTheme } from "@/hooks/use-theme";
 import AppIcon from "@/lib/useIcon";
+import { useMember } from "@/hooks/useMember";
 
 type MenuItem = {
   id: number;
@@ -64,15 +65,9 @@ type InfoRow = {
 
 export default function Profile() {
   const { user } = useAuthStore();
-  const { member, loading, fetchMemberData } = useMemberStore();
+  const { data: member, isLoading } = useMember(user?.id);
   const logoutMutation = useLogout();
   const { colors, isDark } = useTheme();
-
-  useEffect(() => {
-    if (user?.id && !member && !loading) {
-      fetchMemberData(user.id);
-    }
-  }, [user?.id]);
 
   const handleLogout = useCallback(() => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
@@ -97,19 +92,21 @@ export default function Profile() {
     <SafeAreaView style={[s.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
         <View style={s.header}>
+
           <View style={[s.avatar, { backgroundColor: colors.primary, shadowColor: colors.primary }]}>
             <Text style={s.avatarText}>{initials}</Text>
           </View>
+
           <Text style={[s.name, { color: colors.text }]}>{fullName}</Text>
           <Text style={[s.email, { color: colors.textSecondary }]}>{user?.email || ""}</Text>
           {user?.role && (
             <View style={[s.roleBadge, { backgroundColor: colors.primaryLight }]}>
-              <Text style={[s.roleText, { color: colors.primary }]}>{user.role}</Text>
+              <Text style={[s.roleText, { color: colors.text }]}>{user.role}</Text>
             </View>
           )}
         </View>
 
-        {loading ? (
+        {isLoading ? (
           <View style={[s.loadingBox, { backgroundColor: colors.card }]}>
             <ActivityIndicator size="small" color={colors.primary} />
           </View>

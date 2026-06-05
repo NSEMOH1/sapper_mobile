@@ -1,39 +1,26 @@
-## Get started
+# Sapper Mobile
 
-1. Install dependencies
-
-   ```bash
-   bun install
-   ```
-
-2. Start the app
-
-   ```bash
-   bunx expo start
-   ```
+A React Native (Expo bare workflow) app for managing savings, loans, payments, and withdrawals.
 
 ---
 
-## React Query Migration Guide
+## Tech Stack
 
-## What changed and why
-
-### The problems with the original approach
-
-| Issue | Impact |
+| | |
 |---|---|
-| `useTokenStorage()` called inside a Zustand factory | Illegal hook call — crashes at runtime outside React components |
-| Interceptors commented out in `_layout.tsx` | No `Authorization` header was ever sent; all authenticated requests failed silently |
-| Manual `useEffect` + `fetchX()` in every hook | No deduplication — the same endpoint fires multiple times when multiple components mount |
-| No caching | Every screen mount triggers a fresh network request |
-| No background refresh | Data goes stale without the user knowing |
-| Error state reset on remount | Errors vanish before the user can act on them |
+| Framework | React Native + Expo (bare workflow) |
+| Router | Expo Router |
+| Data Fetching | TanStack React Query |
+| Package Manager | Bun |
+| Language | TypeScript |
 
 ---
 
-## New file map
+## Project Structure
 
 ```
+assets/
+scripts/
 src/
 ├── lib/
 │   ├── queryClient.ts       ← QueryClient config (staleTime, gcTime, retry)
@@ -48,31 +35,245 @@ src/
 │   └── useMember.ts         ← useMember(userId)
 └── app/
     ├── _layout.tsx          ← QueryClientProvider wraps the whole app
-    └── (tabs)/
-        └── index.tsx        ← 
-    └── auth/
-        └── login.tsx        ← Uses useLogin() mutation
-    └── payments/
-        └── index.tsx        ← payments
-    └── withdrawal/
-        └── index.tsx        ← Uses useLogin() mutation
+    ├── (tabs)/
+    │   └── index.tsx
+    ├── auth/
+    │   └── login.tsx        ← Uses useLogin() mutation
+    ├── payments/
+    │   └── index.tsx
+    ├── withdrawal/
+    │   └── index.tsx
     └── welcome/
-        └── index.tsx        ← Uses useLogin() mutation
+        └── index.tsx
 ```
-
-The old Zustand stores in `src/store/` (`balance.ts`, `loan.ts`, `savings.ts`, `user.ts`) are **replaced** by the hooks above. You can delete them.
 
 ---
 
-## Installation
+## Prerequisites
+
+Make sure you have the following installed before getting started:
+
+- **Node.js** ≥ 18
+- **Bun** → [bun.sh](https://bun.sh)
+- **Expo CLI** → `bun install -g expo-cli`
+- **EAS CLI** → `bun install -g eas-cli`
+- **Android Studio** + Android SDK (for Android builds)
+- **Xcode** (Mac only, for iOS builds)
+
+### Android SDK Setup (required for local Android builds)
+
+Add to your `~/.zshenv` (persists across all shell types including non-interactive):
 
 ```bash
-bun add @tanstack/react-query
+export ANDROID_HOME=$HOME/Library/Android/sdk
+export PATH=$PATH:$ANDROID_HOME/platform-tools
+export PATH=$PATH:$ANDROID_HOME/tools
+export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
+```
+
+Apply immediately:
+
+```bash
+source ~/.zshenv
+```
+
+Also create `android/local.properties` as a fallback:
+
+```bash
+echo "sdk.dir=$HOME/Library/Android/sdk" > android/local.properties
 ```
 
 ---
 
-## Usage patterns
+## Getting Started
+
+### 1. Install dependencies
+
+```bash
+bun install
+```
+
+### 2. Generate native folders (first time only)
+
+If `android/` and `ios/` folders don't exist:
+
+```bash
+bunx expo prebuild --clean
+```
+
+You'll be prompted for:
+- **Bundle identifier** (iOS) e.g. `com.sappers.app`
+- **Package name** (Android) e.g. `com.sappers.app`
+
+---
+
+## Development
+
+### Start the dev server
+
+```bash
+bunx expo start
+```
+
+### Run on Android (physical device or emulator)
+
+```bash
+bunx expo run:android
+```
+
+### Run on iOS Simulator (Mac only)
+
+```bash
+cd ios && pod install && cd ..
+bunx expo run:ios
+```
+
+### Run on specific simulator
+
+```bash
+# List available simulators
+xcrun simctl list devices
+
+bunx expo run:ios --simulator "iPhone 15 Pro"
+```
+
+---
+
+## Building
+
+### Development Build (with dev client)
+
+Use this for testing with full native modules on a real device.
+
+```bash
+# Android APK (dev)
+eas build --profile development --platform android --local
+
+# iOS (dev, simulator)
+eas build --profile development --platform ios --local
+```
+
+### Preview Build (internal distribution)
+
+Use this for sharing with testers before going to the store.
+
+```bash
+# Android APK
+eas build --profile preview --platform android --local
+
+# iOS
+eas build --profile preview --platform ios --local
+```
+
+### Production Build — AAB (Google Play)
+
+```bash
+eas build --profile production --platform android --local
+```
+
+Output path:
+```
+build-<timestamp>.aab
+```
+
+### Production Build — IPA (App Store, Mac only)
+
+```bash
+eas build --profile production --platform ios --local
+```
+
+---
+
+## Converting AAB → APK (for direct device install)
+
+EAS produces an `.aab` for production. To install directly on a device, convert it to a universal APK.
+
+### Step 1 — Install bundletool
+
+```bash
+brew install bundletool
+```
+
+### Step 2 — Get your keystore credentials
+
+```bash
+eas credentials
+```
+
+Select: **Android → production → Keystore → Download**
+
+Note the keystore path, keystore password, key alias, and key password.
+
+### Step 3 — Build universal APK
+
+```bash
+bundletool build-apks \
+  --bundle=build-<timestamp>.aab \
+  --output=app.apks \
+  --ks=/path/to/keystore.jks \
+  --ks-pass=pass:KEYSTORE_PASSWORD \
+  --ks-key-alias=KEY_ALIAS \
+  --key-pass=pass:KEY_PASSWORD \
+  --mode=universal
+```
+
+### Step 4 — Extract the APK
+
+```bash
+cp app.apks app.zip
+unzip app.zip -d apk-output
+# APK is at: apk-output/universal.apk
+```
+
+### Step 5 — Install on device
+
+```bash
+adb install apk-output/universal.apk
+```
+
+---
+
+## EAS Configuration (`eas.json`)
+
+```json
+{
+  "cli": {
+    "version": ">= 12.0.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": { "simulator": true },
+      "android": { "buildType": "apk" }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": { "buildType": "apk" }
+    },
+    "production": {
+      "android": { "buildType": "app-bundle" },
+      "ios": {}
+    }
+  }
+}
+```
+
+---
+
+## Data Fetching (TanStack React Query)
+
+The app uses TanStack React Query for all server state. The old Zustand stores (`balance.ts`, `loan.ts`, `savings.ts`, `user.ts`) have been replaced.
+
+### Key behaviours
+
+| Behaviour | Detail |
+|---|---|
+| Stale window | 2 minutes — data served from cache with zero network overhead |
+| Garbage collection | 10 minutes — unmounted queries stay in memory for fast back-navigation |
+| Auto-retry | Failed requests retry twice (1s → 2s → 4s, capped at 10s) |
+| Background refresh | Stale queries refetch when user returns to app or reconnects |
+| Deduplication | Multiple components using the same hook fire only one network request |
 
 ### Reading data in a screen
 
@@ -89,7 +290,7 @@ export default function HomeScreen() {
 }
 ```
 
-### Triggering a mutation (login, withdrawal, etc.)
+### Triggering a mutation
 
 ```tsx
 const { mutate, isPending, error } = useLogin();
@@ -103,25 +304,20 @@ const { mutate, isPending, error } = useLogin();
 
 ### Invalidating cache after a mutation
 
-After a successful loan application, invalidate loan data so it refetches:
-
 ```tsx
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
 
 const queryClient = useQueryClient();
+
 // Inside mutation onSuccess:
 queryClient.invalidateQueries({ queryKey: queryKeys.loans.all });
 ```
 
 ### Session rehydration
 
-Call `useSession()` once at the app entry point (e.g. `src/app/index.tsx`):
-
 ```tsx
 import { useSession } from "@/hooks/useAuth";
-import { useEffect } from "react";
-import { router } from "expo-router";
 
 export default function Index() {
   const { data: user, isLoading } = useSession();
@@ -138,10 +334,52 @@ export default function Index() {
 
 ---
 
-## Key behaviours
+## Common Commands Reference
 
-- **2-minute stale window** — data fetched within the last 2 minutes is served from cache with zero network overhead.
-- **10-minute garbage collection** — unmounted queries stay in memory for 10 minutes, so navigating back is instant.
-- **Auto-retry** — failed requests retry twice with exponential backoff (1s → 2s → 4s, capped at 10s).
-- **Background refresh** — when the user returns to the app or reconnects to the internet, stale queries silently refetch.
-- **Deduplication** — if `useBalances()` is mounted in 5 components simultaneously, only one network request fires.
+| Task | Command |
+|---|---|
+| Install dependencies | `bun install` |
+| Generate native folders | `bunx expo prebuild --clean` |
+| Start dev server | `bunx expo start` |
+| Run on Android | `bunx expo run:android` |
+| Run on iOS | `bunx expo run:ios` |
+| Dev build (Android) | `eas build --profile development --platform android --local` |
+| Preview build (Android) | `eas build --profile preview --platform android --local` |
+| Production AAB | `eas build --profile production --platform android --local` |
+| Production IPA | `eas build --profile production --platform ios --local` |
+| Convert AAB → APK | `bundletool build-apks --mode=universal ...` |
+| Install APK on device | `adb install apk-output/universal.apk` |
+| View EAS credentials | `eas credentials` |
+
+---
+
+## Troubleshooting
+
+### `SDK location not found`
+Your `ANDROID_HOME` is not set or not persisting. Add it to `~/.zshenv` (not just `~/.zshrc`) and create `android/local.properties`:
+```bash
+echo "sdk.dir=$HOME/Library/Android/sdk" > android/local.properties
+```
+
+### `ANDROID_HOME` not persistent after restart
+Use `~/.zshenv` instead of `~/.zshrc`. Oh My Zsh and non-interactive shells (used by EAS local) only load `.zshenv`:
+```bash
+echo 'export ANDROID_HOME=$HOME/Library/Android/sdk' >> ~/.zshenv
+source ~/.zshenv
+```
+
+### Gradle build fails
+```bash
+cd android
+./gradlew clean
+cd ..
+eas build --profile production --platform android --local
+```
+
+### iOS pod install fails
+```bash
+cd ios
+pod deintegrate
+pod install
+cd ..
+```

@@ -24,8 +24,9 @@ export default function LoginScreen() {
 
   const { mutate: login, isPending, error, reset } = useLogin();
 
-  const errorMessage =
-    error instanceof Error ? error.message : error ? "Login failed. Please check your credentials." : "";
+
+  const errorMessage = error?.message || (error ? "Login failed. Please check your credentials." : "");
+    // error instanceof Error ? error.message : error ? "Login failed. Please check your credentials." : "";
 
   const handleSignin = () => {
     reset();

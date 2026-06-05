@@ -60,9 +60,9 @@ export const setupInterceptors = ({
       if (error.response?.status === 401) {
         await removeAccessToken();
         onUnauthenticated?.();          // ← Zustand logout lives here
-        router.replace("/auth/login");
+        // router.replace("/auth/login");
       }
-      return Promise.reject(error);
+      return Promise.reject(error.response?.data || error);
     }
   );
 };

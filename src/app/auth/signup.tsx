@@ -198,8 +198,8 @@ export default function RegistrationForm() {
       await register(formData);
       setShowSuccess(true);
     } catch (error: any) {
-      const message =
-        error.response?.data?.message ||
+      const message = error?.message ||
+        error.response?.message ||
         error.response?.data?.error ||
         (error.request ? "Network error. Please check your internet connection." : error.message) ||
         "Registration failed. Please try again.";

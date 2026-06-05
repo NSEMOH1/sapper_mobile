@@ -44,6 +44,14 @@ export async function fetchMember(userId: string): Promise<MemberData> {
   return res.data;
 }
 
+export async function updateMember(
+  userId: string,
+  payload: Record<string, string>
+): Promise<any> {
+  const res = await api.put(`/api/member/${userId}`, payload);
+  return res.data;
+}
+
 // ── Balance ───────────────────────────────────────────────────────────────────
 
 export interface BalanceResponse {

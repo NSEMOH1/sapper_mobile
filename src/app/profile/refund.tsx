@@ -27,9 +27,13 @@ export default function Refund() {
       await api.post("/api/requests", payload);
       Alert.alert("Success", "Your request has been submitted");
       router.push("/(tabs)/profile");
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      Alert.alert("Error", "Your request failed, please try again later");
+      const msg =
+        e.response?.data?.message ||
+        e.response?.data?.error ||
+        "Request failed. Please try again.";
+      Alert.alert("Error", msg);
     }
   };
 
